@@ -1,0 +1,84 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="data">
+      <UniqueIdentifier>{9f65e4ae-af2d-40bd-b739-0958f7da2a5b}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="docs">
+      <UniqueIdentifier>{fa55a4a2-91b7-4a31-b20e-23dd01f2ddc2}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="include">
+      <UniqueIdentifier>{9df7b23f-bd08-4f92-8740-a399f0cc8dc7}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="libraries">
+      <UniqueIdentifier>{c5c049c6-5305-48ea-99e7-60abeac655a8}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="src">
+      <UniqueIdentifier>{e26ab25d-42fd-4180-849f-98cc820e0756}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="libraries\rbush">
+      <UniqueIdentifier>{8b1e2ab6-a1f6-4aeb-a9da-dbceaebe04d0}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="src\CGALUtils.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="src\MapUtils.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="src\GroupEngine.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="src\GETree.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="src\ImmuneSystem.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="src\parse.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="src\RouteEngine.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="src\CableRouteEngine.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="src\crio.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="libraries\rbush\RBush.hpp">
+      <Filter>libraries\rbush</Filter>
+    </ClInclude>
+    <ClInclude Include="include\CGALUtils.h">
+      <Filter>include</Filter>
+    </ClInclude>
+    <ClInclude Include="include\MapUtils.h">
+      <Filter>include</Filter>
+    </ClInclude>
+    <ClInclude Include="include\ImmuneSystem.h">
+      <Filter>include</Filter>
+    </ClInclude>
+    <ClInclude Include="include\parse.h">
+      <Filter>include</Filter>
+    </ClInclude>
+    <ClInclude Include="include\CableRouteEngine.h">
+      <Filter>include</Filter>
+    </ClInclude>
+    <ClInclude Include="include\RouteEngine.h">
+      <Filter>include</Filter>
+    </ClInclude>
+    <ClInclude Include="include\crio.h">
+      <Filter>include</Filter>
+    </ClInclude>
+    <ClInclude Include="include\GETree.h">
+      <Filter>include</Filter>
+    </ClInclude>
+    <ClInclude Include="include\GroupEngine.h">
+      <Filter>include</Filter>
+    </ClInclude>
+  </ItemGroup>
+</Project>
