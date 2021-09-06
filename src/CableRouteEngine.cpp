@@ -48,7 +48,7 @@ bool path_compare(std::pair<Point, Point> a, std::pair<Point, Point> b)
 		b_right * abs(DOUBLE(b.second.hy() - b.first.hy()));
 }
 
-string CableRouter::CableRouteEngine::cable_routing(string datastr)
+string CableRouter::CableRouteEngine::routing(string datastr)
 {
 	MapInfo map;
 	vector<Block> data; 
