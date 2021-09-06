@@ -13,7 +13,7 @@ namespace CableRouter
 	class CableRouteEngine
 	{
 	public:
-		string cable_routing(string datastr);
+		string routing(string datastr);
 	};
 
 }
