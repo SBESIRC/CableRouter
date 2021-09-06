@@ -5,7 +5,7 @@ using namespace CableRouter;
 
 CableRouter::GETree::GETree(vector<Point>& coords, double** G)
 {
-	int n = coords.size();
+	int n = (int)coords.size();
 	nodes = vector<GENode>(n);
 
 	vector<int> parent = this->prim(G, n, 0);
@@ -34,7 +34,8 @@ vector<int> CableRouter::GETree::prim(double** G, int n, int start)
 	disg[start] = 0;
 	for (int i = 0; i < n; i++)
 	{
-		int MIN = CR_INF, u = -1;
+		double MIN = CR_INF;
+		int u = -1;
 		for (int j = 0; j < n; j++)
 		{
 			if (!vis[j] && disg[j] < MIN)

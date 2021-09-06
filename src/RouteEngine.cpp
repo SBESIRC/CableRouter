@@ -41,7 +41,7 @@ vector<Point> CableRouter::a_star_connect_p2p(MapInfo* const data, Point s, Poin
 		Point mid = CGAL::midpoint((*c)->data->source(), (*c)->data->target());
 		if (mid != s && mid != t)
 			vec.push_back(make_pair(mid, VertexInfo(2, true)));
-		int num = 1 + LEN(*(*c)->data) / 2000;
+		int num = 1 + ((int)LEN(*(*c)->data)) / 2000;
 		for (int i = 1; i <= num; i++)
 		{
 			Point end = Point(
@@ -59,7 +59,7 @@ vector<Point> CableRouter::a_star_connect_p2p(MapInfo* const data, Point s, Poin
 		Point mid = CGAL::midpoint(l->source(), l->target());
 		//if (mid != s && mid != t)
 		//	vec.push_back(make_pair(mid, VertexInfo(2, true)));
-		int num = 1 + LEN(*l) / 2000;
+		int num = 1 + ((int)LEN(*l)) / 2000;
 		for (int i = 1; i <= num; i++)
 		{
 			Point end = Point(
@@ -285,7 +285,7 @@ vector<Point> CableRouter::a_star_connect_p2s(MapInfo* const data, Point s, Segm
 		Point mid = CGAL::midpoint(l->source(), l->target());
 		if (mid != s && end_set.find(mid) == end_set.end())
 			vec.push_back(make_pair(mid, VertexInfo(2, true)));
-		int num = 1 + LEN(*l) / 1000;
+		int num = 1 + ((int)LEN(*l)) / 1000;
 		for (int i = 1; i <= num; i++)
 		{
 			Point end = Point(
@@ -616,7 +616,7 @@ vector<Point> CableRouter::line_break(vector<Point>& line, const double gap)
 	{
 		Point start = line[i];
 		Point end = line[i + 1];
-		int num = 1 + DIST(start, end) / gap;
+		int num = 1 + (int)(DIST(start, end) / gap);
 		for (int i = 1; i <= num; i++)
 		{
 			Point next = Point(
@@ -643,12 +643,12 @@ vector<Point> CableRouter::manhattan_smooth_p2p(MapInfo* const data, vector<Poin
 		Point u = line[now];
 
 		int best = -1;
-		int best_cross = CR_INF;
+		double best_cross = CR_INF;
 		bool best_has_mid = false;
 		Point best_mid;
 
 		int better = -1;
-		int better_cross = CR_INF;
+		double better_cross = CR_INF;
 		bool better_has_mid = false;
 		Point better_mid;
 
@@ -789,7 +789,7 @@ vector<Point> CableRouter::manhattan_smooth_basic(MapInfo* const data, vector<Po
 
 	vector<Point> res;
 	int now = 0;
-	int next_id = line.size() - 1;
+	int next_id = (int)line.size() - 1;
 	res.push_back(line[now]);
 	while (next_id != now)
 	{
@@ -804,13 +804,13 @@ vector<Point> CableRouter::manhattan_smooth_basic(MapInfo* const data, vector<Po
 			{
 				now = next_id;
 				res.push_back(line[now]);
-				next_id = line.size() - 1;
+				next_id = (int)line.size() - 1;
 			}
 			else if (next_id - 1 == now)
 			{
 				now = next_id;
 				res.push_back(line[now]);
-				next_id = line.size() - 1;
+				next_id = (int)line.size() - 1;
 			}
 			else
 			{
@@ -845,21 +845,21 @@ vector<Point> CableRouter::manhattan_smooth_basic(MapInfo* const data, vector<Po
 			line.insert(line.begin() + next_id, next);
 			now = next_id;
 			res.push_back(line[now]);
-			next_id = line.size() - 1;
+			next_id = (int)line.size() - 1;
 		}
 		else if (!cross1)
 		{
 			line.insert(line.begin() + next_id, mid1);
 			now = next_id;
 			res.push_back(line[now]);
-			next_id = line.size() - 1;
+			next_id = (int)line.size() - 1;
 		}
 		else if (!cross2)
 		{
 			line.insert(line.begin() + next_id, mid2);
 			now = next_id;
 			res.push_back(line[now]);
-			next_id = line.size() - 1;
+			next_id = (int)line.size() - 1;
 		}
 		else if (next_id - 1 == now)
 		{
@@ -1005,12 +1005,12 @@ vector<Point> CableRouter::manhattan_smooth_p2s(MapInfo* const data, vector<Poin
 		line[line.size() - 1] = project_point_to_segment(u, des);
 
 		int best = -1;
-		int best_cross = CR_INF;
+		double best_cross = CR_INF;
 		bool best_has_mid = false;
 		Point best_mid;
 
 		int better = -1;
-		int better_cross = CR_INF;
+		double better_cross = CR_INF;
 		bool better_has_mid = false;
 		Point better_mid;
 
@@ -1152,7 +1152,7 @@ bool CableRouter::tooCloseToSun(MapInfo* const data, const Point p, const Point 
 	{
 		Segment s = exist_lines[i];
 
-		if (!is_end && DIST(q, s) < LINE_GAP)
+		if (!is_end && DIST(pq, s) < LINE_GAP)
 		{
 			return true;
 		}

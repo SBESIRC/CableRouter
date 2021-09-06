@@ -97,11 +97,11 @@ string CableRouter::CableRouteEngine::routing(string datastr)
 		vector<vector<Point>> paths;
 		vector<Device>& devices = systems[e].data.devices;
 		vector<Power>& powers = systems[e].data.powers;
-		int dn = devices.size();
+		int dn = (int)devices.size();
 
 		vector<int> d(adj.size());
 		for (int i = 0; i < adj.size(); i++)
-			d[i] = adj[i].size();
+			d[i] = (int)adj[i].size();
 		for (int i = 0; i < adj.size(); i++)
 		{
 			Point u = i < devices.size() ? devices[i].coord : powers[i - dn].points[0];

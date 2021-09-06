@@ -16,7 +16,7 @@ vector<vector<int>> CableRouter::GroupEngine::grouping(MapInfo* const data, cons
 	getParam(param);
 
 	CDT dt = buildTriangulation(data);
-	int n_all = dt.number_of_vertices() + data->powers.size();
+	int n_all = (int)(dt.number_of_vertices() + data->powers.size());
 
 	double** G = buildGraphAll(data, dt, n_all, true, true);
 	addDeviceEdges(data, G, true, true);

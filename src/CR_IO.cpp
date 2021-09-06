@@ -33,7 +33,7 @@ MapInfo CableRouter::read_blocks(vector<CableRouterParse::Block>& data)
 		string area_id = data[i].area_id;
 		if (category.compare("Device") == 0)
 		{
-			map.devices.push_back(Device(cgal_point(data[i].coords[0]), map.devices.size()));
+			map.devices.push_back(Device(cgal_point(data[i].coords[0]), (int)map.devices.size()));
 		}
 		if (category.compare("Power") == 0)
 		{

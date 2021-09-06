@@ -25,9 +25,8 @@ vector<int> CableRouter::PruferEncode(const vector<vector<int>>& adj)
 
 	for (int u = 0; u < n; u++)
 	{
-		for (int vi = 0; vi < adj[u].size(); vi++)
+		for (int v = 0; v < adj[u].size(); v++)
 		{
-			int v = adj[u][vi];
 			d[u]++;
 		}
 	}
@@ -125,7 +124,7 @@ vector<vector<int>> CableRouter::PruferDecode(const vector<int>& codes)
 vector<ISData> CableRouter::parse_groups(MapInfo* data, vector<vector<int>>& groups)
 {
 	CDT dt = buildTriangulation(data);
-	int n_all = dt.number_of_vertices() + data->powers.size();
+	int n_all = (int)(dt.number_of_vertices() + data->powers.size());
 
 	double** G = buildGraphAll(data, dt, n_all, false, true);
 	addDeviceEdges(data, G, false, true);
@@ -184,8 +183,8 @@ vector<ISData> CableRouter::parse_groups(MapInfo* data, vector<vector<int>>& gro
 			vis[j] = 1;
 		}
 		pwrs = data->powers;
-		int dev_n = devs.size();
-		int pwr_n = pwrs.size();
+		int dev_n = (int)devs.size();
+		int pwr_n = (int)pwrs.size();
 		vector<vector<double>> g(dev_n + pwr_n);
 		for (int p = 0; p < dev_n; p++)
 		{
@@ -437,7 +436,6 @@ void CableRouter::ImmuneSystem::run()
 	for (int k = 0; k < M; k++)
 	{
 		vector<vector<int>> adj(n);
-		double q = rand() * 1.0 / RAND_MAX;
 
 		double* disg = new double[dn];
 		bool* vis = new bool[dn];

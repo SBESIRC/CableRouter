@@ -79,7 +79,7 @@ CDT CableRouter::buildTriangulation(MapInfo* const data)
 		dt.insert_constraint(vec_con.begin(), vec_con.end(), true);
 	}
 
-	int id = data->devices.size();
+	int id = (int)data->devices.size();
 	// parse_groups other points' id
 	for (auto v = dt.finite_vertices_begin(); v != dt.finite_vertices_end(); v++)
 	{
@@ -165,7 +165,7 @@ void CableRouter::addPowerEdges(MapInfo* const data, const CDT& dt, double** G, 
 	printf("Make up power-to-point edge begin\n");
 	for (int i = 0; i < data->powers.size(); i++)
 	{
-		data->powers[i].id = dt.number_of_vertices() + i;
+		data->powers[i].id = (int)dt.number_of_vertices() + i;
 		printf("power[%d].id = %d\n", i, data->powers[i].id);
 		for (auto j = dt.finite_vertices_begin(); j != dt.finite_vertices_end(); j++)
 		{
@@ -200,8 +200,8 @@ void CableRouter::addPowerEdges(MapInfo* const data, const CDT& dt, double** G, 
 void CableRouter::removeObstacles(MapInfo* const data, double** G, int n)
 {
 	printf("Shifting obstacle points begin\n");
-	int dn = data->devices.size();
-	int pn = data->powers.size();
+	int dn = (int)data->devices.size();
+	int pn = (int)data->powers.size();
 	int on = n - dn - pn;
 	for (int start = 0; start < dn + pn; start++)
 	{
@@ -213,7 +213,8 @@ void CableRouter::removeObstacles(MapInfo* const data, double** G, int n)
 		dis[sid] = 0;
 		for (int i = 0; i < n; i++)
 		{
-			int MIN = CR_INF, u = -1;
+			double MIN = CR_INF;
+			int u = -1;
 			for (int j = 0; j < n; j++)
 			{
 				if (!vis[j] && dis[j] < MIN)
