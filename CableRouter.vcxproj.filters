@@ -21,7 +21,7 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="src\CGALUtils.cpp">
+    <ClCompile Include="src\CR_CGALUtils.cpp">
       <Filter>src</Filter>
     </ClCompile>
     <ClCompile Include="src\MapUtils.cpp">
@@ -36,7 +36,7 @@
     <ClCompile Include="src\ImmuneSystem.cpp">
       <Filter>src</Filter>
     </ClCompile>
-    <ClCompile Include="src\parse.cpp">
+    <ClCompile Include="src\CR_Parse.cpp">
       <Filter>src</Filter>
     </ClCompile>
     <ClCompile Include="src\RouteEngine.cpp">
@@ -45,7 +45,7 @@
     <ClCompile Include="src\CableRouteEngine.cpp">
       <Filter>src</Filter>
     </ClCompile>
-    <ClCompile Include="src\crio.cpp">
+    <ClCompile Include="src\CR_IO.cpp">
       <Filter>src</Filter>
     </ClCompile>
   </ItemGroup>
@@ -53,7 +53,7 @@
     <ClInclude Include="libraries\rbush\RBush.hpp">
       <Filter>libraries\rbush</Filter>
     </ClInclude>
-    <ClInclude Include="include\CGALUtils.h">
+    <ClInclude Include="include\CR_CGALUtils.h">
       <Filter>include</Filter>
     </ClInclude>
     <ClInclude Include="include\MapUtils.h">
@@ -62,7 +62,7 @@
     <ClInclude Include="include\ImmuneSystem.h">
       <Filter>include</Filter>
     </ClInclude>
-    <ClInclude Include="include\parse.h">
+    <ClInclude Include="include\CR_Parse.h">
       <Filter>include</Filter>
     </ClInclude>
     <ClInclude Include="include\CableRouteEngine.h">
@@ -71,7 +71,7 @@
     <ClInclude Include="include\RouteEngine.h">
       <Filter>include</Filter>
     </ClInclude>
-    <ClInclude Include="include\crio.h">
+    <ClInclude Include="include\CR_IO.h">
       <Filter>include</Filter>
     </ClInclude>
     <ClInclude Include="include\GETree.h">
