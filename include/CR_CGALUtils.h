@@ -10,7 +10,7 @@
 #include <CGAL/Polygon_2.h>
 #include <CGAL/Timer.h>
 
-#include "rbush/RBush.hpp"
+#include "RBush.hpp"
 
 #ifndef _CABLEROUTER_CGALUTILS_H_
 #define _CABLEROUTER_CGALUTILS_H_
