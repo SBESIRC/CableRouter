@@ -3,6 +3,7 @@
 #include "GroupEngine.h"
 #include "ImmuneSystem.h"
 #include "RouteEngine.h"
+#include "OptimizeEngine.h"
 
 using namespace CableRouter;
 
@@ -87,82 +88,95 @@ string CableRouter::CableRouteEngine::routing(string datastr, int loop_max_count
 		for (int k = 0; k < 10; k++)
 			systems[e].run();
 
+		if (systems[e].globlMem.size() < 1)
+		{
+			printf("Group %d No result!\n", e);
+			continue;
+		}
+
 		auto adj = systems[e].globlMem.rbegin()->adj;
 		printf("Best value = %lf\n", systems[e].globlMem.rbegin()->value);
 
 		vector<vector<Point>> paths;
 		vector<Device>& devices = systems[e].data.devices;
 		vector<Power>& powers = systems[e].data.powers;
-		int dn = (int)devices.size();
+		int dn = devices.size();
 
-		vector<int> d(adj.size());
-		for (int i = 0; i < adj.size(); i++)
-			d[i] = (int)adj[i].size();
-		for (int i = 0; i < adj.size(); i++)
+		vector<DreamNode*> dev_nodes;
+		for (int i = 0; i < dn; i++)
 		{
-			Point u = i < devices.size() ? devices[i].coord : powers[i - dn].points[0];
+			DreamNode* no = newDreamNode(devices[i].coord);
+			no->is_device = true;
+			dev_nodes.push_back(no);
+		}
+		int root;
+		for (int i = dn; i < adj.size(); i++)
+		{
+			bool found = false;
 			for (int j = 0; j < adj[i].size(); j++)
 			{
-				if (d[adj[i][j]] == 0) continue;
-				Point v = adj[i][j] < dn ? devices[adj[i][j]].coord : powers[adj[i][j] - dn].points[0];
-
-				if (i < dn && adj[i][j] < dn)
+				if (adj[i][j] < dn)
 				{
-					paths.push_back(manhattan_connect(&map, u, v, Vector(0, 0), cables));
+					found = true;
+					root = adj[i][j];
+					power_paths.push_back(make_pair(powers[i - dn].points[0], devices[root].coord));
+					break;
 				}
-				else if (i >= dn && adj[i][j] < dn)
-				{
-					power_paths.push_back(std::make_pair(u, v));
-				}
-				else if (i < dn && adj[i][j] >= dn)
-				{
-					power_paths.push_back(std::make_pair(v, u));
-				}
-
-				d[i]--;
-				d[adj[i][j]]--;
 			}
+			if (found) break;
 		}
-		for (int i = 0; i < paths.size(); i++)
+
+		vector<int> vis(dn, 0);
+		queue<int> dev_queue;
+
+		DreamTree path_tree = dev_nodes[root];
+		dev_queue.push(root);
+		while (!dev_queue.empty())
 		{
-			for (int j = 0; j < paths[i].size() - 1; j++)
+			int now = dev_queue.front();
+			dev_queue.pop();
+			vis[now] = 1;
+			for (int i = 0; i < adj[now].size(); i++)
 			{
-				cables.push_back(Segment(paths[i][j], paths[i][j + 1]));
+				int ch = adj[now][i];
+				if (ch < dn && vis[ch] == 0)
+				{
+					dev_nodes[now]->children.push_back(dev_nodes[ch]);
+					dev_nodes[ch]->parent = dev_nodes[now];
+					vis[ch] = 1;
+					dev_queue.push(ch);
+				}
 			}
 		}
+		get_manhattan_lines(&map, path_tree, cables);
 	}
 
 
 	// power to device connect
 
-	std::sort(power_paths.begin(), power_paths.end(), path_compare);
-
-	vector<int> order;
-	for (int i = 0; i < power_paths.size(); i++)
-	{
-		order.push_back(i);
-	}
-
+	vector<vector<Point>> result_paths;
 	vector<Segment> exist_lines = cables;
 	//for (int i = 0; i < power_paths.size(); i++)
-	for (int ii = 0; ii < order.size(); ii++)
+	for (int i = 0; i < power_paths.size(); i++)
 	{
-		int i = order[ii];
-		int off = ii - power_paths.size() / 2;
 		Point pwr = Point(power_paths[i].first.hx(), power_paths[i].first.hy());
-		//Point pwr = Point(power_paths[i].first.hx() + off * 500, power_paths[i].first.hy() + off * 500);
-		//Segment pwr = Segment(power_paths[i].first, Point(power_paths[i].first.hx() + 7 * 400, power_paths[i].first.hy()));
 		Point dev = power_paths[i].second;
 		printf("Looking for path %d\n", i);
 		vector<Point> pp = obstacle_avoid_connect_p2p(&map, pwr, dev, exist_lines);
+		//vector<Point> pp = obstacle_avoid_connect_p2s(&data, dev, pwr, exist_lines);
 
 		printf("Path size: %d\n", pp.size());
 
-		for (int j = 0; j < pp.size() - 1; j++)
-		{
-			cables.push_back(Segment(pp[j], pp[j + 1]));
-		}
+		result_paths.push_back(pp);
 	}
+
+	DreamTree dream_tree = merge_to_a_tree(result_paths);
+
+	vector<Segment> tree_lines = get_dream_tree_lines(dream_tree);
+
+	cables.insert(cables.end(), tree_lines.begin(), tree_lines.end());
+
+	deleteDreamTree(dream_tree);
 
 
 	// output
