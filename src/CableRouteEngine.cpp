@@ -48,7 +48,7 @@ bool path_compare(std::pair<Point, Point> a, std::pair<Point, Point> b)
 		b_right * abs(DOUBLE(b.second.hy() - b.first.hy()));
 }
 
-string CableRouter::CableRouteEngine::routing(string datastr)
+string CableRouter::CableRouteEngine::routing(string datastr, int loop_max_count)
 {
 	MapInfo map;
 	vector<Block> data; 
@@ -62,7 +62,7 @@ string CableRouter::CableRouteEngine::routing(string datastr)
 	
 	// grouping
 	GroupParam param;
-	param.max_dev_size = MAX_DEV_IN_GROUP;
+	param.max_dev_size = loop_max_count;
 	param.min_dev_size = MIN_DEV_IN_GROUP;
 	param.weight_pos = ALPHA;
 	param.weight_even = BETA;

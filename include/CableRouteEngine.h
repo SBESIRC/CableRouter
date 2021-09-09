@@ -13,7 +13,7 @@ namespace CableRouter
 	class CableRouteEngine
 	{
 	public:
-		string routing(string datastr);
+		string routing(string datastr, int loop_max_count = 25);
 	};
 
 }
