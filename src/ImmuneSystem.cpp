@@ -382,7 +382,7 @@ double CableRouter::ImmuneSystem::affinity(vector<vector<int>>& adj, vector<vect
 
 	//printf("len_source = %lf, len_sum = %lf, back = %lf\n", len_source, len_sum, back);
 
-	double value = 1000000.0 / (len_sum + 1) + 8000.0 / (back + 200) + 1000.0 / (len_source - len_sum + 1) - 40 * cross_n + 0.05 * beauty_n;
+	double value = 1000000.0 / (len_sum + 1) + 100.0 / (back + 100) + 800.0 / (len_source - len_sum + 1) - 40 * cross_n + 0.05 * beauty_n;
 
 	return value > 0 ? value : 0;
 }

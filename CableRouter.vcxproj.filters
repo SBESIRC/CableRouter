@@ -19,6 +19,15 @@
     <Filter Include="libraries\rbush">
       <UniqueIdentifier>{8b1e2ab6-a1f6-4aeb-a9da-dbceaebe04d0}</UniqueIdentifier>
     </Filter>
+    <Filter Include="libraries\jsoncpp">
+      <UniqueIdentifier>{d4c22f20-4b64-42e8-9b88-3d2220620a0f}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="libraries\jsoncpp\include">
+      <UniqueIdentifier>{79bf0d05-cf85-4511-8a9a-fd921d15a85d}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="libraries\jsoncpp\src">
+      <UniqueIdentifier>{7558b5ce-fcf4-4d65-980f-1d413d05987e}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\CR_CGALUtils.cpp">
@@ -36,9 +45,6 @@
     <ClCompile Include="src\ImmuneSystem.cpp">
       <Filter>src</Filter>
     </ClCompile>
-    <ClCompile Include="src\CR_Parse.cpp">
-      <Filter>src</Filter>
-    </ClCompile>
     <ClCompile Include="src\RouteEngine.cpp">
       <Filter>src</Filter>
     </ClCompile>
@@ -47,6 +53,15 @@
     </ClCompile>
     <ClCompile Include="src\CR_IO.cpp">
       <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="libraries\jsoncpp\src\lib_json\json_writer.cpp">
+      <Filter>libraries\jsoncpp\src</Filter>
+    </ClCompile>
+    <ClCompile Include="libraries\jsoncpp\src\lib_json\json_value.cpp">
+      <Filter>libraries\jsoncpp\src</Filter>
+    </ClCompile>
+    <ClCompile Include="libraries\jsoncpp\src\lib_json\json_reader.cpp">
+      <Filter>libraries\jsoncpp\src</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -60,9 +75,6 @@
       <Filter>include</Filter>
     </ClInclude>
     <ClInclude Include="include\ImmuneSystem.h">
-      <Filter>include</Filter>
-    </ClInclude>
-    <ClInclude Include="include\CR_Parse.h">
       <Filter>include</Filter>
     </ClInclude>
     <ClInclude Include="include\CableRouteEngine.h">
@@ -80,5 +92,46 @@
     <ClInclude Include="include\GroupEngine.h">
       <Filter>include</Filter>
     </ClInclude>
+    <ClInclude Include="libraries\jsoncpp\include\json\assertions.h">
+      <Filter>libraries\jsoncpp\include</Filter>
+    </ClInclude>
+    <ClInclude Include="libraries\jsoncpp\include\json\autolink.h">
+      <Filter>libraries\jsoncpp\include</Filter>
+    </ClInclude>
+    <ClInclude Include="libraries\jsoncpp\include\json\config.h">
+      <Filter>libraries\jsoncpp\include</Filter>
+    </ClInclude>
+    <ClInclude Include="libraries\jsoncpp\include\json\features.h">
+      <Filter>libraries\jsoncpp\include</Filter>
+    </ClInclude>
+    <ClInclude Include="libraries\jsoncpp\include\json\forwards.h">
+      <Filter>libraries\jsoncpp\include</Filter>
+    </ClInclude>
+    <ClInclude Include="libraries\jsoncpp\include\json\json.h">
+      <Filter>libraries\jsoncpp\include</Filter>
+    </ClInclude>
+    <ClInclude Include="libraries\jsoncpp\include\json\reader.h">
+      <Filter>libraries\jsoncpp\include</Filter>
+    </ClInclude>
+    <ClInclude Include="libraries\jsoncpp\include\json\value.h">
+      <Filter>libraries\jsoncpp\include</Filter>
+    </ClInclude>
+    <ClInclude Include="libraries\jsoncpp\include\json\version.h">
+      <Filter>libraries\jsoncpp\include</Filter>
+    </ClInclude>
+    <ClInclude Include="libraries\jsoncpp\include\json\writer.h">
+      <Filter>libraries\jsoncpp\include</Filter>
+    </ClInclude>
+    <ClInclude Include="libraries\jsoncpp\src\lib_json\json_tool.h">
+      <Filter>libraries\jsoncpp\src</Filter>
+    </ClInclude>
+    <ClInclude Include="include\stdafx.h">
+      <Filter>include</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="libraries\jsoncpp\src\lib_json\json_valueiterator.inl">
+      <Filter>libraries\jsoncpp\src</Filter>
+    </None>
   </ItemGroup>
 </Project>

@@ -120,7 +120,7 @@
       <WarningLevel>Level1</WarningLevel>
       <PreprocessorDefinitions>%(PreprocessorDefinitions);CGAL_HEADER_ONLY;THMODULE_DLL;_SCL_SECURE_NO_WARNINGS;_CRT_SECURE_NO_WARNINGS</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>.\libraries\jsoncpp\include;.\libraries\rbush;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -145,11 +145,13 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="libraries\jsoncpp\src\lib_json\json_reader.cpp" />
+    <ClCompile Include="libraries\jsoncpp\src\lib_json\json_value.cpp" />
+    <ClCompile Include="libraries\jsoncpp\src\lib_json\json_writer.cpp" />
     <ClCompile Include="src\CR_CGALUtils.cpp" />
     <ClCompile Include="src\CableRouteEngine.cpp" />
     <ClCompile Include="src\CR_IO.cpp" />
     <ClCompile Include="src\MapUtils.cpp" />
-    <ClCompile Include="src\CR_Parse.cpp" />
     <ClCompile Include="src\GroupEngine.cpp" />
     <ClCompile Include="src\GETree.cpp" />
     <ClCompile Include="src\RouteEngine.cpp" />
@@ -160,12 +162,26 @@
     <ClInclude Include="include\CableRouteEngine.h" />
     <ClInclude Include="include\CR_IO.h" />
     <ClInclude Include="include\MapUtils.h" />
-    <ClInclude Include="include\CR_Parse.h" />
     <ClInclude Include="include\GroupEngine.h" />
     <ClInclude Include="include\GETree.h" />
     <ClInclude Include="include\RouteEngine.h" />
     <ClInclude Include="include\ImmuneSystem.h" />
+    <ClInclude Include="include\stdafx.h" />
+    <ClInclude Include="libraries\jsoncpp\include\json\assertions.h" />
+    <ClInclude Include="libraries\jsoncpp\include\json\autolink.h" />
+    <ClInclude Include="libraries\jsoncpp\include\json\config.h" />
+    <ClInclude Include="libraries\jsoncpp\include\json\features.h" />
+    <ClInclude Include="libraries\jsoncpp\include\json\forwards.h" />
+    <ClInclude Include="libraries\jsoncpp\include\json\json.h" />
+    <ClInclude Include="libraries\jsoncpp\include\json\reader.h" />
+    <ClInclude Include="libraries\jsoncpp\include\json\value.h" />
+    <ClInclude Include="libraries\jsoncpp\include\json\version.h" />
+    <ClInclude Include="libraries\jsoncpp\include\json\writer.h" />
+    <ClInclude Include="libraries\jsoncpp\src\lib_json\json_tool.h" />
     <ClInclude Include="libraries\rbush\RBush.hpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="libraries\jsoncpp\src\lib_json\json_valueiterator.inl" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

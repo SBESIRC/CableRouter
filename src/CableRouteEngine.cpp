@@ -1,12 +1,10 @@
 #include "CableRouteEngine.h"
-#include "CR_Parse.h"
 #include "CR_IO.h"
 #include "GroupEngine.h"
 #include "ImmuneSystem.h"
 #include "RouteEngine.h"
 
 using namespace CableRouter;
-using namespace CableRouterParse;
 
 // FOR PARTITION
 #define MAX_DEV_IN_GROUP 25
@@ -51,13 +49,11 @@ bool path_compare(std::pair<Point, Point> a, std::pair<Point, Point> b)
 string CableRouter::CableRouteEngine::routing(string datastr, int loop_max_count)
 {
 	MapInfo map;
-	vector<Block> data; 
 	set<string> categories;
 	set<string> spacenames;
 
 	// parse geojson file
-	data = parse_geojson_string(datastr, categories, spacenames);
-	map = read_blocks(data);
+	map = read_from_geojson_string(datastr);
 	GroupEngine ge;
 	
 	// grouping
@@ -177,15 +173,15 @@ string CableRouter::CableRouteEngine::routing(string datastr, int loop_max_count
 	fout << "    \"features\": [\r\n";
 	for (int i = 0; i < cables.size(); i++)
 	{
-		output_string(fout, &data[i]);
-		if (i == data.size() - 1)
-		{
-			fout << "\r\n";
-		}
-		else
-		{
-			fout << ",\r\n";
-		}
+		//output_string(fout, &data[i]);
+		//if (i == data.size() - 1)
+		//{
+		//	fout << "\r\n";
+		//}
+		//else
+		//{
+		//	fout << ",\r\n";
+		//}
 	}
 
 	fout << "    ]\r\n";
