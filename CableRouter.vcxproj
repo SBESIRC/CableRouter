@@ -145,6 +145,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="include\OptimizeEngine.cpp" />
     <ClCompile Include="libraries\jsoncpp\src\lib_json\json_reader.cpp" />
     <ClCompile Include="libraries\jsoncpp\src\lib_json\json_value.cpp" />
     <ClCompile Include="libraries\jsoncpp\src\lib_json\json_writer.cpp" />
@@ -164,6 +165,7 @@
     <ClInclude Include="include\MapUtils.h" />
     <ClInclude Include="include\GroupEngine.h" />
     <ClInclude Include="include\GETree.h" />
+    <ClInclude Include="include\OptimizeEngine.h" />
     <ClInclude Include="include\RouteEngine.h" />
     <ClInclude Include="include\ImmuneSystem.h" />
     <ClInclude Include="include\stdafx.h" />

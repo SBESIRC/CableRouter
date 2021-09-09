@@ -29,7 +29,7 @@ namespace CableRouter
 	};
 
 	// General
-	vector<Point>	manhattan_connect(MapInfo* const map, Point s, Point t, vector<Segment>& lines);
+	vector<Point>	manhattan_connect(MapInfo* const map, Point s, Point t, Vector pre_dir, vector<Segment>& lines);
 	vector<Point>	funnel_smooth(CDT& dt, ASNode* nodes, Point s, Point t, int end_node_id);
 
 	// Point to Point
@@ -47,7 +47,7 @@ namespace CableRouter
 	vector<Point>	line_simple(vector<Point>& line);
 	vector<Point>	manhattan_smooth_basic(MapInfo* const map, vector<Point>& path, vector<Segment>& exist_lines);
 
-	bool			tooCloseToSun(MapInfo* const map, const Point p, const Point q, vector<Segment>& exist_lines, bool is_end = false);
+	double			tooCloseToSun(MapInfo* const map, const Point p, const Point q, vector<Segment>& exist_lines, bool is_end = false);
 }
 
 #endif

@@ -8,6 +8,7 @@
 #include <CGAL/convex_hull_2.h>
 #include <CGAL/Boolean_set_operations_2.h>
 #include <CGAL/Polygon_2.h>
+#include <CGAL/Iso_rectangle_2.h>
 #include <CGAL/Timer.h>
 
 #include "RBush.hpp"
@@ -20,6 +21,8 @@
 namespace CableRouter
 {
     using namespace std;
+
+    const double PI = acos(-1);
 
     struct VertexInfo
     {
@@ -46,6 +49,9 @@ namespace CableRouter
     typedef CGAL::Delaunay_triangulation_2<Kernel>				            Delaunay;
     typedef Kernel::Point_2                                                 Point;
     typedef Kernel::Segment_2                                               Segment;
+    typedef Kernel::Vector_2                                                Vector;
+    typedef Kernel::Line_2                                                  Line;
+    typedef Kernel::Iso_rectangle_2                                         Rectangle;
     typedef CGAL::Polygon_2<Kernel>                                         Polygon;
     typedef CGAL::Polygon_with_holes_2<Kernel>                              Polygon_with_holes;
 

@@ -636,11 +636,347 @@ vector<Point> CableRouter::manhattan_smooth_p2p(MapInfo* const data, vector<Poin
 	vector<Point> res;
 	int now = 0;
 	res.push_back(line[now]);
+	//bool dirX = true;
+	//bool dirY = true;
+	while (now != line.size() - 1)
+	{
+		Point u = line[now];
+
+		int best = -1;
+		double best_value = CR_INF;
+		bool best_has_mid = false;
+		Point best_mid;
+
+		for (int next = now + 1; next < line.size(); next++)
+		{
+			int far = ((int)line.size() - next);
+			Point v = line[next];
+			bool is_end = (next == (line.size() - 1));
+			if (u.hx() == v.hx() || u.hy() == v.hy())
+			{
+				//bool cross = crossObstacle(data, u, v);
+				bool cross = touchObstacle(data, u, v);
+				if (!cross)
+				{
+					int c = cross_num(exist_lines, u, v);
+					double force = tooCloseToSun(data, u, v, exist_lines, is_end);
+					double value = (1.0 + c) * (1.0 + force) + 10.0 * far;
+					//double value = 10.0 * c + 1.0 * force + 5.0 * far;
+					if (value <= best_value)
+					{
+						best_value = value;
+						best = next;
+						best_has_mid = false;
+					}
+				}
+				continue;
+			}
+
+			Point mid1(v.hx(), u.hy());
+			Point mid2(u.hx(), v.hy());
+			//bool cross1 = crossObstacle(data, u, mid1) || crossObstacle(data, mid1, v);
+			//bool cross2 = crossObstacle(data, u, mid2) || crossObstacle(data, mid2, v);			
+			bool cross1 = touchObstacle(data, u, mid1) || touchObstacle(data, mid1, v);
+			bool cross2 = touchObstacle(data, u, mid2) || touchObstacle(data, mid2, v);
+			//bool best_choose1 = false;
+			if (!cross1)
+			{
+				int c = cross_num(exist_lines, u, mid1) + cross_num(exist_lines, mid1, v);
+				double force1 = tooCloseToSun(data, u, mid1, exist_lines) + tooCloseToSun(data, mid1, v, exist_lines, is_end);
+				double value = (1.0 + c) * (1.0 + force1) + 10.0 * far;
+				//double value = 10.0 * c + 1.0 * force1 + 5.0 * far;
+				if (value <= best_value)
+				{
+					best_value = value;
+					best = next;
+					best_has_mid = true;
+					best_mid = mid1;
+					//best_choose1 = true;
+				}
+			}
+			if (!cross2)
+			{
+				int c = cross_num(exist_lines, u, mid2) + cross_num(exist_lines, mid2, v);
+				double force2 = tooCloseToSun(data, u, mid2, exist_lines) + tooCloseToSun(data, mid2, v, exist_lines, is_end);
+				double value = (1.0 + c) * (1.0 + force2) + 10.0 * far;
+				//double value = 10.0 * c + 1.0 * force2 + 5.0 * far;
+				if (value <= best_value)
+				{
+					best_value = value;
+					best = next;
+					best_has_mid = true;
+					//if (!best_choose1 || dirY)
+					//{
+						best_mid = mid2;
+					//}
+				}
+			}
+		}
+
+		if (best != -1)
+		{
+			//printf("best value = %lf\n", best_value);
+			if (best_has_mid)
+			{
+				//dirX = u.hy() == best_mid.hy();
+				//dirY = u.hx() == best_mid.hx();
+				line.insert(line.begin() + best, best_mid);
+				now = best;
+				res.push_back(line[now]);
+			}
+			else
+			{
+				//dirX = u.hy() == line[best].hy();
+				//dirY = u.hx() == line[best].hx();
+				now = best;
+				res.push_back(line[now]);
+			}
+		}
+		else
+		{
+			//dirX = u.hy() == line[now + 1].hy();
+			//dirY = u.hx() == line[now + 1].hx();
+			now++;
+			res.push_back(line[now]);
+		}
+	}
+	return res;
+}
+vector<Point> CableRouter::manhattan_smooth_basic(MapInfo* const data, vector<Point>& path, vector<Segment>& exist_lines)
+{
+	vector<Point> line = path;
+	if (line.size() <= 1) return line;
+
+	vector<Point> res;
+	int now = 0;
+	int next_id = (int)line.size() - 1;
+	res.push_back(line[now]);
+	while (next_id != now)
+	{
+		Point u = line[now];
+		Point v = line[next_id];
+
+		if (u.hx() == v.hx() || u.hy() == v.hy())
+		{
+			bool cross = crossObstacle(data, u, v);
+			//bool colli = tooCloseToSun(data, u, v, obstacle_lines);
+			if (!cross)
+			{
+				now = next_id;
+				res.push_back(line[now]);
+				next_id = (int)line.size() - 1;
+			}
+			else if (next_id - 1 == now)
+			{
+				now = next_id;
+				res.push_back(line[now]);
+				next_id = (int)line.size() - 1;
+			}
+			else
+			{
+				next_id--;
+			}
+			continue;
+		}
+
+		Point mid1(v.hx(), u.hy());
+		Point mid2(u.hx(), v.hy());
+		bool cross1 = crossObstacle(data, u, mid1) || crossObstacle(data, mid1, v);
+		bool cross2 = crossObstacle(data, u, mid2) || crossObstacle(data, mid2, v);
+		//bool colli1 = tooCloseToSun(data, u, mid1, obstacle_lines) || tooCloseToSun(data, mid1, v, obstacle_lines);
+		//bool colli2 = tooCloseToSun(data, u, mid2, obstacle_lines) || tooCloseToSun(data, mid2, v, obstacle_lines);
+		if (!cross2 && !cross1)
+		{
+			double w1, w2;
+			w1 = w2 = DIST_M(u, v);
+			addWeightCenters(data, u, mid1, w1);
+			addWeightCenters(data, mid1, v, w1);
+			addWeightCenters(data, u, mid2, w2);
+			addWeightCenters(data, mid2, v, w2);
+			w1 += cross_num(exist_lines, u, mid1);
+			w1 += cross_num(exist_lines, mid1, v);
+			w2 += cross_num(exist_lines, u, mid2);
+			w2 += cross_num(exist_lines, mid2, v);
+			Point next;
+			if (w1 < w2)
+				next = mid1;
+			else
+				next = mid2;
+			line.insert(line.begin() + next_id, next);
+			now = next_id;
+			res.push_back(line[now]);
+			next_id = (int)line.size() - 1;
+		}
+		else if (!cross1)
+		{
+			line.insert(line.begin() + next_id, mid1);
+			now = next_id;
+			res.push_back(line[now]);
+			next_id = (int)line.size() - 1;
+		}
+		else if (!cross2)
+		{
+			line.insert(line.begin() + next_id, mid2);
+			now = next_id;
+			res.push_back(line[now]);
+			next_id = (int)line.size() - 1;
+		}
+		else if (next_id - 1 == now)
+		{
+			Point mid = CGAL::midpoint(line[now], line[next_id]);
+			line.insert(line.begin() + next_id, mid);
+		}
+		else
+		{
+			next_id--;
+		}
+	}
+
+	return res;
+}
+
+vector<Point> CableRouter::line_simple(vector<Point>& line)
+{
+	if (line.size() <= 2) return line;
+
+	vector<Point> res;
+	res.push_back(line[0]);
+	int next = 1;
+	bool dirX = line[0].hx() == line[next].hx();
+	bool dirY = line[0].hy() == line[next].hy();
+	while (next + 1 != line.size())
+	{
+		bool dirrX = line[next].hx() == line[next + 1].hx();
+		bool dirrY = line[next].hy() == line[next + 1].hy();
+		if (!((dirX && dirrX) || (dirY && dirrY)))
+		{
+			res.push_back(line[next]);
+			dirX = dirrX;
+			dirY = dirrY;
+		}
+		next++;
+	}
+	res.push_back(line[next]);
+
+	return res;
+}
+
+vector<Point> CableRouter::manhattan_connect(MapInfo* const data, Point u, Point v, Vector prefer, vector<Segment>& lines)
+{
+	vector<Point> res;
+
+	double dx = abs(u.hx() - v.hx());
+	double dy = abs(u.hy() - v.hy());
+	if (dx == 0 || dy == 0)
+	{
+		if (!crossObstacle(data, u, v)) {
+			res.push_back(u);
+			res.push_back(v);
+		}
+		else
+		{
+			res = a_star_connect_p2p(data, u, v, lines);
+			res = manhattan_smooth_basic(data, res, lines);
+			res = line_simple(res);
+		}
+	}
+	else
+	{
+		Point mid1(v.hx(), u.hy());
+		Point mid2(u.hx(), v.hy());
+		bool cross1 = crossObstacle(data, u, mid1) || crossObstacle(data, mid1, v);
+		bool cross2 = crossObstacle(data, u, mid2) || crossObstacle(data, mid2, v);
+		if (!cross2 && !cross1)
+		{
+			double w1, w2;
+			w1 = w2 = DIST_M(u, v);
+			addWeightCenters(data, u, mid1, w1);
+			addWeightCenters(data, mid1, v, w1);
+			addWeightCenters(data, u, mid2, w2);
+			addWeightCenters(data, mid2, v, w2);
+			//w1 += cross_num(lines, u, mid1);
+			//w1 += cross_num(lines, mid1, v);
+			//w2 += cross_num(lines, u, mid2);
+			//w2 += cross_num(lines, mid2, v);
+			if (w1 > w2)
+			{
+				res.push_back(u);
+				res.push_back(mid2);
+				res.push_back(v);
+			}
+			else if (w1 < w2)
+			{
+				res.push_back(u);
+				res.push_back(mid1);
+				res.push_back(v);
+			}
+			else if (prefer.hy() != 0)
+			{
+				res.push_back(u);
+				res.push_back(mid2);
+				res.push_back(v);
+			}
+			else
+			{
+				res.push_back(u);
+				res.push_back(mid1);
+				res.push_back(v);
+			}
+		}
+		else if (!cross2) {
+			res.push_back(u);
+			res.push_back(mid2);
+			res.push_back(v);
+		}
+		else if (!cross1) {
+			res.push_back(u);
+			res.push_back(mid1);
+			res.push_back(v);
+		}
+		else
+		{
+			res = a_star_connect_p2p(data, u, v, lines);
+			res = manhattan_smooth_basic(data, res, lines);
+			res = line_simple(res);
+		}
+	}
+
+	return res;
+
+}
+
+vector<Point> CableRouter::obstacle_avoid_connect_p2p(MapInfo* const data, Point p, Point q, vector<Segment>& lines)
+{
+	vector<Point> line = a_star_connect_p2p(data, p, q, lines);
+	line = line_break(line, 1000);
+	line = manhattan_smooth_p2p(data, line, lines);
+	line = line_simple(line);
+	return line;
+}
+
+vector<Point> CableRouter::obstacle_avoid_connect_p2s(MapInfo* const data, Point p, Segment s, vector<Segment>& lines)
+{
+	vector<Point> line = a_star_connect_p2s(data, p, s, lines);
+	line = line_break(line, 1000);
+	line = manhattan_smooth_p2s(data, line, s, lines);
+	line = line_simple(line);
+	return line;
+}
+
+vector<Point> CableRouter::manhattan_smooth_p2s(MapInfo* const data, vector<Point>& path, Segment des, vector<Segment>& exist_lines)
+{
+	vector<Point> line = path;
+	if (line.size() <= 1) return line;
+
+	vector<Point> res;
+	int now = 0;
+	res.push_back(line[now]);
 	bool dirX = true;
 	bool dirY = true;
 	while (now != line.size() - 1)
 	{
 		Point u = line[now];
+		line[line.size() - 1] = project_point_to_segment(u, des);
 
 		int best = -1;
 		double best_cross = CR_INF;
@@ -782,358 +1118,16 @@ vector<Point> CableRouter::manhattan_smooth_p2p(MapInfo* const data, vector<Poin
 	}
 	return res;
 }
-vector<Point> CableRouter::manhattan_smooth_basic(MapInfo* const data, vector<Point>& path, vector<Segment>& exist_lines)
+
+double CableRouter::tooCloseToSun(MapInfo* const data, const Point p, const Point q, vector<Segment>& exist, bool is_end)
 {
-	vector<Point> line = path;
-	if (line.size() <= 1) return line;
-
-	vector<Point> res;
-	int now = 0;
-	int next_id = (int)line.size() - 1;
-	res.push_back(line[now]);
-	while (next_id != now)
-	{
-		Point u = line[now];
-		Point v = line[next_id];
-
-		if (u.hx() == v.hx() || u.hy() == v.hy())
-		{
-			bool cross = crossObstacle(data, u, v);
-			//bool colli = tooCloseToSun(data, u, v, exist_lines);
-			if (!cross)
-			{
-				now = next_id;
-				res.push_back(line[now]);
-				next_id = (int)line.size() - 1;
-			}
-			else if (next_id - 1 == now)
-			{
-				now = next_id;
-				res.push_back(line[now]);
-				next_id = (int)line.size() - 1;
-			}
-			else
-			{
-				next_id--;
-			}
-			continue;
-		}
-
-		Point mid1(v.hx(), u.hy());
-		Point mid2(u.hx(), v.hy());
-		bool cross1 = crossObstacle(data, u, mid1) || crossObstacle(data, mid1, v);
-		bool cross2 = crossObstacle(data, u, mid2) || crossObstacle(data, mid2, v);
-		//bool colli1 = tooCloseToSun(data, u, mid1, exist_lines) || tooCloseToSun(data, mid1, v, exist_lines);
-		//bool colli2 = tooCloseToSun(data, u, mid2, exist_lines) || tooCloseToSun(data, mid2, v, exist_lines);
-		if (!cross2 && !cross1)
-		{
-			double w1, w2;
-			w1 = w2 = DIST_M(u, v);
-			addWeightCenters(data, u, mid1, w1);
-			addWeightCenters(data, mid1, v, w1);
-			addWeightCenters(data, u, mid2, w2);
-			addWeightCenters(data, mid2, v, w2);
-			w1 += cross_num(exist_lines, u, mid1);
-			w1 += cross_num(exist_lines, mid1, v);
-			w2 += cross_num(exist_lines, u, mid2);
-			w2 += cross_num(exist_lines, mid2, v);
-			Point next;
-			if (w1 < w2)
-				next = mid1;
-			else
-				next = mid2;
-			line.insert(line.begin() + next_id, next);
-			now = next_id;
-			res.push_back(line[now]);
-			next_id = (int)line.size() - 1;
-		}
-		else if (!cross1)
-		{
-			line.insert(line.begin() + next_id, mid1);
-			now = next_id;
-			res.push_back(line[now]);
-			next_id = (int)line.size() - 1;
-		}
-		else if (!cross2)
-		{
-			line.insert(line.begin() + next_id, mid2);
-			now = next_id;
-			res.push_back(line[now]);
-			next_id = (int)line.size() - 1;
-		}
-		else if (next_id - 1 == now)
-		{
-			Point mid = CGAL::midpoint(line[now], line[next_id]);
-			line.insert(line.begin() + next_id, mid);
-		}
-		else
-		{
-			next_id--;
-		}
-	}
-
-	return res;
-}
-
-vector<Point> CableRouter::line_simple(vector<Point>& line)
-{
-	if (line.size() <= 2) return line;
-
-	vector<Point> res;
-	res.push_back(line[0]);
-	int next = 1;
-	bool dirX = line[0].hx() == line[next].hx();
-	bool dirY = line[0].hy() == line[next].hy();
-	while (next + 1 != line.size())
-	{
-		bool dirrX = line[next].hx() == line[next + 1].hx();
-		bool dirrY = line[next].hy() == line[next + 1].hy();
-		if (!((dirX && dirrX) || (dirY && dirrY)))
-		{
-			res.push_back(line[next]);
-			dirX = dirrX;
-			dirY = dirrY;
-		}
-		next++;
-	}
-	res.push_back(line[next]);
-
-	return res;
-}
-
-vector<Point> CableRouter::manhattan_connect(MapInfo* const data, Point u, Point v, vector<Segment>& lines)
-{
-	vector<Point> res;
-
-	double dx = abs(u.hx() - v.hx());
-	double dy = abs(u.hy() - v.hy());
-	if (dx == 0 || dy == 0)
-	{
-		if (!crossObstacle(data, u, v)) {
-			res.push_back(u);
-			res.push_back(v);
-		}
-		else
-		{
-			res = a_star_connect_p2p(data, u, v, lines);
-			res = manhattan_smooth_basic(data, res, lines);
-			res = line_simple(res);
-		}
-	}
-	else
-	{
-		Point mid1(v.hx(), u.hy());
-		Point mid2(u.hx(), v.hy());
-		bool cross1 = crossObstacle(data, u, mid1) || crossObstacle(data, mid1, v);
-		bool cross2 = crossObstacle(data, u, mid2) || crossObstacle(data, mid2, v);
-		if (!cross2 && !cross1)
-		{
-			double w1, w2;
-			w1 = w2 = DIST_M(u, v);
-			addWeightCenters(data, u, mid1, w1);
-			addWeightCenters(data, mid1, v, w1);
-			addWeightCenters(data, u, mid2, w2);
-			addWeightCenters(data, mid2, v, w2);
-			w1 += cross_num(lines, u, mid1);
-			w1 += cross_num(lines, mid1, v);
-			w2 += cross_num(lines, u, mid2);
-			w2 += cross_num(lines, mid2, v);
-			if (w1 > w2)
-			{
-				res.push_back(u);
-				res.push_back(mid2);
-				res.push_back(v);
-			}
-			else
-			{
-				res.push_back(u);
-				res.push_back(mid1);
-				res.push_back(v);
-			}
-		}
-		else if (!cross2) {
-			res.push_back(u);
-			res.push_back(mid2);
-			res.push_back(v);
-		}
-		else if (!cross1) {
-			res.push_back(u);
-			res.push_back(mid1);
-			res.push_back(v);
-		}
-		else
-		{
-			res = a_star_connect_p2p(data, u, v, lines);
-			res = manhattan_smooth_basic(data, res, lines);
-			res = line_simple(res);
-		}
-	}
-
-	return res;
-
-}
-
-vector<Point> CableRouter::obstacle_avoid_connect_p2p(MapInfo* const data, Point p, Point q, vector<Segment>& lines)
-{
-	vector<Point> line = a_star_connect_p2p(data, p, q, lines);
-	line = line_break(line, 800);
-	line = manhattan_smooth_p2p(data, line, lines);
-	line = line_simple(line);
-	return line;
-}
-
-vector<Point> CableRouter::obstacle_avoid_connect_p2s(MapInfo* const data, Point p, Segment s, vector<Segment>& lines)
-{
-	vector<Point> line = a_star_connect_p2s(data, p, s, lines);
-	line = line_break(line, 800);
-	line = manhattan_smooth_p2s(data, line, s, lines);
-	line = line_simple(line);
-	return line;
-}
-
-vector<Point> CableRouter::manhattan_smooth_p2s(MapInfo* const data, vector<Point>& path, Segment des, vector<Segment>& exist_lines)
-{
-	vector<Point> line = path;
-	if (line.size() <= 1) return line;
-
-	vector<Point> res;
-	int now = 0;
-	res.push_back(line[now]);
-	while (now != line.size() - 1)
-	{
-		Point u = line[now];
-		line[line.size() - 1] = project_point_to_segment(u, des);
-
-		int best = -1;
-		double best_cross = CR_INF;
-		bool best_has_mid = false;
-		Point best_mid;
-
-		int better = -1;
-		double better_cross = CR_INF;
-		bool better_has_mid = false;
-		Point better_mid;
-
-		for (int next = now + 1; next < line.size(); next++)
-		{
-			Point v = line[next];
-			bool is_end = (next == line.size() - 1);
-			if (u.hx() == v.hx() || u.hy() == v.hy())
-			{
-				//bool cross = crossObstacle(data, u, v);
-				bool cross = touchObstacle(data, u, v);
-				bool colli = tooCloseToSun(data, u, v, exist_lines, is_end);
-				if (!cross)
-				{
-					int c = cross_num(exist_lines, u, v);
-					if (c <= 0)
-					{
-						better_cross = c;
-						better = next;
-						better_has_mid = false;
-					}
-					if (c <= 0 && !colli)
-					{
-						best_cross = c;
-						best = next;
-						best_has_mid = false;
-					}
-				}
-				continue;
-			}
-
-			Point mid1(v.hx(), u.hy());
-			Point mid2(u.hx(), v.hy());
-			//bool cross1 = crossObstacle(data, u, mid1) || crossObstacle(data, mid1, v);
-			//bool cross2 = crossObstacle(data, u, mid2) || crossObstacle(data, mid2, v);			
-			bool cross1 = touchObstacle(data, u, mid1) || touchObstacle(data, mid1, v);
-			bool cross2 = touchObstacle(data, u, mid2) || touchObstacle(data, mid2, v);
-			bool colli1 = tooCloseToSun(data, u, mid1, exist_lines) || tooCloseToSun(data, mid1, v, exist_lines, is_end);
-			bool colli2 = tooCloseToSun(data, u, mid2, exist_lines) || tooCloseToSun(data, mid2, v, exist_lines, is_end);
-			if (!cross1)
-			{
-				int c = cross_num(exist_lines, u, mid1) + cross_num(exist_lines, mid1, v);
-				if (c <= better_cross)
-				{
-					better_cross = c;
-					better = next;
-					better_has_mid = true;
-					better_mid = mid1;
-				}
-				if (c <= best_cross && !colli1)
-				{
-					best_cross = c;
-					best = next;
-					best_has_mid = true;
-					best_mid = mid1;
-				}
-			}
-			if (!cross2)
-			{
-				int c = cross_num(exist_lines, u, mid2) + cross_num(exist_lines, mid2, v);
-				if (c <= better_cross)
-				{
-					better_cross = c;
-					better = next;
-					better_has_mid = true;
-					better_mid = mid2;
-				}
-				if (c <= best_cross && !colli2)
-				{
-					best_cross = c;
-					best = next;
-					best_has_mid = true;
-					best_mid = mid2;
-				}
-			}
-		}
-
-		if (best != -1)
-		{
-			if (best_has_mid)
-			{
-				line.insert(line.begin() + best, best_mid);
-				now = best;
-				res.push_back(line[now]);
-			}
-			else
-			{
-				now = best;
-				res.push_back(line[now]);
-			}
-		}
-		else if (better != -1)
-		{
-			if (better_has_mid)
-			{
-				line.insert(line.begin() + better, better_mid);
-				now = better;
-				res.push_back(line[now]);
-			}
-			else
-			{
-				now = better;
-				res.push_back(line[now]);
-			}
-		}
-		else
-		{
-			now++;
-			res.push_back(line[now]);
-		}
-	}
-	return res;
-}
-
-bool CableRouter::tooCloseToSun(MapInfo* const data, const Point p, const Point q, vector<Segment>& exist, bool is_end)
-{
-	vector<Segment> exist_lines = exist;
+	vector<Segment> obstacle_lines = exist;
 
 	// area
 	auto edges = segment_search(data->area.area_edge_tree, p, q);
 	for (auto eit = edges.begin(); eit != edges.end(); eit++)
 	{
-		exist_lines.push_back(*(*eit)->data);
+		obstacle_lines.push_back(*(*eit)->data);
 	}
 
 	// holes
@@ -1143,53 +1137,38 @@ bool CableRouter::tooCloseToSun(MapInfo* const data, const Point p, const Point 
 		Polygon boundary = (*oit)->data->boundary;
 		for (auto eit = boundary.edges_begin(); eit != boundary.edges_end(); eit++)
 		{
-			exist_lines.push_back((*eit));
+			obstacle_lines.push_back((*eit));
 		}
 	}
 
+	double res = 0.0;
+	int count = 1;
 	Segment pq(p, q);
-	for (int i = 0; i < exist_lines.size(); i++)
+
+	for (int i = 0; i < exist.size(); i++)
 	{
-		Segment s = exist_lines[i];
-
-		if (!is_end && DIST(pq, s) < LINE_GAP)
-		{
-			return true;
-		}
-
-		if (pq.is_horizontal() && s.is_horizontal())
-		{
-			if (pq.max().hx() > s.min().hx() &&
-				pq.min().hx() < s.max().hx() &&
-				abs(DOUBLE(pq.source().hy() - s.source().hy())) < LINE_GAP)
-			{
-				if (LEN(s) > OVERLAP_ACCEPT && DIST(p, q) > OVERLAP_ACCEPT) return true;
-				double maxX = max(DOUBLE(pq.max().hx()), DOUBLE(s.max().hx()));
-				double minX = min(DOUBLE(pq.min().hx()), DOUBLE(s.min().hx()));
-				double overlap = LEN(pq) + LEN(s) - maxX + minX;
-				if (overlap > OVERLAP_ACCEPT) return true;
-			}
-		}
-		else if (pq.is_vertical() && s.is_vertical())
-		{
-			if (pq.max().hy() > s.min().hy() &&
-				pq.min().hy() < s.max().hy() &&
-				abs(DOUBLE(pq.source().hx() - s.source().hx())) < LINE_GAP)
-			{
-				if (LEN(s) > OVERLAP_ACCEPT && DIST(p, q) > OVERLAP_ACCEPT) return true;
-				double maxY = max(DOUBLE(pq.max().hy()), DOUBLE(s.max().hy()));
-				double minY = min(DOUBLE(pq.min().hy()), DOUBLE(s.min().hy()));
-				double overlap = LEN(pq) + LEN(s) - maxY + minY;
-				if (overlap > OVERLAP_ACCEPT) return true;
-			}
-		}
-		//if (!CGAL::do_intersect(pq, exist_lines[i])) continue;
-		//CGAL::Object result = CGAL::intersection(pq, exist_lines[i]);
-		//Segment seg;
-		//if (CGAL::assign(seg, result))
-		//{
-		//	return true;
-		//}
+		Segment s = exist[i];
+		if (DIST(pq, s) > 1000) continue;
+		if (is_end && (s.source() == q || s.target() == q)) continue;
+		Vector vec_pq(q.hx() - p.hx(), q.hy() - p.hy());
+		Vector vec_s(s);
+		double pq_s = DOUBLE(vec_pq.hx() * vec_s.hx() + vec_pq.hy() * vec_s.hy());
+		double G = abs(pq_s) / (0.01 + LEN(pq));
+		double force = 2000.0 * G / (0.00001 + DIST(pq, s) * DIST(pq, s));
+		res += force;
 	}
-	return false;
+
+	for (int i = 0; i < obstacle_lines.size(); i++)
+	{
+		Segment s = obstacle_lines[i];
+		if (DIST(pq, s) > 1000) continue;
+		if (is_end && (s.source() == q || s.target() == q)) continue;
+		Vector vec_pq(q.hx() - p.hx(), q.hy() - p.hy());
+		Vector vec_s(s);
+		double pq_s = DOUBLE(vec_pq.hx() * vec_s.hx() + vec_pq.hy() * vec_s.hy());
+		double G = abs(pq_s) / (0.01 + LEN(pq));
+		double force = 1500.0 * G / (0.00001 + DIST(pq, s) * DIST(pq, s));
+		res += force;
+	}
+	return res;
 }

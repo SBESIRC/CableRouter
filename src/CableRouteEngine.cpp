@@ -108,7 +108,7 @@ string CableRouter::CableRouteEngine::routing(string datastr, int loop_max_count
 
 				if (i < dn && adj[i][j] < dn)
 				{
-					paths.push_back(manhattan_connect(&map, u, v, cables));
+					paths.push_back(manhattan_connect(&map, u, v, Vector(0, 0), cables));
 				}
 				else if (i >= dn && adj[i][j] < dn)
 				{

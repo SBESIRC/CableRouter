@@ -63,6 +63,9 @@
     <ClCompile Include="libraries\jsoncpp\src\lib_json\json_reader.cpp">
       <Filter>libraries\jsoncpp\src</Filter>
     </ClCompile>
+    <ClCompile Include="include\OptimizeEngine.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="libraries\rbush\RBush.hpp">
@@ -126,6 +129,9 @@
       <Filter>libraries\jsoncpp\src</Filter>
     </ClInclude>
     <ClInclude Include="include\stdafx.h">
+      <Filter>include</Filter>
+    </ClInclude>
+    <ClInclude Include="include\OptimizeEngine.h">
       <Filter>include</Filter>
     </ClInclude>
   </ItemGroup>
