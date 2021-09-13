@@ -261,7 +261,7 @@ void CableRouter::addWeightCenters(MapInfo* const data, const Point p, const Poi
 	{
 		if (CGAL::do_intersect(Segment(p, q), *(*eit)->data))
 		{
-			w += 5000;
+			w += 8000;
 		}
 	}
 }
