@@ -3,8 +3,8 @@
 
 using namespace CableRouter;
 
-#define TEST_PARTITION		1
-#define PRINT_DIVIDE_TREE	1
+#define TEST_PARTITION		0
+#define PRINT_DIVIDE_TREE	0
 #define PRINT_MINI_TREE		0
 
 

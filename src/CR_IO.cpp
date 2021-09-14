@@ -211,7 +211,7 @@ static void parse_geojson(MapInfo& map, const string& datastr)
                 PElement e;
                 e.boundary = construct_polygon(&vec_pts[j]);
                 e.weight = 10;
-                //room_nodes.push_back(get_rtree_node(&e));
+                room_nodes.push_back(get_rtree_node(&e));
             }
         }
         else
@@ -239,6 +239,7 @@ MapInfo CableRouter::read_from_geojson_file(const string& filename)
 	stringstream ss;
 	ss << f.rdbuf();
 	string datastr = ss.str();
+    f.close();
 
 	return read_from_geojson_string(datastr);
 }
