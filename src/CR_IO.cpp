@@ -175,7 +175,8 @@ static void parse_geojson(MapInfo& map, const string& datastr)
         else if (
             cat.compare("ArchitectureWall") == 0 ||
             cat.compare("ShearWall") == 0 ||
-            cat.compare("Column") == 0)
+            cat.compare("Column") == 0 ||
+            cat.compare("Hole") == 0)
         {
             for (auto j = 0; j < vec_pts.size(); ++j)
             {
