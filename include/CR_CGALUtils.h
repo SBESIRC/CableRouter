@@ -91,6 +91,8 @@ namespace CableRouter
     int self_cross_num(vector<Segment>& segs);
     int cross_num(vector<Segment>& segs, const Point p, const Point q);
 
+    vector<Segment> get_segments_from_polylines(vector<vector<Point>>& polylines);
+
     // T: has function swap()
     template <class T>
     void reset(T& ele)

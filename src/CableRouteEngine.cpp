@@ -67,7 +67,7 @@ string CableRouter::CableRouteEngine::routing(string datastr, int loop_max_count
 	param.weight_big = DELTA;
 	param.weight_cut_len = GAMMA;
 
-	vector<vector<int>> group_info = ge.grouping(&map, &param, NULL);
+	vector<vector<int>> group_info = ge.grouping(&map, &param);
 
 	// inter connect
 	vector<ISData> groups = parse_groups(&map, group_info);
@@ -80,7 +80,7 @@ string CableRouter::CableRouteEngine::routing(string datastr, int loop_max_count
 		systems.push_back(is);
 	}
 
-	vector<Segment> cables;
+	vector<vector<Point>> cables;
 
 	vector<std::pair<Point, Point>> power_paths;
 	for (int e = 0; e < systems.size(); e++)
@@ -155,7 +155,7 @@ string CableRouter::CableRouteEngine::routing(string datastr, int loop_max_count
 	// power to device connect
 
 	vector<vector<Point>> result_paths;
-	vector<Segment> exist_lines = cables;
+	vector<Segment> exist_lines = get_segments_from_polylines(cables);
 	//for (int i = 0; i < power_paths.size(); i++)
 	for (int i = 0; i < power_paths.size(); i++)
 	{
@@ -170,35 +170,15 @@ string CableRouter::CableRouteEngine::routing(string datastr, int loop_max_count
 		result_paths.push_back(pp);
 	}
 
-	DreamTree dream_tree = merge_to_a_tree(result_paths);
+	//DreamTree dream_tree = merge_to_a_tree(result_paths);
 
-	vector<Segment> tree_lines = get_dream_tree_lines(dream_tree);
+	//vector<Segment> tree_lines = get_dream_tree_lines(dream_tree);
 
-	cables.insert(cables.end(), tree_lines.begin(), tree_lines.end());
+	//deleteDreamTree(dream_tree);
 
-	deleteDreamTree(dream_tree);
+	cables.insert(cables.end(), result_paths.begin(), result_paths.end());
 
 
 	// output
-	stringstream fout;
-	fout << fixed;
-	fout << "{\r\n";
-	fout << "    \"type\": \"FeatureCollection\",\r\n";
-	fout << "    \"features\": [\r\n";
-	for (int i = 0; i < cables.size(); i++)
-	{
-		//output_string(fout, &data[i]);
-		//if (i == data.size() - 1)
-		//{
-		//	fout << "\r\n";
-		//}
-		//else
-		//{
-		//	fout << ",\r\n";
-		//}
-	}
-
-	fout << "    ]\r\n";
-	fout << "}";
-	return fout.str();
+	return write_to_geojson_string(cables);
 }

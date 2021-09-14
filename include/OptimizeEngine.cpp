@@ -24,9 +24,9 @@ void CableRouter::deleteDreamTree(DreamTree root)
 	}
 }
 
-void CableRouter::get_manhattan_lines(MapInfo* map, DreamTree tree, vector<Segment>& result)
+void CableRouter::get_manhattan_lines(MapInfo* map, DreamTree tree, vector<vector<Point>>& result)
 {
-	vector<Segment> res;
+	vector<Segment> exist_lines = get_segments_from_polylines(result);
 
 	queue<DreamNode*> q;
 	for (int i = 0; i < tree->children.size(); i++)
@@ -38,14 +38,17 @@ void CableRouter::get_manhattan_lines(MapInfo* map, DreamTree tree, vector<Segme
 		DreamNode* now = q.front();
 		q.pop();
 
-		vector<Point> path = manhattan_connect(map, now->parent->coord, now->coord, now->parent->dir_from_parent, result);
+
+		vector<Point> path = manhattan_connect(map, now->parent->coord, now->coord, now->parent->dir_from_parent, exist_lines);
+
+		result.push_back(path);
 
 		for (int j = 0; j < path.size() - 1; j++)
 		{
-			result.push_back(Segment(path[j], path[j + 1]));
+			exist_lines.push_back(Segment(path[j], path[j + 1]));
 		}
 
-		now->dir_from_parent = Vector(result.back());
+		now->dir_from_parent = Vector(exist_lines.back());
 
 		for (int i = 0; i < now->children.size(); i++)
 		{

@@ -279,7 +279,7 @@ void CableRouter::addWeightRooms(MapInfo* const data, const Point p, const Point
 			if (CGAL::do_intersect(Segment(p, q), *eit))
 			{
 				//w += (*oit)->data->weight;
-				w += 10000;
+				w += 16000;
 			}
 		}
 	}

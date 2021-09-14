@@ -216,7 +216,7 @@ vector<Point> CableRouter::a_star_connect_p2p(MapInfo* const data, Point s, Poin
 			double w = DIST(no->mid, next->mid);
 			int k = 0;
 			while (no->face->neighbor(k) != next->face) k++;
-			if (dt.is_constrained(make_pair(no->face, k))) w *= 2;
+			if (dt.is_constrained(make_pair(no->face, k))) w += 10000;
 
 			if (!next->open)
 			{

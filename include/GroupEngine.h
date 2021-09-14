@@ -21,12 +21,7 @@ namespace CableRouter
 	class GroupEngine
 	{
 	public:
-		// for test
-		vector<vector<int>>	grouping(MapInfo* const data, const GroupParam* param, vector<Segment>* result);
-
-		void				test_printTree(vector<GENode>& tree, int root);
-		MapInfo*			test_data;
-		vector<Segment>*	test_result;
+		vector<vector<int>>	grouping(MapInfo* const data, const GroupParam* param);
 
 
 	private:

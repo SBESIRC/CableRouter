@@ -3,16 +3,9 @@
 
 using namespace CableRouter;
 
-#define TEST_PARTITION		0
-#define PRINT_DIVIDE_TREE	0
-#define PRINT_MINI_TREE		0
 
-
-vector<vector<int>> CableRouter::GroupEngine::grouping(MapInfo* const data, const GroupParam* param, vector<Segment>* result)
+vector<vector<int>> CableRouter::GroupEngine::grouping(MapInfo* const data, const GroupParam* param)
 {
-	test_result = result;
-	test_data = data;
-
 	getParam(param);
 
 	CDT dt = buildTriangulation(data);
@@ -32,9 +25,6 @@ vector<vector<int>> CableRouter::GroupEngine::grouping(MapInfo* const data, cons
 	GETree mst(dev_pts, G);
 	printf("MST construct over\n");
 
-	if (TEST_PARTITION && PRINT_MINI_TREE)
-		test_printTree(mst.nodes, 0);
-
 	// divide tree
 	printf("Partition begin\n");
 	reset(partition_result);
@@ -46,26 +36,6 @@ vector<vector<int>> CableRouter::GroupEngine::grouping(MapInfo* const data, cons
 	return partition_result;
 }
 
-void CableRouter::GroupEngine::test_printTree(vector<GENode>& tree, int root)
-{
-	std::queue<int> q;
-	for (int i = 0; i < tree[root].children.size(); i++)
-	{
-		q.push(tree[root].children[i]);
-	}
-	while (!q.empty())
-	{
-		int now = q.front();
-		q.pop();
-
-		test_result->push_back(Segment(test_data->devices[tree[now].parent].coord, test_data->devices[now].coord));
-
-		for (int i = 0; i < tree[now].children.size(); i++)
-		{
-			q.push(tree[now].children[i]);
-		}
-	}
-}
 
 void CableRouter::GroupEngine::getParam(const GroupParam* param)
 {
@@ -85,10 +55,6 @@ void CableRouter::GroupEngine::divide(vector<GENode>& tree, int root)
 	cout << "Tree size = " << num << endl;
 	if (dev_min <= num && num <= dev_max)
 	{
-		if (TEST_PARTITION && PRINT_DIVIDE_TREE)
-		{
-			test_printTree(tree, root);
-		}
 		vector<int> pts = get_points(tree, root);
 		partition_result.push_back(pts);
 		return;
@@ -124,10 +90,6 @@ void CableRouter::GroupEngine::divide(vector<GENode>& tree, int root)
 	// divide
 	if (best == -1 || MAX < 0) {
 		std::cout << "Oops! a tree with " << num << " nodes can't be divided!" << std::endl;
-		if (TEST_PARTITION && PRINT_DIVIDE_TREE)
-		{
-			test_printTree(tree, root);
-		}
 		return;
 	}
 	std::cout << "Best w = " << MAX << std::endl;

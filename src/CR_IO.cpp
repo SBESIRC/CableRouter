@@ -246,31 +246,27 @@ MapInfo CableRouter::read_from_geojson_file(const string& filename)
 
 
 static Json::Value cable_to_json(const vector<Point>& polyline) {
-    Json::Value json_polygon;
+    Json::Value json_linestring;
     Json::Value json_geometry;
     Json::Value json_properties;
-
-    string res;
-
     Json::Value json_coordinates;
-    Json::Value json_polyline;
+
     for (size_t i = 0; i < polyline.size(); ++i) {
         Json::Value json_point;
-        json_point.append(DOUBLE(polyline[i].x()));
-        json_point.append(DOUBLE(polyline[i].y()));
-        json_polyline.append(json_point);
+        json_point.append(DOUBLE(polyline[i].hx()));
+        json_point.append(DOUBLE(polyline[i].hy()));
+        json_coordinates.append(json_point);
     }
-    json_coordinates.append(json_polyline);
 
-    json_geometry["type"] = Json::Value("Polygon");
+    json_geometry["type"] = Json::Value("LineString");
     json_geometry["coordinates"] = json_coordinates;
-
     json_properties["Category"] = Json::Value("Cable");
 
-    json_polygon["type"] = Json::Value("Feature");
-    json_polygon["geometry"] = json_geometry;
-    json_polygon["properties"] = json_properties;
-    return json_polygon;
+    json_linestring["type"] = Json::Value("Feature");
+    json_linestring["geometry"] = json_geometry;
+    json_linestring["properties"] = json_properties;
+
+    return json_linestring;
 }
 
 string CableRouter::write_to_geojson_string(const vector<vector<Point>>& cables)
