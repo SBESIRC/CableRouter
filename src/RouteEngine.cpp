@@ -27,10 +27,9 @@ vector<Point> CableRouter::a_star_connect_p2p(MapInfo* const data, Point s, Poin
 	dt.insert_constraint(data->area.info.boundary.vertices_begin(), data->area.info.boundary.vertices_end(), true);
 
 	// holes
-	vector<rbush::TreeNode<PElement>* > holes = (*data->hole_tree->all());
-	for (auto h = holes.begin(); h != holes.end(); h++)
+	for (auto h = data->holes.begin(); h != data->holes.end(); h++)
 	{
-		dt.insert_constraint((*h)->data->boundary.vertices_begin(), (*h)->data->boundary.vertices_end(), true);
+		dt.insert_constraint(h->vertices_begin(), h->vertices_end(), true);
 	}
 
 	// centers
@@ -272,10 +271,9 @@ vector<Point> CableRouter::a_star_connect_p2s(MapInfo* const data, Point s, Segm
 	dt.insert_constraint(data->area.info.boundary.vertices_begin(), data->area.info.boundary.vertices_end(), true);
 
 	// holes
-	vector<rbush::TreeNode<PElement>* > holes = (*data->hole_tree->all());
-	for (auto h = holes.begin(); h != holes.end(); h++)
+	for (auto h = data->holes.begin(); h != data->holes.end(); h++)
 	{
-		dt.insert_constraint((*h)->data->boundary.vertices_begin(), (*h)->data->boundary.vertices_end(), true);
+		dt.insert_constraint(h->vertices_begin(), h->vertices_end(), true);
 	}
 
 	// line

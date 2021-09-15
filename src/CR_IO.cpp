@@ -184,6 +184,7 @@ static void parse_geojson(MapInfo& map, const string& datastr)
                 e.boundary = construct_polygon(&vec_pts[j]);
                 e.weight = CR_INF;
                 hole_nodes.push_back(get_rtree_node(&e));
+                map.holes.push_back(e.boundary);
             }
         }
         else if (cat.compare("FireApart") == 0)
@@ -212,6 +213,7 @@ static void parse_geojson(MapInfo& map, const string& datastr)
                 e.boundary = construct_polygon(&vec_pts[j]);
                 e.weight = 10;
                 room_nodes.push_back(get_rtree_node(&e));
+                map.rooms.push_back(e.boundary);
             }
         }
         else

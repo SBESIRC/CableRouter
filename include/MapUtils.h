@@ -68,6 +68,8 @@ namespace CableRouter
 	{
 		vector<Power> powers;
 		vector<Device> devices;
+		vector<Polygon> holes;
+		vector<Polygon> rooms;
 		FireArea area;
 		SegBush* cen_line_tree;
 		PEBush* hole_tree;

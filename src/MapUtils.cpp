@@ -52,7 +52,7 @@ CDT CableRouter::buildTriangulation(MapInfo* const data)
 	{
 		vec.push_back(std::make_pair(v->coord, VertexInfo(v->id, true)));
 	}
-	dt.insert(vec.begin(), vec.end());
+	if (vec.size() > 0) dt.insert(vec.begin(), vec.end());
 
 	// insert area point
 	reset(vec);
@@ -61,22 +61,21 @@ CDT CableRouter::buildTriangulation(MapInfo* const data)
 		vec.push_back(std::make_pair(*v, VertexInfo()));
 		vec_con.push_back(*v);
 	}
-	dt.insert(vec.begin(), vec.end());
-	dt.insert_constraint(vec_con.begin(), vec_con.end(), true);
+	if (vec.size() > 0) dt.insert(vec.begin(), vec.end());
+	if (vec_con.size() > 0) dt.insert_constraint(vec_con.begin(), vec_con.end(), true);
 
 	// insert holes point
-	std::vector<rbush::TreeNode<PElement>* >& holes = (*data->hole_tree->all());
-	for (auto h = holes.begin(); h != holes.end(); h++)
+	for (auto h = data->holes.begin(); h != data->holes.end(); h++)
 	{
 		reset(vec);
 		reset(vec_con);
-		for (auto v = (*h)->data->boundary.vertices_begin(); v != (*h)->data->boundary.vertices_end(); v++)
+		for (auto v = h->vertices_begin(); v != h->vertices_end(); v++)
 		{
 			vec.push_back(std::make_pair(*v, VertexInfo()));
 			vec_con.push_back(*v);
 		}
-		dt.insert(vec.begin(), vec.end());
-		dt.insert_constraint(vec_con.begin(), vec_con.end(), true);
+		if (vec.size() > 0) dt.insert(vec.begin(), vec.end());
+		if (vec_con.size() > 0) dt.insert_constraint(vec_con.begin(), vec_con.end(), true);
 	}
 
 	int id = (int)data->devices.size();
