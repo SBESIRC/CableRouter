@@ -82,7 +82,7 @@ string CableRouter::CableRouteEngine::routing(string datastr, int loop_max_count
 
 	vector<vector<Point>> cables;
 
-	vector<std::pair<Point, Point>> power_paths;
+	vector<vector<Point>> power_paths(map.powers.size());
 	for (int e = 0; e < systems.size(); e++)
 	{
 		for (int k = 0; k < 10; k++)
@@ -119,7 +119,7 @@ string CableRouter::CableRouteEngine::routing(string datastr, int loop_max_count
 				{
 					found = true;
 					root = adj[i][j];
-					power_paths.push_back(make_pair(powers[i - dn].points[0], devices[root].coord));
+					power_paths[i - dn].push_back(devices[root].coord);
 					break;
 				}
 			}
@@ -159,15 +159,24 @@ string CableRouter::CableRouteEngine::routing(string datastr, int loop_max_count
 	//for (int i = 0; i < power_paths.size(); i++)
 	for (int i = 0; i < power_paths.size(); i++)
 	{
-		Point pwr = Point(power_paths[i].first.hx(), power_paths[i].first.hy());
-		Point dev = power_paths[i].second;
-		printf("Looking for path %d\n", i);
-		vector<Point> pp = obstacle_avoid_connect_p2p(&map, pwr, dev, exist_lines);
-		//vector<Point> pp = obstacle_avoid_connect_p2s(&data, dev, pwr, exist_lines);
+		Power pwr = map.powers[i];
+		for (int j = 0; j < power_paths[i].size(); j++)
+		{
+			Point dev = power_paths[i][j];
+			printf("Power %d: Looking for path %d\n", i, j);
+			vector<Point> pp;
+			if (pwr.is_point())
+				pp = obstacle_avoid_connect_p2p(&map, pwr.points[0], dev, exist_lines);
+			else if (pwr.is_segment())
+				pp = obstacle_avoid_connect_p2s(&map, dev, Segment(pwr.points[0], pwr.points[1]), exist_lines);
+			else
+				printf("invalid power\n");
 
-		printf("Path size: %d\n", pp.size());
-
-		result_paths.push_back(pp);
+			printf("Path size: %d\n", pp.size());
+			result_paths.push_back(pp);
+			//vector<Segment> pp_segs = get_segments_from_polyline(pp);
+			//exist_lines.insert(exist_lines.end(), pp_segs.begin(), pp_segs.end());
+		}
 	}
 
 	//DreamTree dream_tree = merge_to_a_tree(result_paths);

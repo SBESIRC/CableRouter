@@ -211,6 +211,16 @@ int CableRouter::cross_num(vector<Segment>& segs, const Point p, const Point q)
 	return res;
 }
 
+vector<Segment> CableRouter::get_segments_from_polyline(vector<Point>& polyline)
+{
+	vector<Segment> res;
+	for (int i = 0; i < polyline.size() - 1; i++)
+	{
+		res.push_back(Segment(polyline[i], polyline[i + 1]));
+	}
+	return res;
+}
+
 vector<Segment> CableRouter::get_segments_from_polylines(vector<vector<Point>>& polylines)
 {
 	vector<Segment> res;
