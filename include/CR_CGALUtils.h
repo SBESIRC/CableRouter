@@ -52,6 +52,7 @@ namespace CableRouter
     typedef Kernel::Vector_2                                                Vector;
     typedef Kernel::Line_2                                                  Line;
     typedef Kernel::Iso_rectangle_2                                         Rectangle;
+    typedef vector<Point>                                                   Polyline;
     typedef CGAL::Polygon_2<Kernel>                                         Polygon;
     typedef CGAL::Polygon_with_holes_2<Kernel>                              Polygon_with_holes;
 
@@ -91,8 +92,8 @@ namespace CableRouter
     int self_cross_num(vector<Segment>& segs);
     int cross_num(vector<Segment>& segs, const Point p, const Point q);
 
-    vector<Segment> get_segments_from_polyline(vector<Point>& polyline);
-    vector<Segment> get_segments_from_polylines(vector<vector<Point>>& polylines);
+    vector<Segment> get_segments_from_polyline(Polyline& polyline);
+    vector<Segment> get_segments_from_polylines(vector<Polyline>& polylines);
 
     // T: has function swap()
     template <class T>

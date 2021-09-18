@@ -16,8 +16,8 @@ namespace CableRouter
 	MapInfo read_from_geojson_string(const string& datastr);
 	MapInfo read_from_geojson_file(const string& filename);
 
-	string  write_to_geojson_string(const vector<vector<Point>>& paths);
-	void	write_to_geojson_file(const string& filename, const vector<vector<Point>>& paths);
+	string  write_to_geojson_string(const vector<Polyline>& paths);
+	void	write_to_geojson_file(const string& filename, const vector<Polyline>& paths);
 }
 
 #endif

@@ -247,7 +247,7 @@ MapInfo CableRouter::read_from_geojson_file(const string& filename)
 }
 
 
-static Json::Value cable_to_json(const vector<Point>& polyline) {
+static Json::Value cable_to_json(const Polyline& polyline) {
     Json::Value json_linestring;
     Json::Value json_geometry;
     Json::Value json_properties;
@@ -271,7 +271,7 @@ static Json::Value cable_to_json(const vector<Point>& polyline) {
     return json_linestring;
 }
 
-string CableRouter::write_to_geojson_string(const vector<vector<Point>>& cables)
+string CableRouter::write_to_geojson_string(const vector<Polyline>& cables)
 {
     Json::Value json_root;
     Json::Value json_features;
@@ -291,7 +291,7 @@ string CableRouter::write_to_geojson_string(const vector<vector<Point>>& cables)
     return os.str();
 }
 
-void CableRouter::write_to_geojson_file(const string& filename, const vector<vector<Point>>& paths)
+void CableRouter::write_to_geojson_file(const string& filename, const vector<Polyline>& paths)
 {
     string datastr = write_to_geojson_string(paths);
     ofstream f(filename);

@@ -80,12 +80,12 @@ string CableRouter::CableRouteEngine::routing(string datastr, int loop_max_count
 		systems.push_back(is);
 	}
 
-	vector<vector<Point>> cables;
+	vector<Polyline> cables;
 
-	vector<vector<Point>> power_paths(map.powers.size());
+	vector<Polyline> power_paths(map.powers.size());
 	for (int e = 0; e < systems.size(); e++)
 	{
-		for (int k = 0; k < 10; k++)
+		for (int k = 0; k < 15; k++)
 			systems[e].run();
 
 		if (systems[e].globlMem.size() < 1)
@@ -97,7 +97,7 @@ string CableRouter::CableRouteEngine::routing(string datastr, int loop_max_count
 		auto adj = systems[e].globlMem.rbegin()->adj;
 		printf("Best value = %lf\n", systems[e].globlMem.rbegin()->value);
 
-		vector<vector<Point>> paths;
+		vector<Polyline> paths;
 		vector<Device>& devices = systems[e].data.devices;
 		vector<Power>& powers = systems[e].data.powers;
 		int dn = devices.size();
@@ -154,7 +154,7 @@ string CableRouter::CableRouteEngine::routing(string datastr, int loop_max_count
 
 	// power to device connect
 
-	vector<vector<Point>> result_paths;
+	vector<Polyline> result_paths;
 	vector<Segment> exist_lines = get_segments_from_polylines(cables);
 	//for (int i = 0; i < power_paths.size(); i++)
 	for (int i = 0; i < power_paths.size(); i++)
@@ -164,7 +164,7 @@ string CableRouter::CableRouteEngine::routing(string datastr, int loop_max_count
 		{
 			Point dev = power_paths[i][j];
 			printf("Power %d: Looking for path %d\n", i, j);
-			vector<Point> pp;
+			Polyline pp;
 			if (pwr.is_point())
 				pp = obstacle_avoid_connect_p2p(&map, pwr.points[0], dev, exist_lines);
 			else if (pwr.is_segment())

@@ -14,7 +14,7 @@ bool open_list_less(ASNode* a, ASNode* b)
 	return a->f() > b->f();
 }
 
-vector<Point> CableRouter::a_star_connect_p2p(MapInfo* const data, Point s, Point t, vector<Segment>& lines)
+Polyline CableRouter::a_star_connect_p2p(MapInfo* const data, Point s, Point t, vector<Segment>& lines)
 {
 	CDT dt;
 
@@ -237,17 +237,17 @@ vector<Point> CableRouter::a_star_connect_p2p(MapInfo* const data, Point s, Poin
 	{
 		printf("NO PATH!\n");
 		delete[] nodes;
-		return vector<Point>();
+		return Polyline();
 	}
 
-	vector<Point> path = funnel_smooth(dt, nodes, s, t, end_node->id);
+	Polyline path = funnel_smooth(dt, nodes, s, t, end_node->id);
 	reverse(path.begin(), path.end());
 	//printf("Path size: %d\n", path.size());
 	delete[] nodes;
 	return path;
 }
 
-vector<Point> CableRouter::a_star_connect_p2s(MapInfo* const data, Point s, Segment t, vector<Segment>& lines)
+Polyline CableRouter::a_star_connect_p2s(MapInfo* const data, Point s, Segment t, vector<Segment>& lines)
 {
 
 	CDT dt;
@@ -437,7 +437,7 @@ vector<Point> CableRouter::a_star_connect_p2s(MapInfo* const data, Point s, Segm
 	{
 		printf("NO PATH!\n");
 		delete[] nodes;
-		return vector<Point>();
+		return Polyline();
 	}
 
 	Point end_p;
@@ -449,16 +449,16 @@ vector<Point> CableRouter::a_star_connect_p2s(MapInfo* const data, Point s, Segm
 		}
 	}
 
-	vector<Point> path = funnel_smooth(dt, nodes, s, end_p, end_node->id);
+	Polyline path = funnel_smooth(dt, nodes, s, end_p, end_node->id);
 	reverse(path.begin(), path.end());
 	//printf("Path size: %d\n", path.size());
 	delete[] nodes;
 	return path;
 }
 
-vector<Point> CableRouter::funnel_smooth(CDT& dt, ASNode* nodes, Point s, Point t, int end_node_id)
+Polyline CableRouter::funnel_smooth(CDT& dt, ASNode* nodes, Point s, Point t, int end_node_id)
 {
-	vector<Point> path;
+	Polyline path;
 	path.push_back(t);
 
 	int now = end_node_id;
@@ -603,12 +603,12 @@ vector<Point> CableRouter::funnel_smooth(CDT& dt, ASNode* nodes, Point s, Point 
 	return path;
 }
 
-vector<Point> CableRouter::line_break(vector<Point>& line, const double gap)
+Polyline CableRouter::line_break(Polyline& line, const double gap)
 {
 	if (line.size() < 2)
 		return line;
 
-	vector<Point> res;
+	Polyline res;
 	res.push_back(line[0]);
 	for (int i = 0; i < line.size() - 1; i++)
 	{
@@ -626,12 +626,12 @@ vector<Point> CableRouter::line_break(vector<Point>& line, const double gap)
 	return res;
 }
 
-vector<Point> CableRouter::manhattan_smooth_p2p(MapInfo* const data, vector<Point>& path, vector<Segment>& exist_lines)
+Polyline CableRouter::manhattan_smooth_p2p(MapInfo* const data, Polyline& path, vector<Segment>& exist_lines)
 {
-	vector<Point> line = path;
+	Polyline line = path;
 	if (line.size() <= 1) return line;
 
-	vector<Point> res;
+	Polyline res;
 	int now = 0;
 	res.push_back(line[now]);
 	//bool dirX = true;
@@ -740,12 +740,12 @@ vector<Point> CableRouter::manhattan_smooth_p2p(MapInfo* const data, vector<Poin
 	}
 	return res;
 }
-vector<Point> CableRouter::manhattan_smooth_basic(MapInfo* const data, vector<Point>& path, vector<Segment>& exist_lines)
+Polyline CableRouter::manhattan_smooth_basic(MapInfo* const data, Polyline& path, vector<Segment>& exist_lines)
 {
-	vector<Point> line = path;
+	Polyline line = path;
 	if (line.size() <= 1) return line;
 
-	vector<Point> res;
+	Polyline res;
 	int now = 0;
 	int next_id = (int)line.size() - 1;
 	res.push_back(line[now]);
@@ -833,11 +833,11 @@ vector<Point> CableRouter::manhattan_smooth_basic(MapInfo* const data, vector<Po
 	return res;
 }
 
-vector<Point> CableRouter::line_simple(vector<Point>& line)
+Polyline CableRouter::line_simple(Polyline& line)
 {
 	if (line.size() <= 2) return line;
 
-	vector<Point> res;
+	Polyline res;
 	res.push_back(line[0]);
 	int next = 1;
 	bool dirX = line[0].hx() == line[next].hx();
@@ -859,9 +859,9 @@ vector<Point> CableRouter::line_simple(vector<Point>& line)
 	return res;
 }
 
-vector<Point> CableRouter::manhattan_connect(MapInfo* const data, Point u, Point v, Vector prefer, vector<Segment>& lines)
+Polyline CableRouter::manhattan_connect(MapInfo* const data, Point u, Point v, Vector prefer, vector<Segment>& lines)
 {
-	vector<Point> res;
+	Polyline res;
 
 	double dx = abs(u.hx() - v.hx());
 	double dy = abs(u.hy() - v.hy());
@@ -943,30 +943,30 @@ vector<Point> CableRouter::manhattan_connect(MapInfo* const data, Point u, Point
 
 }
 
-vector<Point> CableRouter::obstacle_avoid_connect_p2p(MapInfo* const data, Point p, Point q, vector<Segment>& lines)
+Polyline CableRouter::obstacle_avoid_connect_p2p(MapInfo* const data, Point p, Point q, vector<Segment>& lines)
 {
-	vector<Point> line = a_star_connect_p2p(data, p, q, lines);
+	Polyline line = a_star_connect_p2p(data, p, q, lines);
 	line = line_break(line, 1000);
 	line = manhattan_smooth_p2p(data, line, lines);
 	line = line_simple(line);
 	return line;
 }
 
-vector<Point> CableRouter::obstacle_avoid_connect_p2s(MapInfo* const data, Point p, Segment s, vector<Segment>& lines)
+Polyline CableRouter::obstacle_avoid_connect_p2s(MapInfo* const data, Point p, Segment s, vector<Segment>& lines)
 {
-	vector<Point> line = a_star_connect_p2s(data, p, s, lines);
+	Polyline line = a_star_connect_p2s(data, p, s, lines);
 	line = line_break(line, 1000);
 	line = manhattan_smooth_p2s(data, line, s, lines);
 	line = line_simple(line);
 	return line;
 }
 
-vector<Point> CableRouter::manhattan_smooth_p2s(MapInfo* const data, vector<Point>& path, Segment des, vector<Segment>& exist_lines)
+Polyline CableRouter::manhattan_smooth_p2s(MapInfo* const data, Polyline& path, Segment des, vector<Segment>& exist_lines)
 {
-	vector<Point> line = path;
+	Polyline line = path;
 	if (line.size() <= 1) return line;
 
-	vector<Point> res;
+	Polyline res;
 	int now = 0;
 	res.push_back(line[now]);
 	bool dirX = true;

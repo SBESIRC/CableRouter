@@ -29,23 +29,23 @@ namespace CableRouter
 	};
 
 	// General
-	vector<Point>	manhattan_connect(MapInfo* const map, Point s, Point t, Vector pre_dir, vector<Segment>& lines);
-	vector<Point>	funnel_smooth(CDT& dt, ASNode* nodes, Point s, Point t, int end_node_id);
+	Polyline	manhattan_connect(MapInfo* const map, Point s, Point t, Vector pre_dir, vector<Segment>& lines);
+	Polyline	funnel_smooth(CDT& dt, ASNode* nodes, Point s, Point t, int end_node_id);
 
 	// Point to Point
-	vector<Point>	obstacle_avoid_connect_p2p(MapInfo* const map, Point s, Point t, vector<Segment>& lines);
-	vector<Point>	a_star_connect_p2p(MapInfo* const map, Point s, Point t, vector<Segment>& lines);
-	vector<Point>	manhattan_smooth_p2p(MapInfo* const map, vector<Point>& path, vector<Segment>& exist_lines);
+	Polyline	obstacle_avoid_connect_p2p(MapInfo* const map, Point s, Point t, vector<Segment>& lines);
+	Polyline	a_star_connect_p2p(MapInfo* const map, Point s, Point t, vector<Segment>& lines);
+	Polyline	manhattan_smooth_p2p(MapInfo* const map, Polyline& path, vector<Segment>& exist_lines);
 
 	// Point to Segment
-	vector<Point>	obstacle_avoid_connect_p2s(MapInfo* const map, Point s, Segment t, vector<Segment>& lines);
-	vector<Point>	a_star_connect_p2s(MapInfo* const map, Point s, Segment t, vector<Segment>& lines);
-	vector<Point>	manhattan_smooth_p2s(MapInfo* const map, vector<Point>& path, Segment des, vector<Segment>& exist_lines);
+	Polyline	obstacle_avoid_connect_p2s(MapInfo* const map, Point s, Segment t, vector<Segment>& lines);
+	Polyline	a_star_connect_p2s(MapInfo* const map, Point s, Segment t, vector<Segment>& lines);
+	Polyline	manhattan_smooth_p2s(MapInfo* const map, Polyline& path, Segment des, vector<Segment>& exist_lines);
 
 	// Smooth
-	vector<Point>	line_break(vector<Point>& line, const double gap);
-	vector<Point>	line_simple(vector<Point>& line);
-	vector<Point>	manhattan_smooth_basic(MapInfo* const map, vector<Point>& path, vector<Segment>& exist_lines);
+	Polyline	line_break(Polyline& line, const double gap);
+	Polyline	line_simple(Polyline& line);
+	Polyline	manhattan_smooth_basic(MapInfo* const map, Polyline& path, vector<Segment>& exist_lines);
 
 	double			tooCloseToSun(MapInfo* const map, const Point p, const Point q, vector<Segment>& exist_lines, bool is_end = false);
 }

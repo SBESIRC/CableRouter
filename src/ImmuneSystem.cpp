@@ -10,7 +10,7 @@ using namespace CableRouter;
 
 #define VOLATILE_RATE		0.01
 
-#define ANT_SIZE			25
+#define ANT_SIZE			30
 
 #define DEBUG_MOD			0
 
