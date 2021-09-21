@@ -85,7 +85,7 @@ string CableRouter::CableRouteEngine::routing(string datastr, int loop_max_count
 	vector<Polyline> power_paths(map.powers.size());
 	for (int e = 0; e < systems.size(); e++)
 	{
-		for (int k = 0; k < 15; k++)
+		for (int k = 0; k < 20; k++)
 			systems[e].run();
 
 		if (systems[e].globlMem.size() < 1)
@@ -148,7 +148,16 @@ string CableRouter::CableRouteEngine::routing(string datastr, int loop_max_count
 				}
 			}
 		}
-		get_manhattan_lines(&map, path_tree, cables);
+		get_manhattan_tree(&map, path_tree, cables);
+		vector<Segment> ll = get_dream_tree_lines(path_tree);
+		for (int i = 0; i < ll.size(); i++)
+		{
+			Polyline pl;
+			pl.push_back(ll[i].source());
+			pl.push_back(ll[i].target());
+			cables.push_back(pl);
+		}
+		deleteDreamTree(path_tree);
 	}
 
 

@@ -610,7 +610,7 @@ Polyline CableRouter::line_break(Polyline& line, const double gap)
 
 	Polyline res;
 	res.push_back(line[0]);
-	for (int i = 0; i < line.size() - 1; i++)
+	for (int i = 0; i < (int)line.size() - 1; i++)
 	{
 		Point start = line[i];
 		Point end = line[i + 1];
@@ -636,7 +636,7 @@ Polyline CableRouter::manhattan_smooth_p2p(MapInfo* const data, Polyline& path, 
 	res.push_back(line[now]);
 	//bool dirX = true;
 	//bool dirY = true;
-	while (now != line.size() - 1)
+	while (now != (int)line.size() - 1)
 	{
 		Point u = line[now];
 
@@ -649,7 +649,7 @@ Polyline CableRouter::manhattan_smooth_p2p(MapInfo* const data, Polyline& path, 
 		{
 			int far = ((int)line.size() - next);
 			Point v = line[next];
-			bool is_end = (next == (line.size() - 1));
+			bool is_end = (next == ((int)line.size() - 1));
 			if (u.hx() == v.hx() || u.hy() == v.hy())
 			{
 				//bool cross = crossObstacle(data, u, v);
@@ -945,7 +945,8 @@ Polyline CableRouter::manhattan_connect(MapInfo* const data, Point u, Point v, V
 
 Polyline CableRouter::obstacle_avoid_connect_p2p(MapInfo* const data, Point p, Point q, vector<Segment>& lines)
 {
-	Polyline line = a_star_connect_p2p(data, p, q, lines);
+	vector<Segment> blank;
+	Polyline line = a_star_connect_p2p(data, p, q, blank);
 	line = line_break(line, 1000);
 	line = manhattan_smooth_p2p(data, line, lines);
 	line = line_simple(line);
@@ -954,7 +955,8 @@ Polyline CableRouter::obstacle_avoid_connect_p2p(MapInfo* const data, Point p, P
 
 Polyline CableRouter::obstacle_avoid_connect_p2s(MapInfo* const data, Point p, Segment s, vector<Segment>& lines)
 {
-	Polyline line = a_star_connect_p2s(data, p, s, lines);
+	vector<Segment> blank;
+	Polyline line = a_star_connect_p2s(data, p, s, blank);
 	line = line_break(line, 1000);
 	line = manhattan_smooth_p2s(data, line, s, lines);
 	line = line_simple(line);
@@ -971,10 +973,10 @@ Polyline CableRouter::manhattan_smooth_p2s(MapInfo* const data, Polyline& path, 
 	res.push_back(line[now]);
 	bool dirX = true;
 	bool dirY = true;
-	while (now != line.size() - 1)
+	while (now != (int)line.size() - 1)
 	{
 		Point u = line[now];
-		line[line.size() - 1] = project_point_to_segment(u, des);
+		line[(int)line.size() - 1] = project_point_to_segment(u, des);
 
 		int best = -1;
 		double best_cross = CR_INF;
@@ -989,7 +991,7 @@ Polyline CableRouter::manhattan_smooth_p2s(MapInfo* const data, Polyline& path, 
 		for (int next = now + 1; next < line.size(); next++)
 		{
 			Point v = line[next];
-			bool is_end = (next == line.size() - 1);
+			bool is_end = (next == (int)line.size() - 1);
 			if (u.hx() == v.hx() || u.hy() == v.hy())
 			{
 				//bool cross = crossObstacle(data, u, v);

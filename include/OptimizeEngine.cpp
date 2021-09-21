@@ -3,6 +3,9 @@
 
 using namespace CableRouter;
 
+#define MERGE_GAP	200
+#define SMALL_TURN	500
+
 DreamNode* CableRouter::newDreamNode(Point coord)
 {
 	DreamNode* n = new DreamNode();
@@ -24,9 +27,9 @@ void CableRouter::deleteDreamTree(DreamTree root)
 	}
 }
 
-void CableRouter::get_manhattan_lines(MapInfo* map, DreamTree tree, vector<Polyline>& result)
+void CableRouter::get_manhattan_tree(MapInfo* map, DreamTree tree, vector<Polyline>& exist)
 {
-	vector<Segment> exist_lines = get_segments_from_polylines(result);
+	vector<Segment> exist_lines = get_segments_from_polylines(exist);
 
 	queue<DreamNode*> q;
 	for (int i = 0; i < tree->children.size(); i++)
@@ -36,23 +39,47 @@ void CableRouter::get_manhattan_lines(MapInfo* map, DreamTree tree, vector<Polyl
 	while (!q.empty())
 	{
 		DreamNode* now = q.front();
+		DreamNode* pa = now->parent;
 		q.pop();
 
 
-		Polyline path = manhattan_connect(map, now->parent->coord, now->coord, now->parent->dir_from_parent, exist_lines);
+		Polyline path = manhattan_connect(map, pa->coord, now->coord, pa->dir_from_parent, exist_lines);
 
-		result.push_back(path);
-
+		for (auto ch = pa->children.begin(); ch != pa->children.end(); ch++)
+		{
+			if ((*ch) == now)
+			{
+				pa->children.erase(ch);
+				break;
+			}
+		}
 		for (int j = 0; j < path.size() - 1; j++)
 		{
 			exist_lines.push_back(Segment(path[j], path[j + 1]));
+			DreamNode* ch = NULL;
+			if (j + 1 == path.size() - 1)
+				ch = now;
+			else
+				ch = newDreamNode(path[j + 1]);
+			pa->children.push_back(ch);
+			ch->parent = pa;
+			ch->dir_from_parent = Vector(path[j], path[j + 1]);
+			pa = ch;
 		}
-
-		now->dir_from_parent = Vector(exist_lines.back());
+				
 
 		for (int i = 0; i < now->children.size(); i++)
 		{
 			q.push(now->children[i]);
+		}
+		if (path.size() > 2 && LEN(exist_lines.back()) < SMALL_TURN)
+		{
+			for (int i = 0; i < now->children.size(); i++)
+			{
+				now->children[i]->parent = now->parent;
+				now->parent->children.push_back(now->children[i]);
+			}
+			reset(now->children);
 		}
 	}
 }
@@ -77,17 +104,17 @@ vector<pair<DreamNode*, Point>> CableRouter::intersect_dream_tree(DreamTree tree
 		if (seg_now.is_horizontal())
 		{
 			double minX = min(DOUBLE(now->coord.hx()), DOUBLE(now->parent->coord.hx()));
-			double minY = DOUBLE(now->coord.hy()) - 200;
+			double minY = DOUBLE(now->coord.hy()) - MERGE_GAP;
 			double maxX = max(DOUBLE(now->coord.hx()), DOUBLE(now->parent->coord.hx()));
-			double maxY = DOUBLE(now->coord.hy()) + 200;
+			double maxY = DOUBLE(now->coord.hy()) + MERGE_GAP;
 			rec_now = Rectangle(minX, minY, maxX, maxY);
 		}
 		else if (seg_now.is_vertical())
 		{
 			double minY = min(DOUBLE(now->coord.hy()), DOUBLE(now->parent->coord.hy()));
-			double minX = DOUBLE(now->coord.hx()) - 200;
+			double minX = DOUBLE(now->coord.hx()) - MERGE_GAP;
 			double maxY = max(DOUBLE(now->coord.hy()), DOUBLE(now->parent->coord.hy()));
-			double maxX = DOUBLE(now->coord.hx()) + 200;
+			double maxX = DOUBLE(now->coord.hx()) + MERGE_GAP;
 			rec_now = Rectangle(minX, minY, maxX, maxY);
 		}
 		else

@@ -26,7 +26,7 @@ namespace CableRouter
 	void deleteDreamTree(DreamTree root);
 
 	// inner connect
-	void get_manhattan_lines(MapInfo* map, DreamTree tree, vector<Polyline>& result);
+	void get_manhattan_tree(MapInfo* map, DreamTree tree, vector<Polyline>& exist);
 
 	// inter connect
 	DreamTree merge_to_a_tree(vector<Polyline>& paths);
