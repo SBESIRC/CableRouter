@@ -1142,7 +1142,6 @@ double CableRouter::tooCloseToSun(MapInfo* const data, const Point p, const Poin
 	}
 
 	double res = 0.0;
-	int count = 1;
 	Segment pq(p, q);
 
 	for (int i = 0; i < exist.size(); i++)

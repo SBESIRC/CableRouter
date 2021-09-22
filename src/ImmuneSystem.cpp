@@ -424,7 +424,6 @@ void CableRouter::ImmuneSystem::run()
 
 	int n = (int) G.size();
 	auto dn = (int) devices.size();
-	auto pn = (int) powers.size();
 
 	set<Antibody> mem;
 

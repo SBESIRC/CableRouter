@@ -208,7 +208,7 @@ DreamTree CableRouter::merge_to_a_tree(vector<Polyline>& paths)
 	for (int i = 1; i < paths.size(); i++)
 	{
 		DreamNode* child = NULL;
-		for (int j = paths[i].size() - 1; j >= 1; j--)
+		for (int j = (int)paths[i].size() - 1; j >= 1; j--)
 		{
 			Point old = paths[i][j];
 			Point young = paths[i][j - 1];
@@ -377,7 +377,7 @@ DreamTree CableRouter::merge_to_a_tree(vector<Polyline>& paths)
 	return tree;
 }
 
-vector<Segment> CableRouter::get_dream_tree_lines(DreamTree tree)
+vector<Segment> CableRouter::get_dream_tree_lines(DreamTree tree, bool opened)
 {
 	vector<Segment> res;
 
@@ -393,7 +393,80 @@ vector<Segment> CableRouter::get_dream_tree_lines(DreamTree tree)
 
 		Segment ss(now->coord, now->parent->coord);
 
-		res.push_back(ss);
+		if (!opened || now->line_num_to_parent <= 1)
+		{
+			res.push_back(ss);
+		}
+		else if (ss.is_horizontal())
+		{
+			int turn_up = 0;
+			int turn_down = 0;
+			int go_ahead = 0;
+			horizontal_count(now, turn_up, turn_down);
+			go_ahead = now->line_num_to_parent - turn_up - turn_down;
+			for (int i = 0; i < go_ahead; i++)
+			{
+				int off = i - go_ahead / 2;
+				res.push_back(Segment(
+					Point(now->coord.hx(), now->coord.hy() + off * 500), 
+					Point(now->parent->coord.hx(), now->parent->coord.hy() + off * 500)
+				));
+			}
+			for (int i = 0; i < turn_up; i++)
+			{
+				int off = go_ahead - go_ahead / 2 + i;
+				res.push_back(Segment(
+					Point(now->coord.hx(), now->coord.hy() + off * 500), 
+					Point(now->parent->coord.hx(), now->parent->coord.hy() + off * 500)
+				));
+			}
+			for (int i = 0; i < turn_down; i++)
+			{
+				int off = 0 - go_ahead / 2 - (go_ahead == 0 ? 0 : 1) - i;
+				//int off = 0 - go_ahead / 2 - 1 - i;
+				res.push_back(Segment(
+					Point(now->coord.hx(), now->coord.hy() + off * 500), 
+					Point(now->parent->coord.hx(), now->parent->coord.hy() + off * 500)
+				));
+			}
+		}
+		else if (ss.is_vertical())
+		{
+			int trun_left = 0;
+			int trun_right = 0;
+			int go_ahead = 0;
+			vertical_count(now, trun_left, trun_right);
+			go_ahead = now->line_num_to_parent - trun_left - trun_right;
+			for (int i = 0; i < go_ahead; i++)
+			{
+				double off = i - go_ahead / 2;
+				res.push_back(Segment(
+					Point(now->coord.hx() + off * 500, now->coord.hy()),
+					Point(now->parent->coord.hx() + off * 500, now->parent->coord.hy())
+				));
+			}
+			for (int i = 0; i < trun_right; i++)
+			{
+				double off = go_ahead - go_ahead / 2 + i;
+				res.push_back(Segment(
+					Point(now->coord.hx() + off * 500, now->coord.hy()),
+					Point(now->parent->coord.hx() + off * 500, now->parent->coord.hy())
+				));
+			}
+			for (int i = 0; i < trun_left; i++)
+			{
+				double off = 0 - go_ahead / 2 - (go_ahead == 0 ? 0 : 1) - i;
+				//double off = 0 - go_ahead / 2 - 1 - i;
+				res.push_back(Segment(
+					Point(now->coord.hx() + off * 500, now->coord.hy()),
+					Point(now->parent->coord.hx() + off * 500, now->parent->coord.hy())
+				));
+			}
+		}
+		else
+		{
+			res.push_back(ss);
+		}
 
 		for (int i = 0; i < now->children.size(); i++)
 		{
@@ -401,6 +474,49 @@ vector<Segment> CableRouter::get_dream_tree_lines(DreamTree tree)
 		}
 	}
 
+	return res;
+}
+
+vector<Polyline> CableRouter::get_dream_tree_paths(DreamTree tree)
+{
+	vector<Polyline> res;
+	queue<DreamNode*> q;
+	for (int i = 0; i < tree->children.size(); i++)
+	{
+		q.push(tree->children[i]);
+	}
+	while (!q.empty())
+	{
+		DreamNode* now = q.front();
+		q.pop();
+
+		if (now->is_device)
+		{
+			Polyline pl = get_path(now);
+			if (pl.size() >= 2)
+			{
+				res.push_back(pl);
+			}
+		}
+
+		for (int i = 0; i < now->children.size(); i++)
+		{
+			q.push(now->children[i]);
+		}
+	}
+	return res;
+}
+
+Polyline CableRouter::get_path(DreamNode* node)
+{
+	Polyline res;
+	DreamNode* now = node;
+	while (now != NULL)
+	{
+		res.push_back(now->coord);
+		now = now->parent;
+	}
+	reverse(res.begin(), res.end());
 	return res;
 }
 

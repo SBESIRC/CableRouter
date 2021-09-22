@@ -49,16 +49,32 @@ bool path_compare(std::pair<Point, Point> a, std::pair<Point, Point> b)
 
 string CableRouter::CableRouteEngine::routing(string datastr, int loop_max_count)
 {
+	if (loop_max_count < 1)
+	{
+		return "error: loop max count < 1";
+	}
+
 	MapInfo map;
-	set<string> categories;
-	set<string> spacenames;
+	GroupParam param;
+	GroupEngine ge;
 
 	// parse geojson file
 	map = read_from_geojson_string(datastr);
-	GroupEngine ge;
+
+	if (map.devices.size() == 0)
+	{
+		return "error: no Wiring Position";
+	}
+	else if (map.powers.size() == 0)
+	{
+		return "error: no Power Position";
+	}
+	else if (map.area.info.boundary.size() == 0)
+	{
+		return "error: no Fire Apart";
+	}
 	
 	// grouping
-	GroupParam param;
 	param.max_dev_size = loop_max_count;
 	param.min_dev_size = MIN_DEV_IN_GROUP;
 	param.weight_pos = ALPHA;
@@ -97,10 +113,8 @@ string CableRouter::CableRouteEngine::routing(string datastr, int loop_max_count
 		auto adj = systems[e].globlMem.rbegin()->adj;
 		printf("Best value = %lf\n", systems[e].globlMem.rbegin()->value);
 
-		vector<Polyline> paths;
 		vector<Device>& devices = systems[e].data.devices;
-		vector<Power>& powers = systems[e].data.powers;
-		int dn = devices.size();
+		int dn = (int)devices.size();
 
 		vector<DreamNode*> dev_nodes;
 		for (int i = 0; i < dn; i++)
@@ -149,7 +163,11 @@ string CableRouter::CableRouteEngine::routing(string datastr, int loop_max_count
 			}
 		}
 		get_manhattan_tree(&map, path_tree, cables);
-		vector<Segment> ll = get_dream_tree_lines(path_tree);
+
+		vector<Polyline> paths = get_dream_tree_paths(path_tree);
+		DreamTree dream_path_dream = merge_to_a_tree(paths);
+
+		vector<Segment> ll = get_dream_tree_lines(dream_path_dream);
 		for (int i = 0; i < ll.size(); i++)
 		{
 			Polyline pl;
@@ -158,6 +176,7 @@ string CableRouter::CableRouteEngine::routing(string datastr, int loop_max_count
 			cables.push_back(pl);
 		}
 		deleteDreamTree(path_tree);
+		deleteDreamTree(dream_path_dream);
 	}
 
 
@@ -179,10 +198,10 @@ string CableRouter::CableRouteEngine::routing(string datastr, int loop_max_count
 			else if (pwr.is_segment())
 				pp = obstacle_avoid_connect_p2s(&map, dev, Segment(pwr.points[0], pwr.points[1]), exist_lines);
 			else
-				printf("invalid power\n");
+				return "invalid power";
 
-			printf("Path size: %d\n", pp.size());
-			result_paths.push_back(pp);
+			if (pp.size() > 1)
+				result_paths.push_back(pp);
 			//vector<Segment> pp_segs = get_segments_from_polyline(pp);
 			//exist_lines.insert(exist_lines.end(), pp_segs.begin(), pp_segs.end());
 		}

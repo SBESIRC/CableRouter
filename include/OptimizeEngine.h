@@ -35,7 +35,10 @@ namespace CableRouter
 	void add_line_num(DreamNode* node);
 	void init_line_num(DreamTree tree);
 
-	vector<Segment> get_dream_tree_lines(DreamTree tree);
+	vector<Polyline> get_dream_tree_paths(DreamTree tree);
+	Polyline get_path(DreamNode* node);
+
+	vector<Segment> get_dream_tree_lines(DreamTree tree, bool opened = false);
 	void horizontal_count(DreamNode* node, int& up, int& down);
 	void vertical_count(DreamNode* node, int& left, int& right);
 }

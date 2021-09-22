@@ -47,7 +47,7 @@ namespace CableRouter
 	Polyline	line_simple(Polyline& line);
 	Polyline	manhattan_smooth_basic(MapInfo* const map, Polyline& path, vector<Segment>& exist_lines);
 
-	double			tooCloseToSun(MapInfo* const map, const Point p, const Point q, vector<Segment>& exist_lines, bool is_end = false);
+	double		tooCloseToSun(MapInfo* const map, const Point p, const Point q, vector<Segment>& exist_lines, bool is_end = false);
 }
 
 #endif
