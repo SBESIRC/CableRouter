@@ -45,37 +45,37 @@ CDT CableRouter::buildTriangulation(MapInfo* const data)
 	CDT dt;
 
 	vector<std::pair<Point, VertexInfo>> vec;
-	vector<Point> vec_con;
+	set<Constraint> constraints;
 
 	// insert device, id from 0 to dev_n - 1
 	for (auto v = data->devices.begin(); v != data->devices.end(); v++)
 	{
 		vec.push_back(std::make_pair(v->coord, VertexInfo(v->id, true)));
 	}
-	if (vec.size() > 0) dt.insert(vec.begin(), vec.end());
+	if (vec.size() > 0)
+	{
+		dt.insert(vec.begin(), vec.end());
+	}
 
 	// insert area point
-	reset(vec);
-	for (auto v = data->area.info.boundary.vertices_begin(); v != data->area.info.boundary.vertices_end(); v++)
+	Polygon area_boundary = data->area.info.boundary;
+	for (int i = 0; i < area_boundary.size(); i++)
 	{
-		vec.push_back(std::make_pair(*v, VertexInfo()));
-		vec_con.push_back(*v);
+		constraints.insert(Constraint(area_boundary.vertex(i), area_boundary.vertex((i + 1) % area_boundary.size())));
 	}
-	if (vec.size() > 0) dt.insert(vec.begin(), vec.end());
-	if (vec_con.size() > 0) dt.insert_constraint(vec_con.begin(), vec_con.end(), true);
 
 	// insert holes point
 	for (auto h = data->holes.begin(); h != data->holes.end(); h++)
 	{
-		reset(vec);
-		reset(vec_con);
-		for (auto v = h->vertices_begin(); v != h->vertices_end(); v++)
+		for (int i = 0; i < h->size(); i++)
 		{
-			vec.push_back(std::make_pair(*v, VertexInfo()));
-			vec_con.push_back(*v);
+			constraints.insert(Constraint(h->vertex(i), h->vertex((i + 1) % h->size())));
 		}
-		if (vec.size() > 0) dt.insert(vec.begin(), vec.end());
-		if (vec_con.size() > 0) dt.insert_constraint(vec_con.begin(), vec_con.end(), true);
+	}
+
+	for (auto c = constraints.begin(); c != constraints.end(); c++)
+	{
+		dt.insert_constraint(c->source, c->target);
 	}
 
 	int id = (int)data->devices.size();

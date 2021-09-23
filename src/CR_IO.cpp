@@ -202,7 +202,9 @@ static void parse_geojson(MapInfo& map, const string& datastr)
         {
             for (auto j = 0; j < vec_pts[0].size() - 1; ++j)
             {
-                center_nodes.push_back(get_seg_rtree_node(&Segment(vec_pts[0][j], vec_pts[0][j + 1])));
+                Segment s(vec_pts[0][j], vec_pts[0][j + 1]);
+                center_nodes.push_back(get_seg_rtree_node(&s));
+                map.centers.push_back(s);
             }
         }
         else if (cat.compare("Room") == 0)

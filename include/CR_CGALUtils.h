@@ -65,6 +65,21 @@ namespace CableRouter
     typedef CDT::Face_handle                                                Face_handle;
     typedef CDT::Vertex_handle                                              Vertex_handle;
 
+    struct Constraint
+    {
+        Point source;
+        Point target;
+        Constraint(Point p, Point q)
+            :source(p), target(q) {}
+        bool operator < (const Constraint& c) const
+        {
+            if (source.hx() != c.source.hx()) return source.hx() < c.source.hx();
+            if (source.hy() != c.source.hy()) return source.hy() < c.source.hy();
+            if (target.hx() != c.target.hx()) return target.hx() < c.target.hx();
+            return target.hy() < c.target.hy();
+        }
+    };
+
     //#define DOUBLE(x)			                                CGAL::to_double(x.exact())
     #define DOUBLE(x)			                                (x)
     #define DIST_2(x, y)		                                DOUBLE(CGAL::squared_distance((x), (y)))

@@ -68,6 +68,7 @@ namespace CableRouter
 	{
 		vector<Power> powers;
 		vector<Device> devices;
+		vector<Segment> centers;
 		vector<Polygon> holes;
 		vector<Polygon> rooms;
 		FireArea area;

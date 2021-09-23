@@ -17,6 +17,7 @@ bool open_list_less(ASNode* a, ASNode* b)
 Polyline CableRouter::a_star_connect_p2p(MapInfo* const data, Point s, Point t, vector<Segment>& lines)
 {
 	CDT dt;
+	set<Constraint> constraints;
 
 	// start and end
 	vector<pair<Point, VertexInfo>> vec;
@@ -24,29 +25,35 @@ Polyline CableRouter::a_star_connect_p2p(MapInfo* const data, Point s, Point t, 
 	vec.push_back(make_pair(t, VertexInfo(1, true)));
 
 	// area
-	dt.insert_constraint(data->area.info.boundary.vertices_begin(), data->area.info.boundary.vertices_end(), true);
+	Polygon area_boundary = data->area.info.boundary;
+	for (int i = 0; i < area_boundary.size(); i++)
+	{
+		constraints.insert(Constraint(area_boundary.vertex(i), area_boundary.vertex((i + 1) % area_boundary.size())));
+	}
 
 	// holes
 	for (auto h = data->holes.begin(); h != data->holes.end(); h++)
 	{
-		dt.insert_constraint(h->vertices_begin(), h->vertices_end(), true);
+		for (int i = 0; i < h->size(); i++)
+		{
+			constraints.insert(Constraint(h->vertex(i), h->vertex((i + 1) % h->size())));
+		}
 	}
 
 	// centers
-	vector<rbush::TreeNode<Segment>* > centers = (*data->cen_line_tree->all());
-	for (auto c = centers.begin(); c != centers.end(); c++)
+	for (auto c = data->centers.begin(); c != data->centers.end(); c++)
 	{
-		Point start = (*c)->data->source();
-		Point mid = CGAL::midpoint((*c)->data->source(), (*c)->data->target());
+		Point start = c->source();
+		Point mid = CGAL::midpoint(c->source(), c->target());
 		if (mid != s && mid != t)
 			vec.push_back(make_pair(mid, VertexInfo(2, true)));
-		int num = 1 + ((int)LEN(*(*c)->data)) / 2000;
+		int num = 1 + ((int)LEN(*c)) / 2000;
 		for (int i = 1; i <= num; i++)
 		{
 			Point end = Point(
-				1.0 * i / num * DOUBLE((*c)->data->target().hx() - (*c)->data->source().hx()) + DOUBLE((*c)->data->source().hx()),
-				1.0 * i / num * DOUBLE((*c)->data->target().hy() - (*c)->data->source().hy()) + DOUBLE((*c)->data->source().hy()));
-			dt.insert_constraint(start, end);
+				1.0 * i / num * DOUBLE(c->target().hx() - c->source().hx()) + DOUBLE(c->source().hx()),
+				1.0 * i / num * DOUBLE(c->target().hy() - c->source().hy()) + DOUBLE(c->source().hy()));
+			constraints.insert(Constraint(start, end));
 			start = end;
 		}
 	}
@@ -64,7 +71,7 @@ Polyline CableRouter::a_star_connect_p2p(MapInfo* const data, Point s, Point t, 
 			Point end = Point(
 				1.0 * i / num * DOUBLE(l->target().hx() - l->source().hx()) + DOUBLE(l->source().hx()),
 				1.0 * i / num * DOUBLE(l->target().hy() - l->source().hy()) + DOUBLE(l->source().hy()));
-			dt.insert_constraint(start, end);
+			constraints.insert(Constraint(start, end));
 			start = end;
 		}
 	}
@@ -75,6 +82,11 @@ Polyline CableRouter::a_star_connect_p2p(MapInfo* const data, Point s, Point t, 
 	//	vec.push_back(make_pair(v->coord, VertexInfo(2, true)));
 	//}
 	dt.insert(vec.begin(), vec.end());
+
+	for (auto c = constraints.begin(); c != constraints.end(); c++)
+	{
+		dt.insert_constraint(c->source, c->target);
+	}
 
 	mark_domains(dt);
 
@@ -908,16 +920,16 @@ Polyline CableRouter::manhattan_connect(MapInfo* const data, Point u, Point v, V
 				res.push_back(mid1);
 				res.push_back(v);
 			}
-			else if (prefer.hy() != 0)
+			else if (prefer.hx() != 0)
 			{
 				res.push_back(u);
-				res.push_back(mid2);
+				res.push_back(mid1);
 				res.push_back(v);
 			}
 			else
 			{
 				res.push_back(u);
-				res.push_back(mid1);
+				res.push_back(mid2);
 				res.push_back(v);
 			}
 		}
