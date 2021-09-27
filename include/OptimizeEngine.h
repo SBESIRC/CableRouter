@@ -27,6 +27,8 @@ namespace CableRouter
 
 	// inner connect
 	void get_manhattan_tree(MapInfo* map, DreamTree tree, vector<Polyline>& exist);
+	void avoid_coincidence(DreamTree tree);
+	void avoid_coincidence_non_device(DreamTree tree);
 
 	// inter connect
 	DreamTree merge_to_a_tree(vector<Polyline>& paths);

@@ -3,6 +3,8 @@
 
 using namespace CableRouter;
 
+#define LINE_GAP	150
+#define MAX_OVERLAP	200
 #define MERGE_GAP	200
 #define SMALL_TURN	500
 
@@ -74,14 +76,642 @@ void CableRouter::get_manhattan_tree(MapInfo* map, DreamTree tree, vector<Polyli
 		}
 		if (path.size() > 2 && LEN(exist_lines.back()) < SMALL_TURN)
 		{
-			for (int i = 0; i < now->children.size(); i++)
-			{
-				now->children[i]->parent = now->parent;
-				now->parent->children.push_back(now->children[i]);
-			}
+			vector<DreamNode*> children = now->children;
 			reset(now->children);
+			for (int i = 0; i < children.size(); i++)
+			{
+				Vector ab(now->parent->coord, now->coord);
+				Vector ap(now->parent->coord, children[i]->coord);
+				double abap = DOUBLE(ab * ap);
+				double abab = DOUBLE(ab * ab);
+				double apap = DOUBLE(ap * ap);
+
+				if (abab == 0 ||
+					apap == 0 ||
+					(abap / sqrt(abab) >= 1 && abap / sqrt(abab) / sqrt(apap) > sqrt(2.0) / 2))
+				{
+					children[i]->parent = now;
+					now->children.push_back(children[i]);
+				}
+				else
+				{
+					DreamNode* mid = newDreamNode(now->parent->coord);
+					mid->parent = now;
+					mid->dir_from_parent = now->parent->dir_from_parent;
+					now->children.push_back(mid);
+					children[i]->parent = mid;
+					mid->children.push_back(children[i]);
+				}
+			}
 		}
 	}
+}
+
+bool compare_left_from_down_to_up(DreamNode* a, DreamNode* b)
+{
+	int aturn;
+	if (a->is_device)
+		aturn = 0;
+	else if (a->children.size() > 0 && a->children[0]->dir_from_parent.hy() > 0)
+		aturn = 1;
+	else if (a->children.size() > 0 && a->children[0]->dir_from_parent.hy() < 0)
+		aturn = -1;
+	else
+		aturn = 0;
+
+	int bturn;
+	if (b->is_device)
+		bturn = 0;
+	else if (b->children.size() > 0 && b->children[0]->dir_from_parent.hy() > 0)
+		bturn = 1;
+	else if (b->children.size() > 0 && b->children[0]->dir_from_parent.hy() < 0)
+		bturn = -1;
+	else
+		bturn = 0;
+
+	if (aturn != bturn) return aturn < bturn;
+
+	if (aturn == -1) return a->coord.hx() > b->coord.hx();
+
+	return a->coord.hx() < b->coord.hx();
+}
+
+bool compare_right_from_down_to_up(DreamNode* a, DreamNode* b)
+{
+	int aturn;
+	if (a->is_device)
+		aturn = 0;
+	else if (a->children.size() > 0 && a->children[0]->dir_from_parent.hy() > 0)
+		aturn = 1;
+	else if (a->children.size() > 0 && a->children[0]->dir_from_parent.hy() < 0)
+		aturn = -1;
+	else
+		aturn = 0;
+
+	int bturn;
+	if (b->is_device)
+		bturn = 0;
+	else if (b->children.size() > 0 && b->children[0]->dir_from_parent.hy() > 0)
+		bturn = 1;
+	else if (b->children.size() > 0 && b->children[0]->dir_from_parent.hy() < 0)
+		bturn = -1;
+	else
+		bturn = 0;
+
+	if (aturn != bturn) return aturn < bturn;
+
+	if (aturn == -1) return a->coord.hx() < b->coord.hx();
+
+	return a->coord.hx() > b->coord.hx();
+}
+
+bool compare_down_from_left_to_right(DreamNode* a, DreamNode* b)
+{
+	int aturn;
+	if (a->is_device)
+		aturn = 0;
+	else if (a->children.size() > 0 && a->children[0]->dir_from_parent.hx() > 0)
+		aturn = 1;
+	else if (a->children.size() > 0 && a->children[0]->dir_from_parent.hx() < 0)
+		aturn = -1;
+	else
+		aturn = 0;
+
+	int bturn;
+	if (b->is_device)
+		bturn = 0;
+	else if (b->children.size() > 0 && b->children[0]->dir_from_parent.hx() > 0)
+		bturn = 1;
+	else if (b->children.size() > 0 && b->children[0]->dir_from_parent.hx() < 0)
+		bturn = -1;
+	else
+		bturn = 0;
+
+	if (aturn != bturn) return aturn < bturn;
+
+	if (aturn == -1) return a->coord.hy() > b->coord.hy();
+
+	return a->coord.hx() < b->coord.hx();
+}
+
+bool compare_up_from_left_to_right(DreamNode* a, DreamNode* b)
+{
+	int aturn;
+	if (a->is_device)
+		aturn = 0;
+	else if (a->children.size() > 0 && a->children[0]->dir_from_parent.hx() > 0)
+		aturn = 1;
+	else if (a->children.size() > 0 && a->children[0]->dir_from_parent.hx() < 0)
+		aturn = -1;
+	else
+		aturn = 0;
+
+	int bturn;
+	if (b->is_device)
+		bturn = 0;
+	else if (b->children.size() > 0 && b->children[0]->dir_from_parent.hx() > 0)
+		bturn = 1;
+	else if (b->children.size() > 0 && b->children[0]->dir_from_parent.hx() < 0)
+		bturn = -1;
+	else
+		bturn = 0;
+
+	if (aturn != bturn) return aturn < bturn;
+
+	if (aturn == -1) return a->coord.hy() < b->coord.hy();
+
+	return a->coord.hx() > b->coord.hx();
+}
+
+void CableRouter::avoid_coincidence(DreamTree tree)
+{
+	if (tree == NULL) return;
+
+	queue<DreamNode*> q;
+	q.push((DreamNode*)tree);
+	while (!q.empty())
+	{
+		DreamNode* now = q.front();
+		q.pop();
+
+		for (int i = 0; i < now->children.size(); i++)
+		{
+			q.push(now->children[i]);
+		}
+
+
+		if (!now->is_device) continue;
+
+		vector<DreamNode*> children = now->children;
+		DreamNode* now_pa = now->parent;
+		if (now->parent) children.push_back(now->parent);
+
+		if (children.size() <= 1) continue;
+
+		vector<DreamNode*> left, right, up, down;
+
+		for (int i = 0; i < children.size(); i++)
+		{
+			
+			Vector dir(now->coord, children[i]->coord);
+			if (LEN(dir) <= MAX_OVERLAP) continue;
+			if (dir.hy() == 0 && dir.hx() < 0) left.push_back(children[i]);
+			if (dir.hy() == 0 && dir.hx() > 0) right.push_back(children[i]);
+			if (dir.hx() == 0 && dir.hy() < 0) down.push_back(children[i]);
+			if (dir.hx() == 0 && dir.hy() > 0) up.push_back(children[i]);
+		}
+
+		if (left.size() > 1)
+		{
+			sort(left.begin(), left.end(), compare_left_from_down_to_up);
+			int fix = -1;
+			for (int i = 0; i < left.size(); i++)
+			{
+				if (left[i]->is_device)
+				{
+					fix = i;
+					break;
+				}
+			}
+			if (fix == -1)
+			{
+				fix = left.size() / 2;
+			}
+			for (int i = 0; i < left.size(); i++)
+			{
+				if (i == fix) continue;
+
+				DreamNode* mid = newDreamNode(Point(now->coord.hx(), now->coord.hy() + (i - fix) * 1.0 * LINE_GAP));
+
+				if (left[i] == now_pa)
+				{
+					for (auto ch = now_pa->children.begin(); ch != now_pa->children.end(); ch++)
+					{
+						if ((*ch) == now)
+						{
+							now_pa->children.erase(ch);
+							break;
+						}
+					}
+					now->parent = mid;
+					mid->children.push_back(now);
+				}
+				else
+				{
+					for (auto ch = now->children.begin(); ch != now->children.end(); ch++)
+					{
+						if ((*ch) == left[i])
+						{
+							now->children.erase(ch);
+							break;
+						}
+					}
+					mid->parent = now;
+					now->children.push_back(mid);
+				}
+
+				Point dd(left[i]->coord.hx(), left[i]->coord.hy() + (i - fix) * 1.0 * LINE_GAP);
+				if (left[i]->is_device)
+				{
+					DreamNode* mid2 = newDreamNode(dd);
+					if (left[i] == now_pa)
+					{
+						mid->parent = mid2;
+						mid2->children.push_back(mid);
+					}
+					else
+					{
+						mid2->parent = mid;
+						mid->children.push_back(mid2);
+					}
+					mid = mid2;
+				}
+				else
+				{
+					left[i]->coord = dd;
+				}
+				if (left[i] == now_pa)
+				{
+					mid->parent = left[i];
+					left[i]->children.push_back(mid);
+				}
+				else
+				{
+					left[i]->parent = mid;
+					mid->children.push_back(left[i]);
+				}
+			}
+		}
+		
+		if (right.size() > 1)
+		{
+			sort(right.begin(), right.end(), compare_right_from_down_to_up);
+			int fix = -1;
+			for (int i = 0; i < right.size(); i++)
+			{
+				if (right[i]->is_device)
+				{
+					fix = i;
+					break;
+				}
+			}
+			if (fix == -1)
+			{
+				fix = right.size() / 2;
+			}
+			for (int i = 0; i < right.size(); i++)
+			{
+				if (i == fix) continue;
+
+				DreamNode* mid = newDreamNode(Point(now->coord.hx(), now->coord.hy() + (i - fix) * 1.0 * LINE_GAP));
+
+				if (right[i] == now_pa)
+				{
+					for (auto ch = now_pa->children.begin(); ch != now_pa->children.end(); ch++)
+					{
+						if ((*ch) == now)
+						{
+							now_pa->children.erase(ch);
+							break;
+						}
+					}
+					now->parent = mid;
+					mid->children.push_back(now);
+				}
+				else
+				{
+					for (auto ch = now->children.begin(); ch != now->children.end(); ch++)
+					{
+						if ((*ch) == right[i])
+						{
+							now->children.erase(ch);
+							break;
+						}
+					}
+					mid->parent = now;
+					now->children.push_back(mid);
+				}
+
+				Point dd(right[i]->coord.hx(), right[i]->coord.hy() + (i - fix) * 1.0 * LINE_GAP);
+				if (right[i]->is_device)
+				{
+					DreamNode* mid2 = newDreamNode(dd);
+					if (right[i] == now_pa)
+					{
+						mid->parent = mid2;
+						mid2->children.push_back(mid);
+					}
+					else
+					{
+						mid2->parent = mid;
+						mid->children.push_back(mid2);
+					}
+					mid = mid2;
+				}
+				else
+				{
+					right[i]->coord = dd;
+				}
+				if (right[i] == now_pa)
+				{
+					mid->parent = right[i];
+					right[i]->children.push_back(mid);
+				}
+				else
+				{
+					right[i]->parent = mid;
+					mid->children.push_back(right[i]);
+				}
+			}
+		}
+
+		if (down.size() > 1)
+		{
+			sort(down.begin(), down.end(), compare_down_from_left_to_right);
+			int fix = -1;
+			for (int i = 0; i < down.size(); i++)
+			{
+				if (down[i]->is_device)
+				{
+					fix = i;
+					break;
+				}
+			}
+			if (fix == -1)
+			{
+				fix = down.size() / 2;
+			}
+			for (int i = 0; i < down.size(); i++)
+			{
+				if (i == fix) continue;
+
+				DreamNode* mid = newDreamNode(Point(now->coord.hx() + (i - fix) * 1.0 * LINE_GAP, now->coord.hy()));
+
+				if (down[i] == now_pa)
+				{
+					for (auto ch = now_pa->children.begin(); ch != now_pa->children.end(); ch++)
+					{
+						if ((*ch) == now)
+						{
+							now_pa->children.erase(ch);
+							break;
+						}
+					}
+					now->parent = mid;
+					mid->children.push_back(now);
+				}
+				else
+				{
+					for (auto ch = now->children.begin(); ch != now->children.end(); ch++)
+					{
+						if ((*ch) == down[i])
+						{
+							now->children.erase(ch);
+							break;
+						}
+					}
+					mid->parent = now;
+					now->children.push_back(mid);
+				}
+
+				Point dd(down[i]->coord.hx() + (i - fix) * 1.0 * LINE_GAP, down[i]->coord.hy());
+				if (down[i]->is_device)
+				{
+					DreamNode* mid2 = newDreamNode(dd);
+					if (down[i] == now_pa)
+					{
+						mid->parent = mid2;
+						mid2->children.push_back(mid);
+					}
+					else
+					{
+						mid2->parent = mid;
+						mid->children.push_back(mid2);
+					}
+					mid = mid2;
+				}
+				else
+				{
+					down[i]->coord = dd;
+				}
+				if (down[i] == now_pa)
+				{
+					mid->parent = down[i];
+					down[i]->children.push_back(mid);
+				}
+				else
+				{
+					down[i]->parent = mid;
+					mid->children.push_back(down[i]);
+				}
+			}
+		}
+
+		if (up.size() > 1)
+		{
+			sort(up.begin(), up.end(), compare_up_from_left_to_right);
+			int fix = -1;
+			for (int i = 0; i < up.size(); i++)
+			{
+				if (up[i]->is_device)
+				{
+					fix = i;
+					break;
+				}
+			}
+			if (fix == -1)
+			{
+				fix = up.size() / 2;
+			}
+			for (int i = 0; i < up.size(); i++)
+			{
+				if (i == fix) continue;
+
+				DreamNode* mid = newDreamNode(Point(now->coord.hx() + (i - fix) * 1.0 * LINE_GAP, now->coord.hy()));
+
+				if (up[i] == now_pa)
+				{
+					for (auto ch = now_pa->children.begin(); ch != now_pa->children.end(); ch++)
+					{
+						if ((*ch) == now)
+						{
+							now_pa->children.erase(ch);
+							break;
+						}
+					}
+					now->parent = mid;
+					mid->children.push_back(now);
+				}
+				else
+				{
+					for (auto ch = now->children.begin(); ch != now->children.end(); ch++)
+					{
+						if ((*ch) == up[i])
+						{
+							now->children.erase(ch);
+							break;
+						}
+					}
+					mid->parent = now;
+					now->children.push_back(mid);
+				}
+
+				Point dd(up[i]->coord.hx() + (i - fix) * 1.0 * LINE_GAP, up[i]->coord.hy());
+				if (up[i]->is_device)
+				{
+					DreamNode* mid2 = newDreamNode(dd);
+					if (up[i] == now_pa)
+					{
+						mid->parent = mid2;
+						mid2->children.push_back(mid);
+					}
+					else
+					{
+						mid2->parent = mid;
+						mid->children.push_back(mid2);
+					}
+					mid = mid2;
+				}
+				else
+				{
+					up[i]->coord = dd;
+				}
+				if (up[i] == now_pa)
+				{
+					mid->parent = up[i];
+					up[i]->children.push_back(mid);
+				}
+				else
+				{
+					up[i]->parent = mid;
+					mid->children.push_back(up[i]);
+				}
+			}
+		}
+	}
+
+	avoid_coincidence_non_device(tree);
+}
+
+void CableRouter::avoid_coincidence_non_device(DreamTree tree)
+{
+	if (tree == NULL) return;
+
+	// init dream node search tree
+
+	vector<rbush::TreeNode<DreamNode*>* > dream_node_nodes;
+
+	queue<DreamNode*> q;
+	for (int i = 0; i < tree->children.size(); i++)
+	{
+		q.push(tree->children[i]);
+	}
+	while (!q.empty())
+	{
+		DreamNode* now = q.front();
+		q.pop();
+
+		Segment seg = Segment(now->parent->coord, now->coord);
+
+		rbush::TreeNode<DreamNode*>* node = new rbush::TreeNode<DreamNode*>();
+		node->data = new DreamNode*(now);
+		node->bbox.minX = DOUBLE(seg.bbox().xmin());
+		node->bbox.minY = DOUBLE(seg.bbox().ymin());
+		node->bbox.maxX = DOUBLE(seg.bbox().xmax());
+		node->bbox.maxY = DOUBLE(seg.bbox().ymax());
+		dream_node_nodes.push_back(node);
+
+		for (int i = 0; i < now->children.size(); i++)
+		{
+			q.push(now->children[i]);
+		}
+	}
+
+	auto dn_tree = new rbush::RBush<DreamNode*>(dream_node_nodes);
+
+	// move non-device edges if overlap with other edges
+
+	reset(q);
+	for (int i = 0; i < tree->children.size(); i++)
+	{
+		q.push(tree->children[i]);
+	}
+	while (!q.empty())
+	{
+		DreamNode* now = q.front();
+		q.pop();
+
+		for (int i = 0; i < now->children.size(); i++)
+		{
+			q.push(now->children[i]);
+		}
+
+		if (now->is_device || now->parent->is_device) continue;
+
+		Segment seg_now = Segment(now->parent->coord, now->coord);
+		bool overlap = false;
+
+		vector<rbush::TreeNode<DreamNode*>* > search_ret;
+		if (dn_tree) {
+			rbush::Bbox bbox;
+			bbox.minX = DOUBLE(seg_now.bbox().xmin());
+			bbox.minY = DOUBLE(seg_now.bbox().ymin());
+			bbox.maxX = DOUBLE(seg_now.bbox().xmax());
+			bbox.maxY = DOUBLE(seg_now.bbox().ymax());
+			auto feedback = dn_tree->search(bbox);
+			if (feedback) {
+				for (auto fit = feedback->begin(); fit != feedback->end(); ++fit) {
+					search_ret.push_back(*fit);
+				}
+			}
+		}
+		for (auto sit = search_ret.begin(); sit != search_ret.end(); sit++)
+		{
+			DreamNode* sn = *(*sit)->data;
+			if (sn == now) continue;
+			Segment s = Segment(sn->parent->coord, sn->coord);
+			if (!CGAL::do_intersect(s, seg_now)) continue;
+			CGAL::Object result = CGAL::intersection(s, seg_now);
+			Segment ss;
+			if (CGAL::assign(ss, result) && LEN(ss) > MAX_OVERLAP)
+			{
+				overlap = true;
+				break;
+			}
+		}
+
+		if (overlap)
+		{
+			if (seg_now.is_horizontal())
+			{
+				if (now->children.size() > 0 && now->children[0]->coord.hy() < now->coord.hy())
+				{
+					now->coord = Point(now->coord.hx(), now->coord.hy() - LINE_GAP);
+					now->parent->coord = Point(now->parent->coord.hx(), now->parent->coord.hy() - LINE_GAP);
+				}
+				if (now->children.size() > 0 && now->children[0]->coord.hy() > now->coord.hy())
+				{
+					now->coord = Point(now->coord.hx(), now->coord.hy() + LINE_GAP);
+					now->parent->coord = Point(now->parent->coord.hx(), now->parent->coord.hy() + LINE_GAP);
+				}
+			}
+			if (seg_now.is_vertical())
+			{
+				if (now->children.size() > 0 && now->children[0]->coord.hx() < now->coord.hx())
+				{
+					now->coord = Point(now->coord.hx() - LINE_GAP, now->coord.hy());
+					now->parent->coord = Point(now->parent->coord.hx() - LINE_GAP, now->parent->coord.hy());
+				}
+				if (now->children.size() > 0 && now->children[0]->coord.hx() > now->coord.hx())
+				{
+					now->coord = Point(now->coord.hx() + LINE_GAP, now->coord.hy());
+					now->parent->coord = Point(now->parent->coord.hx() + LINE_GAP, now->parent->coord.hy());
+				}
+			}
+		}
+
+	}
+	delete dn_tree;
 }
 
 vector<pair<DreamNode*, Point>> CableRouter::intersect_dream_tree(DreamTree tree, Segment seg)
@@ -190,7 +820,6 @@ DreamTree CableRouter::merge_to_a_tree(vector<Polyline>& paths)
 	if (paths[0].size() == 0) return NULL;
 
 	// init tree
-	printf("init begin\n");
 	DreamTree tree = newDreamNode(paths[0][0]);
 	DreamNode* parent = tree;
 	for (int i = 1; i < paths[0].size(); i++)
@@ -202,7 +831,6 @@ DreamTree CableRouter::merge_to_a_tree(vector<Polyline>& paths)
 		parent->children.push_back(no);
 		parent = no;
 	}
-	printf("init end\n");
 
 	// add paths to tree
 	for (int i = 1; i < paths.size(); i++)
@@ -511,10 +1139,14 @@ Polyline CableRouter::get_path(DreamNode* node)
 {
 	Polyline res;
 	DreamNode* now = node;
-	while (now != NULL)
+	do
 	{
 		res.push_back(now->coord);
 		now = now->parent;
+	} while (now != NULL && !now->is_device);
+	if (now != NULL && now->is_device)
+	{
+		res.push_back(now->coord);
 	}
 	reverse(res.begin(), res.end());
 	return res;

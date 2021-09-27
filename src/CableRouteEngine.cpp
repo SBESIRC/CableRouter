@@ -163,22 +163,13 @@ string CableRouter::CableRouteEngine::routing(string datastr, int loop_max_count
 			}
 		}
 		get_manhattan_tree(&map, path_tree, cables);
-
+		avoid_coincidence(path_tree);
 		vector<Polyline> paths = get_dream_tree_paths(path_tree);
-		DreamTree dream_path_dream = merge_to_a_tree(paths);
-
-		vector<Segment> ll = get_dream_tree_lines(dream_path_dream);
-		for (int i = 0; i < ll.size(); i++)
-		{
-			Polyline pl;
-			pl.push_back(ll[i].source());
-			pl.push_back(ll[i].target());
-			cables.push_back(pl);
-		}
+		cables.insert(cables.end(), paths.begin(), paths.end());
 		deleteDreamTree(path_tree);
-		deleteDreamTree(dream_path_dream);
 	}
 
+	return write_to_geojson_string(cables);
 
 	// power to device connect
 

@@ -113,13 +113,16 @@ void CableRouter::deleteGraph(double** G, int n)
 
 Point CableRouter::project_point_to_segment(Point p, Segment s)
 {
+	if (s.source() == s.target())
+		return s.source();
+
 	double apab =
 		DOUBLE((p.hx() - s.source().hx()) * (s.target().hx() - s.source().hx())) +
 		DOUBLE((p.hy() - s.source().hy()) * (s.target().hy() - s.source().hy()));
 	double abab =
 		DOUBLE((s.target().hx() - s.source().hx()) * (s.target().hx() - s.source().hx())) +
 		DOUBLE((s.target().hy() - s.source().hy()) * (s.target().hy() - s.source().hy()));
-	double r = apab / abab;
+	double r = apab / sqrt(abab);
 	if (r <= 0)
 		return s.source();
 	if (r >= 1)

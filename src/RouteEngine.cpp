@@ -926,6 +926,18 @@ Polyline CableRouter::manhattan_connect(MapInfo* const data, Point u, Point v, V
 				res.push_back(mid1);
 				res.push_back(v);
 			}
+			else if (prefer.hy() != 0)
+			{
+				res.push_back(u);
+				res.push_back(mid2);
+				res.push_back(v);
+			}
+			else if (abs(DOUBLE(u.hx() - v.hx())) > abs(DOUBLE(u.hy() - v.hy())))
+			{
+				res.push_back(u);
+				res.push_back(mid1);
+				res.push_back(v);
+			}
 			else
 			{
 				res.push_back(u);
@@ -983,44 +995,36 @@ Polyline CableRouter::manhattan_smooth_p2s(MapInfo* const data, Polyline& path, 
 	Polyline res;
 	int now = 0;
 	res.push_back(line[now]);
-	bool dirX = true;
-	bool dirY = true;
+	//bool dirX = true;
+	//bool dirY = true;
 	while (now != (int)line.size() - 1)
 	{
 		Point u = line[now];
 		line[(int)line.size() - 1] = project_point_to_segment(u, des);
 
 		int best = -1;
-		double best_cross = CR_INF;
+		double best_value = CR_INF;
 		bool best_has_mid = false;
 		Point best_mid;
 
-		int better = -1;
-		double better_cross = CR_INF;
-		bool better_has_mid = false;
-		Point better_mid;
-
 		for (int next = now + 1; next < line.size(); next++)
 		{
+			int far = ((int)line.size() - next);
 			Point v = line[next];
-			bool is_end = (next == (int)line.size() - 1);
+			bool is_end = (next == ((int)line.size() - 1));
 			if (u.hx() == v.hx() || u.hy() == v.hy())
 			{
 				//bool cross = crossObstacle(data, u, v);
 				bool cross = touchObstacle(data, u, v);
-				bool colli = tooCloseToSun(data, u, v, exist_lines, is_end);
 				if (!cross)
 				{
 					int c = cross_num(exist_lines, u, v);
-					if (c <= 0)
+					double force = tooCloseToSun(data, u, v, exist_lines, is_end);
+					double value = (1.0 + c) * (1.0 + force) + 10.0 * far;
+					//double value = 10.0 * c + 1.0 * force + 5.0 * far;
+					if (value <= best_value)
 					{
-						better_cross = c;
-						better = next;
-						better_has_mid = false;
-					}
-					if (c <= 0 && !colli)
-					{
-						best_cross = c;
+						best_value = value;
 						best = next;
 						best_has_mid = false;
 					}
@@ -1034,96 +1038,64 @@ Polyline CableRouter::manhattan_smooth_p2s(MapInfo* const data, Polyline& path, 
 			//bool cross2 = crossObstacle(data, u, mid2) || crossObstacle(data, mid2, v);			
 			bool cross1 = touchObstacle(data, u, mid1) || touchObstacle(data, mid1, v);
 			bool cross2 = touchObstacle(data, u, mid2) || touchObstacle(data, mid2, v);
-			bool colli1 = tooCloseToSun(data, u, mid1, exist_lines) || tooCloseToSun(data, mid1, v, exist_lines, is_end);
-			bool colli2 = tooCloseToSun(data, u, mid2, exist_lines) || tooCloseToSun(data, mid2, v, exist_lines, is_end);
-			bool best_choose1 = false;
-			bool better_choose1 = false;
+			//bool best_choose1 = false;
 			if (!cross1)
 			{
 				int c = cross_num(exist_lines, u, mid1) + cross_num(exist_lines, mid1, v);
-				if (c <= better_cross)
+				double force1 = tooCloseToSun(data, u, mid1, exist_lines) + tooCloseToSun(data, mid1, v, exist_lines, is_end);
+				double value = (1.0 + c) * (1.0 + force1) + 10.0 * far;
+				//double value = 10.0 * c + 1.0 * force1 + 5.0 * far;
+				if (value <= best_value)
 				{
-					better_cross = c;
-					better = next;
-					better_has_mid = true;
-					better_mid = mid1;
-					better_choose1 = true;
-				}
-				if (c <= best_cross && !colli1)
-				{
-					best_cross = c;
+					best_value = value;
 					best = next;
 					best_has_mid = true;
 					best_mid = mid1;
-					best_choose1 = true;
+					//best_choose1 = true;
 				}
 			}
 			if (!cross2)
 			{
 				int c = cross_num(exist_lines, u, mid2) + cross_num(exist_lines, mid2, v);
-				if (c <= better_cross)
+				double force2 = tooCloseToSun(data, u, mid2, exist_lines) + tooCloseToSun(data, mid2, v, exist_lines, is_end);
+				double value = (1.0 + c) * (1.0 + force2) + 10.0 * far;
+				//double value = 10.0 * c + 1.0 * force2 + 5.0 * far;
+				if (value <= best_value)
 				{
-					better_cross = c;
-					better = next;
-					better_has_mid = true;
-					if (!better_choose1 || dirY)
-					{
-						better_mid = mid2;
-					}
-				}
-				if (c <= best_cross && !colli2)
-				{
-					best_cross = c;
+					best_value = value;
 					best = next;
 					best_has_mid = true;
-					if (!best_choose1 || dirY)
-					{
-						best_mid = mid2;
-					}
+					//if (!best_choose1 || dirY)
+					//{
+					best_mid = mid2;
+					//}
 				}
 			}
 		}
 
 		if (best != -1)
 		{
+			//printf("best value = %lf\n", best_value);
 			if (best_has_mid)
 			{
-				dirX = u.hy() == best_mid.hy();
-				dirY = u.hx() == best_mid.hx();
+				//dirX = u.hy() == best_mid.hy();
+				//dirY = u.hx() == best_mid.hx();
 				line.insert(line.begin() + best, best_mid);
 				now = best;
 				res.push_back(line[now]);
 			}
 			else
 			{
-				dirX = u.hy() == line[best].hy();
-				dirY = u.hx() == line[best].hx();
+				//dirX = u.hy() == line[best].hy();
+				//dirY = u.hx() == line[best].hx();
 				now = best;
-				res.push_back(line[now]);
-			}
-		}
-		else if (better != -1)
-		{
-			if (better_has_mid)
-			{
-				dirX = u.hy() == better_mid.hy();
-				dirY = u.hx() == better_mid.hx();
-				line.insert(line.begin() + better, better_mid);
-				now = better;
-				res.push_back(line[now]);
-			}
-			else
-			{
-				dirX = u.hy() == line[better].hy();
-				dirY = u.hx() == line[better].hx();
-				now = better;
 				res.push_back(line[now]);
 			}
 		}
 		else
 		{
-			dirX = u.hy() == line[now + 1].hy();
-			dirY = u.hx() == line[now + 1].hx();
+			//dirX = u.hy() == line[now + 1].hy();
+			//dirY = u.hx() == line[now + 1].hx();
 			now++;
 			res.push_back(line[now]);
 		}
