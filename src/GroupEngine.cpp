@@ -8,6 +8,17 @@ vector<vector<int>> CableRouter::GroupEngine::grouping(MapInfo* const data, cons
 {
 	getParam(param);
 
+	if (data->devices.size() < param->min_dev_size)
+	{
+		vector<int> pts;
+		for (int i = 0; i < data->devices.size(); i++)
+		{
+			pts.push_back(i);
+		}
+		partition_result.push_back(pts);
+		return partition_result;
+	}
+
 	CDT dt = buildTriangulation(data);
 	int n_all = (int)(dt.number_of_vertices() + data->powers.size());
 
@@ -89,7 +100,39 @@ void CableRouter::GroupEngine::divide(vector<GENode>& tree, int root)
 	}
 	// divide
 	if (best == -1 || MAX < 0) {
-		std::cout << "Oops! a tree with " << num << " nodes can't be divided!" << std::endl;
+		reset(q);
+		for (int i = 0; i < tree[root].children.size(); i++)
+		{
+			q.push(tree[root].children[i]);
+		}
+		int MIN = num + 1;
+		best = -1;
+		while (!q.empty())
+		{
+			int now = q.front();
+			q.pop();
+
+			int parent = tree[now].parent;
+			breaking(tree, now);
+			int c = abs(num - 2 * count(tree, root));
+			reconnect(tree, parent, now);
+
+			if (c < MIN) {
+				MIN = c;
+				best = now;
+			}
+
+			for (int i = 0; i < tree[now].children.size(); i++)
+			{
+				q.push(tree[now].children[i]);
+			}
+		}		
+		if (best == -1) return;
+		breaking(tree, best);
+		vector<int> pts = get_points(tree, root);
+		partition_result.push_back(pts);
+		pts = get_points(tree, best);
+		partition_result.push_back(pts);
 		return;
 	}
 	std::cout << "Best w = " << MAX << std::endl;
