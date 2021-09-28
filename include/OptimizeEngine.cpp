@@ -55,11 +55,11 @@ void CableRouter::get_manhattan_tree(MapInfo* map, DreamTree tree, vector<Polyli
 				break;
 			}
 		}
-		for (int j = 0; j < path.size() - 1; j++)
+		for (int j = 0; j < (int)path.size() - 1; j++)
 		{
 			exist_lines.push_back(Segment(path[j], path[j + 1]));
 			DreamNode* ch = NULL;
-			if (j + 1 == path.size() - 1)
+			if (j + 1 == (int)path.size() - 1)
 				ch = now;
 			else
 				ch = newDreamNode(path[j + 1]);
@@ -826,7 +826,7 @@ DreamTree CableRouter::merge_to_a_tree(vector<Polyline>& paths)
 	{
 		DreamNode* no = newDreamNode(paths[0][i]);
 		no->parent = parent;
-		if (i == paths[0].size() - 1)
+		if (i == (int)paths[0].size() - 1)
 			no->is_device = true;
 		parent->children.push_back(no);
 		parent = no;
@@ -842,7 +842,7 @@ DreamTree CableRouter::merge_to_a_tree(vector<Polyline>& paths)
 			Point young = paths[i][j - 1];
 
 			DreamNode* old_node = newDreamNode(old);
-			if (j == paths[i].size() - 1)
+			if (j == (int)paths[i].size() - 1)
 				old_node->is_device = true;
 			if (child != NULL)
 			{
