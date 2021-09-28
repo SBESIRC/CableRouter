@@ -758,6 +758,7 @@ Polyline CableRouter::manhattan_smooth_basic(MapInfo* const data, Polyline& path
 	if (line.size() <= 1) return line;
 
 	Polyline res;
+	int loop_count = 0;
 	int now = 0;
 	int next_id = (int)line.size() - 1;
 	res.push_back(line[now]);
@@ -799,10 +800,10 @@ Polyline CableRouter::manhattan_smooth_basic(MapInfo* const data, Polyline& path
 		{
 			double w1, w2;
 			w1 = w2 = DIST_M(u, v);
-			addWeightCenters(data, u, mid1, w1);
-			addWeightCenters(data, mid1, v, w1);
-			addWeightCenters(data, u, mid2, w2);
-			addWeightCenters(data, mid2, v, w2);
+			//addWeightCenters(data, u, mid1, w1);
+			//addWeightCenters(data, mid1, v, w1);
+			//addWeightCenters(data, u, mid2, w2);
+			//addWeightCenters(data, mid2, v, w2);
 			w1 += cross_num(exist_lines, u, mid1);
 			w1 += cross_num(exist_lines, mid1, v);
 			w2 += cross_num(exist_lines, u, mid2);
@@ -833,8 +834,18 @@ Polyline CableRouter::manhattan_smooth_basic(MapInfo* const data, Polyline& path
 		}
 		else if (next_id - 1 == now)
 		{
-			Point mid = CGAL::midpoint(line[now], line[next_id]);
-			line.insert(line.begin() + next_id, mid);
+			if (loop_count < 10)
+			{
+				Point mid = CGAL::midpoint(line[now], line[next_id]);
+				line.insert(line.begin() + next_id, mid);
+				loop_count++;
+			}
+			else
+			{
+				now = next_id;
+				res.push_back(line[now]);
+				next_id = (int)line.size() - 1;
+			}
 		}
 		else
 		{
