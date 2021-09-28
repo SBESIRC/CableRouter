@@ -91,6 +91,7 @@ namespace CableRouter
     Polygon construct_polygon(const vector<Point>* coords);
     bool polygons_intersect(const Polygon& p, const Polygon& q);
 
+    bool is_tiny_face_between_obstacles(CDT& cdt, CDT::Face_handle face);
     void mark_domains(CDT& cdt, CDT::Face_handle start, int index);
     void mark_domains(CDT& cdt);
 

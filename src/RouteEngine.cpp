@@ -41,22 +41,22 @@ Polyline CableRouter::a_star_connect_p2p(MapInfo* const data, Point s, Point t, 
 	}
 
 	// centers
-	for (auto c = data->centers.begin(); c != data->centers.end(); c++)
-	{
-		Point start = c->source();
-		Point mid = CGAL::midpoint(c->source(), c->target());
-		if (mid != s && mid != t)
-			vec.push_back(make_pair(mid, VertexInfo(2, true)));
-		int num = 1 + ((int)LEN(*c)) / 2000;
-		for (int i = 1; i <= num; i++)
-		{
-			Point end = Point(
-				1.0 * i / num * DOUBLE(c->target().hx() - c->source().hx()) + DOUBLE(c->source().hx()),
-				1.0 * i / num * DOUBLE(c->target().hy() - c->source().hy()) + DOUBLE(c->source().hy()));
-			constraints.insert(Constraint(start, end));
-			start = end;
-		}
-	}
+	//for (auto c = data->centers.begin(); c != data->centers.end(); c++)
+	//{
+	//	Point start = c->source();
+	//	Point mid = CGAL::midpoint(c->source(), c->target());
+	//	if (mid != s && mid != t)
+	//		vec.push_back(make_pair(mid, VertexInfo(2, true)));
+	//	int num = 1 + ((int)LEN(*c)) / 2000;
+	//	for (int i = 1; i <= num; i++)
+	//	{
+	//		Point end = Point(
+	//			1.0 * i / num * DOUBLE(c->target().hx() - c->source().hx()) + DOUBLE(c->source().hx()),
+	//			1.0 * i / num * DOUBLE(c->target().hy() - c->source().hy()) + DOUBLE(c->source().hy()));
+	//		constraints.insert(Constraint(start, end));
+	//		start = end;
+	//	}
+	//}
 
 	// line
 	for (auto l = lines.begin(); l != lines.end(); l++)

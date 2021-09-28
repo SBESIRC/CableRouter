@@ -44,6 +44,40 @@ bool CableRouter::polygons_intersect(const Polygon& p, const Polygon& q)
 	return false;
 }
 
+bool CableRouter::is_tiny_face_between_obstacles(CDT& ct, CDT::Face_handle fh)
+{
+	bool is_constrained = false;
+	bool is_device = false;
+	for (int i = 0; i < 3; i++)
+	{
+		if (fh->is_constrained(i))
+			is_constrained = true;
+		if (fh->vertex(i)->info().is_device)
+			is_device = true;
+	}
+	bool tiny = false;
+	for (int i = 0; i < 3; i++)
+	{
+		Point p = fh->vertex(i)->point();
+		Point q = fh->vertex(ct.ccw(i))->point();
+		if (fh->is_constrained(ct.cw(i))) continue;
+		if (DIST(p, q) < 0.001)
+		{
+			auto nei = fh->neighbor(ct.cw(i));
+			bool nei_is_con = false;
+			for (int i = 0; i < 3; i++)
+				if (fh->is_constrained(i))
+					nei_is_con = true;
+			if (is_constrained && nei_is_con)
+			{
+				tiny = true;
+				break;
+			}
+		}
+	}
+	return tiny && !is_device;
+}
+
 void CableRouter::mark_domains(CDT& ct, CDT::Face_handle start, int index)
 {
 	if (start->info().nesting_level != -1) {
@@ -56,27 +90,7 @@ void CableRouter::mark_domains(CDT& ct, CDT::Face_handle start, int index)
 		queue.pop_front();
 		if (fh->info().nesting_level == -1) {
 
-			bool tiny = false;
-			bool is_device = false;
-			int con_count = 0;
-			for (int i = 0; i < 3; i++)
-			{
-				Point p = fh->vertex(i)->point();
-				Point q = fh->vertex(ct.ccw(i))->point();
-				if (!ct.is_constrained(make_pair(fh, ct.cw(i))))
-				{
-					if (DIST(p, q) < 0.001)
-					{
-						tiny = true;
-					}
-				}
-				if (fh->vertex(i)->info().is_device)
-				{
-					is_device = true;
-				}
-			}
-			if (tiny && !is_device) continue;
-
+			if (is_tiny_face_between_obstacles(ct, fh)) continue;
 			fh->info().nesting_level = index;
 			for (int i = 0; i < 3; i++) {
 				CDT::Edge e(fh, i);

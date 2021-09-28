@@ -4,7 +4,7 @@
 using namespace CableRouter;
 
 #define LINE_GAP	150
-#define MAX_OVERLAP	200
+#define MAX_OVERLAP	50
 #define MERGE_GAP	200
 #define SMALL_TURN	500
 
@@ -248,345 +248,463 @@ void CableRouter::avoid_coincidence(DreamTree tree)
 
 		if (children.size() <= 1) continue;
 
-		vector<DreamNode*> left, right, up, down;
+		vector<vector<DreamNode*>> dir_nodes(4);
 
 		for (int i = 0; i < children.size(); i++)
 		{
-			
+
 			Vector dir(now->coord, children[i]->coord);
-			if (LEN(dir) <= MAX_OVERLAP) continue;
-			if (dir.hy() == 0 && dir.hx() < 0) left.push_back(children[i]);
-			if (dir.hy() == 0 && dir.hx() > 0) right.push_back(children[i]);
-			if (dir.hx() == 0 && dir.hy() < 0) down.push_back(children[i]);
-			if (dir.hx() == 0 && dir.hy() > 0) up.push_back(children[i]);
+			//if (LEN(dir) <= MAX_OVERLAP) continue;
+			if (dir.hy() == 0 && dir.hx() < 0) dir_nodes[N_LEFT].push_back(children[i]);
+			if (dir.hy() == 0 && dir.hx() > 0) dir_nodes[N_RIGHT].push_back(children[i]);
+			if (dir.hx() == 0 && dir.hy() < 0) dir_nodes[N_DOWN].push_back(children[i]);
+			if (dir.hx() == 0 && dir.hy() > 0) dir_nodes[N_UP].push_back(children[i]);
 		}
 
-		if (left.size() > 1)
-		{
-			sort(left.begin(), left.end(), compare_left_from_down_to_up);
-			int fix = -1;
-			for (int i = 0; i < left.size(); i++)
-			{
-				if (left[i]->is_device)
-				{
-					fix = i;
-					break;
-				}
-			}
-			if (fix == -1)
-			{
-				fix = left.size() / 2;
-			}
-			for (int i = 0; i < left.size(); i++)
-			{
-				if (i == fix) continue;
-
-				DreamNode* mid = newDreamNode(Point(now->coord.hx(), now->coord.hy() + (i - fix) * 1.0 * LINE_GAP));
-
-				if (left[i] == now_pa)
-				{
-					for (auto ch = now_pa->children.begin(); ch != now_pa->children.end(); ch++)
-					{
-						if ((*ch) == now)
-						{
-							now_pa->children.erase(ch);
-							break;
-						}
-					}
-					now->parent = mid;
-					mid->children.push_back(now);
-				}
-				else
-				{
-					for (auto ch = now->children.begin(); ch != now->children.end(); ch++)
-					{
-						if ((*ch) == left[i])
-						{
-							now->children.erase(ch);
-							break;
-						}
-					}
-					mid->parent = now;
-					now->children.push_back(mid);
-				}
-
-				Point dd(left[i]->coord.hx(), left[i]->coord.hy() + (i - fix) * 1.0 * LINE_GAP);
-				if (left[i]->is_device)
-				{
-					DreamNode* mid2 = newDreamNode(dd);
-					if (left[i] == now_pa)
-					{
-						mid->parent = mid2;
-						mid2->children.push_back(mid);
-					}
-					else
-					{
-						mid2->parent = mid;
-						mid->children.push_back(mid2);
-					}
-					mid = mid2;
-				}
-				else
-				{
-					left[i]->coord = dd;
-				}
-				if (left[i] == now_pa)
-				{
-					mid->parent = left[i];
-					left[i]->children.push_back(mid);
-				}
-				else
-				{
-					left[i]->parent = mid;
-					mid->children.push_back(left[i]);
-				}
-			}
+		if (children.size() > 4) {
+			avoid_left(dir_nodes[N_LEFT], now, now_pa, dir_nodes[N_DOWN], dir_nodes[N_UP]);
+			avoid_right(dir_nodes[N_RIGHT], now, now_pa, dir_nodes[N_DOWN], dir_nodes[N_UP]);
+			avoid_down(dir_nodes[N_DOWN], now, now_pa, dir_nodes[N_LEFT], dir_nodes[N_RIGHT]);
+			avoid_up(dir_nodes[N_UP], now, now_pa, dir_nodes[N_LEFT], dir_nodes[N_RIGHT]);
+			continue;
 		}
-		
-		if (right.size() > 1)
+
+		int max_size = 0;
+		int max_dir = 0;
+		for (int i = 0; i < 4; i++)
 		{
-			sort(right.begin(), right.end(), compare_right_from_down_to_up);
-			int fix = -1;
-			for (int i = 0; i < right.size(); i++)
+			if (max_size < (int)dir_nodes[i].size())
 			{
-				if (right[i]->is_device)
-				{
-					fix = i;
-					break;
-				}
-			}
-			if (fix == -1)
-			{
-				fix = right.size() / 2;
-			}
-			for (int i = 0; i < right.size(); i++)
-			{
-				if (i == fix) continue;
-
-				DreamNode* mid = newDreamNode(Point(now->coord.hx(), now->coord.hy() + (i - fix) * 1.0 * LINE_GAP));
-
-				if (right[i] == now_pa)
-				{
-					for (auto ch = now_pa->children.begin(); ch != now_pa->children.end(); ch++)
-					{
-						if ((*ch) == now)
-						{
-							now_pa->children.erase(ch);
-							break;
-						}
-					}
-					now->parent = mid;
-					mid->children.push_back(now);
-				}
-				else
-				{
-					for (auto ch = now->children.begin(); ch != now->children.end(); ch++)
-					{
-						if ((*ch) == right[i])
-						{
-							now->children.erase(ch);
-							break;
-						}
-					}
-					mid->parent = now;
-					now->children.push_back(mid);
-				}
-
-				Point dd(right[i]->coord.hx(), right[i]->coord.hy() + (i - fix) * 1.0 * LINE_GAP);
-				if (right[i]->is_device)
-				{
-					DreamNode* mid2 = newDreamNode(dd);
-					if (right[i] == now_pa)
-					{
-						mid->parent = mid2;
-						mid2->children.push_back(mid);
-					}
-					else
-					{
-						mid2->parent = mid;
-						mid->children.push_back(mid2);
-					}
-					mid = mid2;
-				}
-				else
-				{
-					right[i]->coord = dd;
-				}
-				if (right[i] == now_pa)
-				{
-					mid->parent = right[i];
-					right[i]->children.push_back(mid);
-				}
-				else
-				{
-					right[i]->parent = mid;
-					mid->children.push_back(right[i]);
-				}
+				max_size = dir_nodes[i].size();
+				max_dir = i;
 			}
 		}
 
-		if (down.size() > 1)
+		if (max_size == 2)
 		{
-			sort(down.begin(), down.end(), compare_down_from_left_to_right);
-			int fix = -1;
-			for (int i = 0; i < down.size(); i++)
+			switch (max_dir)
 			{
-				if (down[i]->is_device)
+			case N_LEFT:
+			{
+				if (dir_nodes[N_DOWN].size() == 0 && dir_nodes[N_UP].size() != 0)
 				{
-					fix = i;
-					break;
+					avoid_left(		// to down
+						dir_nodes[N_LEFT], now, now_pa, 
+						dir_nodes[N_DOWN], dir_nodes[N_UP], 
+						(int)dir_nodes[N_LEFT].size() - 1);
+					avoid_right(	// to up
+						dir_nodes[N_RIGHT], now, now_pa, 
+						dir_nodes[N_DOWN], dir_nodes[N_UP],
+						0);
+					avoid_up(		// to right
+						dir_nodes[N_UP], now, now_pa, 
+						dir_nodes[N_LEFT], dir_nodes[N_RIGHT],
+						0);
 				}
+				else if (dir_nodes[N_DOWN].size() != 0 && dir_nodes[N_UP].size() == 0)
+				{
+					avoid_left(		// to up
+						dir_nodes[N_LEFT], now, now_pa,
+						dir_nodes[N_DOWN], dir_nodes[N_UP],
+						0);
+					avoid_right(	// to down
+						dir_nodes[N_RIGHT], now, now_pa,
+						dir_nodes[N_DOWN], dir_nodes[N_UP],
+						(int)dir_nodes[N_RIGHT].size() - 1);
+					avoid_down(		// to right
+						dir_nodes[N_DOWN], now, now_pa,
+						dir_nodes[N_LEFT], dir_nodes[N_RIGHT],
+						0);
+				}
+				else
+				{
+					int down_size = (int)dir_nodes[N_DOWN].size();
+					int up_size = (int)dir_nodes[N_UP].size();
+					avoid_left(dir_nodes[N_LEFT], now, now_pa, dir_nodes[N_DOWN], dir_nodes[N_UP]);
+					if (dir_nodes[N_DOWN].size() > down_size)
+					{
+						avoid_right(	// to up
+							dir_nodes[N_RIGHT], now, now_pa,
+							dir_nodes[N_DOWN], dir_nodes[N_UP],
+							0);
+						avoid_down(		// to right
+							dir_nodes[N_DOWN], now, now_pa,
+							dir_nodes[N_LEFT], dir_nodes[N_RIGHT],
+							0);
+					}
+					else if (dir_nodes[N_UP].size() > up_size)
+					{
+						avoid_right(	// to down
+							dir_nodes[N_RIGHT], now, now_pa,
+							dir_nodes[N_DOWN], dir_nodes[N_UP],
+							(int)dir_nodes[N_RIGHT].size() - 1);
+						avoid_up(		// to right
+							dir_nodes[N_UP], now, now_pa,
+							dir_nodes[N_LEFT], dir_nodes[N_RIGHT],
+							0);
+					}
+				}
+				break;
 			}
-			if (fix == -1)
+			case N_RIGHT:
 			{
-				fix = down.size() / 2;
+				if (dir_nodes[N_DOWN].size() == 0 && dir_nodes[N_UP].size() != 0)
+				{
+					avoid_right(	// to down
+						dir_nodes[N_RIGHT], now, now_pa,
+						dir_nodes[N_DOWN], dir_nodes[N_UP],
+						(int)dir_nodes[N_RIGHT].size() - 1);
+					avoid_left(		// to up
+						dir_nodes[N_RIGHT], now, now_pa,
+						dir_nodes[N_DOWN], dir_nodes[N_UP],
+						0);
+					avoid_up(		// to left
+						dir_nodes[N_UP], now, now_pa,
+						dir_nodes[N_LEFT], dir_nodes[N_RIGHT],
+						(int)dir_nodes[N_UP].size() - 1);
+				}
+				else if (dir_nodes[N_DOWN].size() != 0 && dir_nodes[N_UP].size() == 0)
+				{
+					avoid_right(	// to up
+						dir_nodes[N_RIGHT], now, now_pa,
+						dir_nodes[N_DOWN], dir_nodes[N_UP],
+						0);
+					avoid_left(		// to down
+						dir_nodes[N_LEFT], now, now_pa,
+						dir_nodes[N_DOWN], dir_nodes[N_UP],
+						(int)dir_nodes[N_LEFT].size() - 1);
+					avoid_down(		// to left
+						dir_nodes[N_DOWN], now, now_pa,
+						dir_nodes[N_LEFT], dir_nodes[N_RIGHT],
+						(int)dir_nodes[N_DOWN].size() - 1);
+				}
+				else
+				{
+					int down_size = (int)dir_nodes[N_DOWN].size();
+					int up_size = (int)dir_nodes[N_UP].size();
+					avoid_right(dir_nodes[N_RIGHT], now, now_pa, dir_nodes[N_DOWN], dir_nodes[N_UP]);
+					if (dir_nodes[N_DOWN].size() > down_size)
+					{
+						avoid_left(		// to up
+							dir_nodes[N_RIGHT], now, now_pa,
+							dir_nodes[N_DOWN], dir_nodes[N_UP],
+							0);
+						avoid_down(		// to left
+							dir_nodes[N_DOWN], now, now_pa,
+							dir_nodes[N_LEFT], dir_nodes[N_RIGHT],
+							(int)dir_nodes[N_DOWN].size() - 1);
+					}
+					else if (dir_nodes[N_UP].size() > up_size)
+					{
+						avoid_left(		// to down
+							dir_nodes[N_LEFT], now, now_pa,
+							dir_nodes[N_DOWN], dir_nodes[N_UP],
+							(int)dir_nodes[N_LEFT].size() - 1);
+						avoid_up(		// to left
+							dir_nodes[N_UP], now, now_pa,
+							dir_nodes[N_LEFT], dir_nodes[N_RIGHT],
+							(int)dir_nodes[N_UP].size() - 1);
+					}
+				}
+				break;
 			}
-			for (int i = 0; i < down.size(); i++)
+			case N_DOWN:
 			{
-				if (i == fix) continue;
-
-				DreamNode* mid = newDreamNode(Point(now->coord.hx() + (i - fix) * 1.0 * LINE_GAP, now->coord.hy()));
-
-				if (down[i] == now_pa)
+				if (dir_nodes[N_LEFT].size() == 0 && dir_nodes[N_RIGHT].size() != 0)
 				{
-					for (auto ch = now_pa->children.begin(); ch != now_pa->children.end(); ch++)
-					{
-						if ((*ch) == now)
-						{
-							now_pa->children.erase(ch);
-							break;
-						}
-					}
-					now->parent = mid;
-					mid->children.push_back(now);
+					avoid_down(		// to left
+						dir_nodes[N_DOWN], now, now_pa,
+						dir_nodes[N_LEFT], dir_nodes[N_RIGHT],
+						(int)dir_nodes[N_DOWN].size() - 1);
+					avoid_up(		// to right
+						dir_nodes[N_UP], now, now_pa,
+						dir_nodes[N_LEFT], dir_nodes[N_RIGHT],
+						0);
+					avoid_right(	// to up
+						dir_nodes[N_RIGHT], now, now_pa,
+						dir_nodes[N_DOWN], dir_nodes[N_UP],
+						0);
+				}
+				else if (dir_nodes[N_LEFT].size() != 0 && dir_nodes[N_RIGHT].size() == 0)
+				{
+					avoid_down(		// to right
+						dir_nodes[N_DOWN], now, now_pa,
+						dir_nodes[N_LEFT], dir_nodes[N_RIGHT],
+						0);
+					avoid_up(		// to left
+						dir_nodes[N_UP], now, now_pa,
+						dir_nodes[N_LEFT], dir_nodes[N_RIGHT],
+						(int)dir_nodes[N_UP].size() - 1);
+					avoid_left(		// to up
+						dir_nodes[N_RIGHT], now, now_pa,
+						dir_nodes[N_DOWN], dir_nodes[N_UP],
+						0);
 				}
 				else
 				{
-					for (auto ch = now->children.begin(); ch != now->children.end(); ch++)
+					int left_size = (int)dir_nodes[N_LEFT].size();
+					int right_size = (int)dir_nodes[N_RIGHT].size();
+					avoid_down(dir_nodes[N_DOWN], now, now_pa, dir_nodes[N_LEFT], dir_nodes[N_RIGHT]);
+					if (dir_nodes[N_LEFT].size() > left_size)
 					{
-						if ((*ch) == down[i])
-						{
-							now->children.erase(ch);
-							break;
-						}
+						avoid_up(		// to right
+							dir_nodes[N_UP], now, now_pa,
+							dir_nodes[N_LEFT], dir_nodes[N_RIGHT],
+							0);
+						avoid_left(		// to up
+							dir_nodes[N_RIGHT], now, now_pa,
+							dir_nodes[N_DOWN], dir_nodes[N_UP],
+							0);
 					}
-					mid->parent = now;
-					now->children.push_back(mid);
+					else if (dir_nodes[N_RIGHT].size() > right_size)
+					{
+						avoid_up(		// to left
+							dir_nodes[N_UP], now, now_pa,
+							dir_nodes[N_LEFT], dir_nodes[N_RIGHT],
+							(int)dir_nodes[N_UP].size() - 1);
+						avoid_right(	// to up
+							dir_nodes[N_RIGHT], now, now_pa,
+							dir_nodes[N_DOWN], dir_nodes[N_UP],
+							0);
+					}
 				}
-
-				Point dd(down[i]->coord.hx() + (i - fix) * 1.0 * LINE_GAP, down[i]->coord.hy());
-				if (down[i]->is_device)
+				break;
+			}
+			case N_UP:
+			{
+				if (dir_nodes[N_LEFT].size() == 0 && dir_nodes[N_RIGHT].size() != 0)
 				{
-					DreamNode* mid2 = newDreamNode(dd);
-					if (down[i] == now_pa)
-					{
-						mid->parent = mid2;
-						mid2->children.push_back(mid);
-					}
-					else
-					{
-						mid2->parent = mid;
-						mid->children.push_back(mid2);
-					}
-					mid = mid2;
+					avoid_up(		// to left
+						dir_nodes[N_UP], now, now_pa,
+						dir_nodes[N_LEFT], dir_nodes[N_RIGHT],
+						(int)dir_nodes[N_UP].size() - 1);
+					avoid_down(		// to right
+						dir_nodes[N_DOWN], now, now_pa,
+						dir_nodes[N_LEFT], dir_nodes[N_RIGHT],
+						0);
+					avoid_right(	// to down
+						dir_nodes[N_RIGHT], now, now_pa,
+						dir_nodes[N_DOWN], dir_nodes[N_UP],
+						(int)dir_nodes[N_RIGHT].size() - 1);
+				}
+				else if (dir_nodes[N_LEFT].size() != 0 && dir_nodes[N_RIGHT].size() == 0)
+				{
+					avoid_up(		// to right
+						dir_nodes[N_UP], now, now_pa,
+						dir_nodes[N_LEFT], dir_nodes[N_RIGHT],
+						0);
+					avoid_down(		// to left
+						dir_nodes[N_DOWN], now, now_pa,
+						dir_nodes[N_LEFT], dir_nodes[N_RIGHT],
+						(int)dir_nodes[N_DOWN].size() - 1);
+					avoid_left(		// to down
+						dir_nodes[N_LEFT], now, now_pa,
+						dir_nodes[N_DOWN], dir_nodes[N_UP],
+						(int)dir_nodes[N_LEFT].size() - 1);
 				}
 				else
 				{
-					down[i]->coord = dd;
+					int left_size = (int)dir_nodes[N_LEFT].size();
+					int right_size = (int)dir_nodes[N_RIGHT].size();
+					avoid_up(dir_nodes[N_UP], now, now_pa, dir_nodes[N_LEFT], dir_nodes[N_RIGHT]);
+					if (dir_nodes[N_LEFT].size() > left_size)
+					{
+						avoid_down(		// to right
+							dir_nodes[N_DOWN], now, now_pa,
+							dir_nodes[N_LEFT], dir_nodes[N_RIGHT],
+							0);
+						avoid_left(		// to down
+							dir_nodes[N_LEFT], now, now_pa,
+							dir_nodes[N_DOWN], dir_nodes[N_UP],
+							(int)dir_nodes[N_LEFT].size() - 1);
+					}
+					else if (dir_nodes[N_RIGHT].size() > right_size)
+					{
+						avoid_down(		// to left
+							dir_nodes[N_DOWN], now, now_pa,
+							dir_nodes[N_LEFT], dir_nodes[N_RIGHT],
+							(int)dir_nodes[N_DOWN].size() - 1);
+						avoid_right(	// to down
+							dir_nodes[N_RIGHT], now, now_pa,
+							dir_nodes[N_DOWN], dir_nodes[N_UP],
+							(int)dir_nodes[N_RIGHT].size() - 1);
+					}
 				}
-				if (down[i] == now_pa)
-				{
-					mid->parent = down[i];
-					down[i]->children.push_back(mid);
-				}
-				else
-				{
-					down[i]->parent = mid;
-					mid->children.push_back(down[i]);
-				}
+				break;
+			}
+			default:
+			{
+				break;
+			}
 			}
 		}
-
-		if (up.size() > 1)
+		else if (max_size == 3)
 		{
-			sort(up.begin(), up.end(), compare_up_from_left_to_right);
-			int fix = -1;
-			for (int i = 0; i < up.size(); i++)
+			switch (max_dir)
 			{
-				if (up[i]->is_device)
-				{
-					fix = i;
-					break;
-				}
-			}
-			if (fix == -1)
+			case N_LEFT:
 			{
-				fix = up.size() / 2;
+				if (dir_nodes[N_DOWN].size() == 0 && dir_nodes[N_UP].size() == 0)
+				{
+					avoid_left(
+						dir_nodes[N_LEFT], now, now_pa,
+						dir_nodes[N_DOWN], dir_nodes[N_UP],
+						1);
+				}
+				else if (dir_nodes[N_DOWN].size() == 0)
+				{
+					avoid_left(		// to down
+						dir_nodes[N_LEFT], now, now_pa,
+						dir_nodes[N_DOWN], dir_nodes[N_UP],
+						(int)dir_nodes[N_LEFT].size() - 1);
+					avoid_down(		// to right
+						dir_nodes[N_DOWN], now, now_pa,
+						dir_nodes[N_LEFT], dir_nodes[N_RIGHT],
+						0);
+				}
+				else if (dir_nodes[N_UP].size() == 0)
+				{
+					avoid_left(		// to up
+						dir_nodes[N_RIGHT], now, now_pa,
+						dir_nodes[N_DOWN], dir_nodes[N_UP],
+						0);
+					avoid_up(		// to right
+						dir_nodes[N_UP], now, now_pa,
+						dir_nodes[N_LEFT], dir_nodes[N_RIGHT],
+						0);
+				}
+				break;
 			}
-			for (int i = 0; i < up.size(); i++)
+			case N_RIGHT:
 			{
-				if (i == fix) continue;
-
-				DreamNode* mid = newDreamNode(Point(now->coord.hx() + (i - fix) * 1.0 * LINE_GAP, now->coord.hy()));
-
-				if (up[i] == now_pa)
+				if (dir_nodes[N_DOWN].size() == 0 && dir_nodes[N_UP].size() == 0)
 				{
-					for (auto ch = now_pa->children.begin(); ch != now_pa->children.end(); ch++)
-					{
-						if ((*ch) == now)
-						{
-							now_pa->children.erase(ch);
-							break;
-						}
-					}
-					now->parent = mid;
-					mid->children.push_back(now);
+					avoid_right(
+						dir_nodes[N_RIGHT], now, now_pa,
+						dir_nodes[N_DOWN], dir_nodes[N_UP],
+						1);
 				}
-				else
+				else if (dir_nodes[N_DOWN].size() == 0)
 				{
-					for (auto ch = now->children.begin(); ch != now->children.end(); ch++)
-					{
-						if ((*ch) == up[i])
-						{
-							now->children.erase(ch);
-							break;
-						}
-					}
-					mid->parent = now;
-					now->children.push_back(mid);
+					avoid_right(	// to down
+						dir_nodes[N_RIGHT], now, now_pa,
+						dir_nodes[N_DOWN], dir_nodes[N_UP],
+						(int)dir_nodes[N_RIGHT].size() - 1);
+					avoid_down(		// to left
+						dir_nodes[N_DOWN], now, now_pa,
+						dir_nodes[N_LEFT], dir_nodes[N_RIGHT],
+						(int)dir_nodes[N_DOWN].size() - 1);
 				}
-
-				Point dd(up[i]->coord.hx() + (i - fix) * 1.0 * LINE_GAP, up[i]->coord.hy());
-				if (up[i]->is_device)
+				else if (dir_nodes[N_UP].size() == 0)
 				{
-					DreamNode* mid2 = newDreamNode(dd);
-					if (up[i] == now_pa)
-					{
-						mid->parent = mid2;
-						mid2->children.push_back(mid);
-					}
-					else
-					{
-						mid2->parent = mid;
-						mid->children.push_back(mid2);
-					}
-					mid = mid2;
+					avoid_right(	// to up
+						dir_nodes[N_RIGHT], now, now_pa,
+						dir_nodes[N_DOWN], dir_nodes[N_UP],
+						0);
+					avoid_up(		// to left
+						dir_nodes[N_UP], now, now_pa,
+						dir_nodes[N_LEFT], dir_nodes[N_RIGHT],
+						(int)dir_nodes[N_UP].size() - 1);
 				}
-				else
-				{
-					up[i]->coord = dd;
-				}
-				if (up[i] == now_pa)
-				{
-					mid->parent = up[i];
-					up[i]->children.push_back(mid);
-				}
-				else
-				{
-					up[i]->parent = mid;
-					mid->children.push_back(up[i]);
-				}
+				break;
 			}
+			case N_DOWN:
+			{
+				if (dir_nodes[N_LEFT].size() == 0 && dir_nodes[N_RIGHT].size() == 0)
+				{
+					avoid_down(
+						dir_nodes[N_DOWN], now, now_pa,
+						dir_nodes[N_LEFT], dir_nodes[N_RIGHT],
+						1);
+				}
+				else if (dir_nodes[N_LEFT].size() == 0)
+				{
+					avoid_down(		// to left
+						dir_nodes[N_DOWN], now, now_pa,
+						dir_nodes[N_LEFT], dir_nodes[N_RIGHT],
+						(int)dir_nodes[N_DOWN].size() - 1);
+					avoid_left(		// to up
+						dir_nodes[N_RIGHT], now, now_pa,
+						dir_nodes[N_DOWN], dir_nodes[N_UP],
+						0);
+				}
+				else if (dir_nodes[N_RIGHT].size() == 0)
+				{
+					avoid_down(		// to right
+						dir_nodes[N_DOWN], now, now_pa,
+						dir_nodes[N_LEFT], dir_nodes[N_RIGHT],
+						0);
+					avoid_right(	// to up
+						dir_nodes[N_RIGHT], now, now_pa,
+						dir_nodes[N_DOWN], dir_nodes[N_UP],
+						0);
+				}
+				break;
+			}
+			case N_UP:
+			{
+				if (dir_nodes[N_LEFT].size() == 0 && dir_nodes[N_RIGHT].size() == 0)
+				{
+					avoid_up(
+						dir_nodes[N_UP], now, now_pa,
+						dir_nodes[N_LEFT], dir_nodes[N_RIGHT],
+						1);
+				}
+				else if (dir_nodes[N_LEFT].size() == 0)
+				{
+					avoid_up(		// to left
+						dir_nodes[N_UP], now, now_pa,
+						dir_nodes[N_LEFT], dir_nodes[N_RIGHT],
+						(int)dir_nodes[N_UP].size() - 1);
+					avoid_left(		// to down
+						dir_nodes[N_LEFT], now, now_pa,
+						dir_nodes[N_DOWN], dir_nodes[N_UP],
+						(int)dir_nodes[N_LEFT].size() - 1);
+				}
+				else if (dir_nodes[N_RIGHT].size() == 0)
+				{
+					avoid_up(		// to right
+						dir_nodes[N_UP], now, now_pa,
+						dir_nodes[N_LEFT], dir_nodes[N_RIGHT],
+						0);
+					avoid_right(	// to down
+						dir_nodes[N_RIGHT], now, now_pa,
+						dir_nodes[N_DOWN], dir_nodes[N_UP],
+						(int)dir_nodes[N_RIGHT].size() - 1);
+				}
+				break;
+			}
+			default:
+			{
+				break;
+			}
+			}
+		}
+		else if (max_size == 4)
+		{
+			printf("route engine ÄãÕÒ¸ö°àÉÏ°É\n");
+			switch (max_dir)
+			{
+			case N_LEFT:
+			{
+				break;
+			}
+			case N_RIGHT:
+			{
+			}
+			case N_DOWN:
+			{
+				break;
+			}
+			case N_UP:
+			{
+				break;
+			}
+			default:
+			{
+				break;
+			}
+		}
 		}
 	}
 
@@ -673,7 +791,7 @@ void CableRouter::avoid_coincidence_non_device(DreamTree tree)
 			if (!CGAL::do_intersect(s, seg_now)) continue;
 			CGAL::Object result = CGAL::intersection(s, seg_now);
 			Segment ss;
-			if (CGAL::assign(ss, result) && LEN(ss) > MAX_OVERLAP)
+			if (CGAL::assign(ss, result))
 			{
 				overlap = true;
 				break;
@@ -712,6 +830,370 @@ void CableRouter::avoid_coincidence_non_device(DreamTree tree)
 
 	}
 	delete dn_tree;
+}
+
+void CableRouter::avoid_left(
+	vector<DreamNode*>& left, DreamNode* now, DreamNode* now_pa,
+	vector<DreamNode*>& down, vector<DreamNode*>& up, int fix)
+{
+	if (left.size() <= 1) return;
+
+	sort(left.begin(), left.end(), compare_left_from_down_to_up);
+	if (fix == -1)
+	{
+		for (int i = 0; i < left.size(); i++)
+		{
+			if (left[i]->is_device)
+			{
+				fix = i;
+				break;
+			}
+		}
+		if (fix == -1)
+		{
+			fix = left.size() / 2;
+		}
+	}
+	for (int i = 0; i < left.size(); i++)
+	{
+		if (i == fix) continue;
+
+		DreamNode* mid = newDreamNode(Point(now->coord.hx(), now->coord.hy() + (i - fix) * 1.0 * LINE_GAP));
+
+		if (left[i] == now_pa)
+		{
+			for (auto ch = now_pa->children.begin(); ch != now_pa->children.end(); ch++)
+			{
+				if ((*ch) == now)
+				{
+					now_pa->children.erase(ch);
+					break;
+				}
+			}
+			now->parent = mid;
+			mid->children.push_back(now);
+		}
+		else
+		{
+			for (auto ch = now->children.begin(); ch != now->children.end(); ch++)
+			{
+				if ((*ch) == left[i])
+				{
+					now->children.erase(ch);
+					break;
+				}
+			}
+			mid->parent = now;
+			now->children.push_back(mid);
+		}
+
+		if (i < fix) down.push_back(mid);
+		if (i > fix) up.push_back(mid);
+
+		Point dd(left[i]->coord.hx(), left[i]->coord.hy() + (i - fix) * 1.0 * LINE_GAP);
+		if (left[i]->is_device)
+		{
+			DreamNode* mid2 = newDreamNode(dd);
+			if (left[i] == now_pa)
+			{
+				mid->parent = mid2;
+				mid2->children.push_back(mid);
+			}
+			else
+			{
+				mid2->parent = mid;
+				mid->children.push_back(mid2);
+			}
+			mid = mid2;
+		}
+		else
+		{
+			left[i]->coord = dd;
+		}
+		if (left[i] == now_pa)
+		{
+			mid->parent = left[i];
+			left[i]->children.push_back(mid);
+		}
+		else
+		{
+			left[i]->parent = mid;
+			mid->children.push_back(left[i]);
+		}
+	}
+}
+
+void CableRouter::avoid_right(
+	vector<DreamNode*>& right, DreamNode* now, DreamNode* now_pa,
+	vector<DreamNode*>& down, vector<DreamNode*>& up, int fix)
+{
+	if (right.size() <= 1) return;
+
+	sort(right.begin(), right.end(), compare_right_from_down_to_up);
+	if (fix == -1)
+	{
+		for (int i = 0; i < right.size(); i++)
+		{
+			if (right[i]->is_device)
+			{
+				fix = i;
+				break;
+			}
+		}
+		if (fix == -1)
+		{
+			fix = right.size() / 2;
+		}
+	}
+	for (int i = 0; i < right.size(); i++)
+	{
+		if (i == fix) continue;
+
+		DreamNode* mid = newDreamNode(Point(now->coord.hx(), now->coord.hy() + (i - fix) * 1.0 * LINE_GAP));
+
+		if (right[i] == now_pa)
+		{
+			for (auto ch = now_pa->children.begin(); ch != now_pa->children.end(); ch++)
+			{
+				if ((*ch) == now)
+				{
+					now_pa->children.erase(ch);
+					break;
+				}
+			}
+			now->parent = mid;
+			mid->children.push_back(now);
+		}
+		else
+		{
+			for (auto ch = now->children.begin(); ch != now->children.end(); ch++)
+			{
+				if ((*ch) == right[i])
+				{
+					now->children.erase(ch);
+					break;
+				}
+			}
+			mid->parent = now;
+			now->children.push_back(mid);
+		}
+
+		if (i < fix) down.push_back(mid);
+		if (i > fix) up.push_back(mid);
+
+		Point dd(right[i]->coord.hx(), right[i]->coord.hy() + (i - fix) * 1.0 * LINE_GAP);
+		if (right[i]->is_device)
+		{
+			DreamNode* mid2 = newDreamNode(dd);
+			if (right[i] == now_pa)
+			{
+				mid->parent = mid2;
+				mid2->children.push_back(mid);
+			}
+			else
+			{
+				mid2->parent = mid;
+				mid->children.push_back(mid2);
+			}
+			mid = mid2;
+		}
+		else
+		{
+			right[i]->coord = dd;
+		}
+		if (right[i] == now_pa)
+		{
+			mid->parent = right[i];
+			right[i]->children.push_back(mid);
+		}
+		else
+		{
+			right[i]->parent = mid;
+			mid->children.push_back(right[i]);
+		}
+	}
+}
+
+void CableRouter::avoid_down(
+	vector<DreamNode*>& down, DreamNode* now, DreamNode* now_pa,
+	vector<DreamNode*>& left, vector<DreamNode*>& right, int fix)
+{
+	if (down.size() <= 1) return;
+
+	sort(down.begin(), down.end(), compare_down_from_left_to_right);
+	if (fix == -1)
+	{
+		for (int i = 0; i < down.size(); i++)
+		{
+			if (down[i]->is_device)
+			{
+				fix = i;
+				break;
+			}
+		}
+		if (fix == -1)
+		{
+			fix = down.size() / 2;
+		}
+	}
+	for (int i = 0; i < down.size(); i++)
+	{
+		if (i == fix) continue;
+
+		DreamNode* mid = newDreamNode(Point(now->coord.hx() + (i - fix) * 1.0 * LINE_GAP, now->coord.hy()));
+
+		if (down[i] == now_pa)
+		{
+			for (auto ch = now_pa->children.begin(); ch != now_pa->children.end(); ch++)
+			{
+				if ((*ch) == now)
+				{
+					now_pa->children.erase(ch);
+					break;
+				}
+			}
+			now->parent = mid;
+			mid->children.push_back(now);
+		}
+		else
+		{
+			for (auto ch = now->children.begin(); ch != now->children.end(); ch++)
+			{
+				if ((*ch) == down[i])
+				{
+					now->children.erase(ch);
+					break;
+				}
+			}
+			mid->parent = now;
+			now->children.push_back(mid);
+		}
+
+		if (i < fix) left.push_back(mid);
+		if (i > fix) right.push_back(mid);
+
+		Point dd(down[i]->coord.hx() + (i - fix) * 1.0 * LINE_GAP, down[i]->coord.hy());
+		if (down[i]->is_device)
+		{
+			DreamNode* mid2 = newDreamNode(dd);
+			if (down[i] == now_pa)
+			{
+				mid->parent = mid2;
+				mid2->children.push_back(mid);
+			}
+			else
+			{
+				mid2->parent = mid;
+				mid->children.push_back(mid2);
+			}
+			mid = mid2;
+		}
+		else
+		{
+			down[i]->coord = dd;
+		}
+		if (down[i] == now_pa)
+		{
+			mid->parent = down[i];
+			down[i]->children.push_back(mid);
+		}
+		else
+		{
+			down[i]->parent = mid;
+			mid->children.push_back(down[i]);
+		}
+	}
+}
+
+void CableRouter::avoid_up(
+	vector<DreamNode*>& up, DreamNode* now, DreamNode* now_pa,
+	vector<DreamNode*>& left, vector<DreamNode*>& right, int fix)
+{
+	if (up.size() <= 1) return;
+
+	sort(up.begin(), up.end(), compare_up_from_left_to_right);
+	if (fix == -1)
+	{
+		for (int i = 0; i < up.size(); i++)
+		{
+			if (up[i]->is_device)
+			{
+				fix = i;
+				break;
+			}
+		}
+		if (fix == -1)
+		{
+			fix = up.size() / 2;
+		}
+	}
+	for (int i = 0; i < up.size(); i++)
+	{
+		if (i == fix) continue;
+
+		DreamNode* mid = newDreamNode(Point(now->coord.hx() + (i - fix) * 1.0 * LINE_GAP, now->coord.hy()));
+
+		if (up[i] == now_pa)
+		{
+			for (auto ch = now_pa->children.begin(); ch != now_pa->children.end(); ch++)
+			{
+				if ((*ch) == now)
+				{
+					now_pa->children.erase(ch);
+					break;
+				}
+			}
+			now->parent = mid;
+			mid->children.push_back(now);
+		}
+		else
+		{
+			for (auto ch = now->children.begin(); ch != now->children.end(); ch++)
+			{
+				if ((*ch) == up[i])
+				{
+					now->children.erase(ch);
+					break;
+				}
+			}
+			mid->parent = now;
+			now->children.push_back(mid);
+		}
+
+		if (i < fix) left.push_back(mid);
+		if (i > fix) right.push_back(mid);
+
+		Point dd(up[i]->coord.hx() + (i - fix) * 1.0 * LINE_GAP, up[i]->coord.hy());
+		if (up[i]->is_device)
+		{
+			DreamNode* mid2 = newDreamNode(dd);
+			if (up[i] == now_pa)
+			{
+				mid->parent = mid2;
+				mid2->children.push_back(mid);
+			}
+			else
+			{
+				mid2->parent = mid;
+				mid->children.push_back(mid2);
+			}
+			mid = mid2;
+		}
+		else
+		{
+			up[i]->coord = dd;
+		}
+		if (up[i] == now_pa)
+		{
+			mid->parent = up[i];
+			up[i]->children.push_back(mid);
+		}
+		else
+		{
+			up[i]->parent = mid;
+			mid->children.push_back(up[i]);
+		}
+	}
 }
 
 vector<pair<DreamNode*, Point>> CableRouter::intersect_dream_tree(DreamTree tree, Segment seg)
