@@ -405,15 +405,89 @@ void CableRouter::ImmuneSystem::init(ISData* d)
 	}
 	printf("Init pheromone end_node\n");
 
-	//for (int i = 0; i < pheromone.size(); i++)
-	//{
-	//	for (int j = 0; j < pheromone.size(); j++)
-	//	{
-	//		printf("%lf ", pheromone[i][j]);
-	//	}
-	//	printf("\n");
-	//}
-	//printf("\n");
+	vector<vector<double>>& G = data.G;
+
+	int n = (int)G.size();
+	auto dn = (int)data.devices.size();
+	vector<vector<int>> adj(n);
+
+	int start = -1;
+	int pwr = -1;
+	double MIN = CR_INF;
+	for (int i = dn; i < n; i++)
+	{
+		if (i > dn)
+		{
+			adj[i - 1].push_back(i);
+			adj[i].push_back(i - 1);
+		}
+		for (int v = 0; v < dn; v++)
+		{
+			if (G[i][v] < MIN)
+			{
+				MIN = G[i][v];
+				start = v;
+				pwr = i;
+			}
+		}
+	}
+	adj[start].push_back(pwr);
+	adj[pwr].push_back(start);
+
+	double* disg = new double[dn];
+	bool* vis = new bool[dn];
+	int* parent = new int[dn];
+	fill(vis, vis + dn, false);
+	fill(parent, parent + dn, -1);
+	fill(disg, disg + dn, CR_INF);
+	disg[start] = 0;
+	for (int i = 0; i < dn; i++)
+	{
+		int u = -1;
+		MIN = CR_INF;
+		for (int j = 0; j < dn; j++)
+		{
+			if (!vis[j] && disg[j] < MIN)
+			{
+				MIN = disg[j];
+				u = j;
+			}
+		}
+
+		if (u == -1) break;
+		vis[u] = true;
+
+		if (parent[u] != -1)
+		{
+			adj[parent[u]].push_back(u);
+			adj[u].push_back(parent[u]);
+		}
+
+		for (int v = 0; v < dn; v++)
+		{
+			if (!vis[v] && G[u][v] != CR_INF)
+			{
+				if (G[u][v] < disg[v])
+				{
+					disg[v] = G[u][v];
+					parent[v] = u;
+				}
+			}
+		}
+	}
+	delete[] vis;
+	delete[] parent;
+	delete[] disg;
+
+	double value = affinity(adj, G, dn);
+	if (value > 0)
+	{
+		Antibody an;
+		an.adj = adj;
+		an.prufer_code = PruferEncode(adj);
+		an.value = value;
+		globlMem.insert(an);
+	}
 }
 
 void CableRouter::ImmuneSystem::run()
