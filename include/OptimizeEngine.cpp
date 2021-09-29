@@ -25,6 +25,7 @@ void CableRouter::deleteAllDreamNodes()
 	for (int i = 0; i < all_dream_nodes.size(); i++)
 	{
 		delete all_dream_nodes[i];
+		all_dream_nodes[i] = NULL;
 	}
 	reset(all_dream_nodes);
 }
@@ -843,6 +844,7 @@ void CableRouter::avoid_coincidence_non_device(DreamTree tree)
 	for (int i = 0; i < dream_node_nodes.size(); i++)
 	{
 		delete dream_node_nodes[i];
+		dream_node_nodes[i] = NULL;
 	}
 }
 
