@@ -202,10 +202,10 @@ void CableRouter::removeObstacles(MapInfo* const data, double** G, int n)
 	int dn = (int)data->devices.size();
 	int pn = (int)data->powers.size();
 	int on = n - dn - pn;
+	double* dis = new double[n];
+	bool* vis = new bool[n];
 	for (int start = 0; start < dn + pn; start++)
 	{
-		double* dis = new double[n];
-		bool* vis = new bool[n];
 		fill(dis, dis + n, CR_INF);
 		fill(vis, vis + n, false);
 		int sid = start < dn ? start : start + on;
@@ -237,7 +237,6 @@ void CableRouter::removeObstacles(MapInfo* const data, double** G, int n)
 			}
 		}
 
-
 		for (int i = 0; i < dn + pn; i++)
 		{
 			int id = i < dn ? i : i + on;
@@ -245,9 +244,9 @@ void CableRouter::removeObstacles(MapInfo* const data, double** G, int n)
 			G[sid][id] = G[id][sid] = dis[id];
 		}
 
-		delete[] dis;
-		delete[] vis;
 	}
+	delete[] dis;
+	delete[] vis;
 	printf("Shifting obstacle points end\n");
 }
 

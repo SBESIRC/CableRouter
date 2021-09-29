@@ -22,6 +22,8 @@ namespace CableRouter
 
 	typedef DreamNode* DreamTree;
 
+	static vector<DreamNode*> all_dream_nodes;
+
 	enum NodeDir
 	{
 		N_LEFT = 0,
@@ -31,7 +33,8 @@ namespace CableRouter
 	};
 
 	DreamNode* newDreamNode(Point coord);
-	void deleteDreamTree(DreamTree root);
+	//void deleteDreamTree(DreamTree root);
+	void deleteAllDreamNodes();
 
 	// inner connect
 	void get_manhattan_tree(MapInfo* map, DreamTree tree, vector<Polyline>& exist);

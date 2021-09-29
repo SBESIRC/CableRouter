@@ -166,9 +166,9 @@ string CableRouter::CableRouteEngine::routing(string datastr, int loop_max_count
 		avoid_coincidence(path_tree);
 		vector<Polyline> paths = get_dream_tree_paths(path_tree);
 		cables.insert(cables.end(), paths.begin(), paths.end());
-		deleteDreamTree(path_tree);
+		//deleteDreamTree(path_tree);
 	}
-
+	deleteAllDreamNodes();
 	return write_to_geojson_string(cables);
 
 	// power to device connect

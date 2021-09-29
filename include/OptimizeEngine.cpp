@@ -16,18 +16,28 @@ DreamNode* CableRouter::newDreamNode(Point coord)
 	n->coord = coord;
 	n->children = vector<DreamNode*>();
 	n->is_device = false;
+	all_dream_nodes.push_back(n);
 	return n;
 }
 
-void CableRouter::deleteDreamTree(DreamTree root)
+void CableRouter::deleteAllDreamNodes()
 {
-	vector<DreamNode*> chs = root->children;
-	delete root;
-	for (int i = 0; i < chs.size(); i++)
+	for (int i = 0; i < all_dream_nodes.size(); i++)
 	{
-		deleteDreamTree(chs[i]);
+		delete all_dream_nodes[i];
 	}
+	reset(all_dream_nodes);
 }
+
+//void CableRouter::deleteDreamTree(DreamTree root)
+//{
+//	vector<DreamNode*> chs = root->children;
+//	delete root;
+//	for (int i = 0; i < chs.size(); i++)
+//	{
+//		deleteDreamTree(chs[i]);
+//	}
+//}
 
 void CableRouter::get_manhattan_tree(MapInfo* map, DreamTree tree, vector<Polyline>& exist)
 {
@@ -830,6 +840,10 @@ void CableRouter::avoid_coincidence_non_device(DreamTree tree)
 
 	}
 	delete dn_tree;
+	for (int i = 0; i < dream_node_nodes.size(); i++)
+	{
+		delete dream_node_nodes[i];
+	}
 }
 
 void CableRouter::avoid_left(
@@ -1366,7 +1380,7 @@ DreamTree CableRouter::merge_to_a_tree(vector<Polyline>& paths)
 						old_node->children[c]->parent = inter_ch;
 						inter_ch->children.push_back(old_node->children[c]);
 					}
-					deleteDreamTree(old_node);
+					//deleteDreamTree(old_node);
 				}
 				else if (old == inter_pa->coord)
 				{
@@ -1377,7 +1391,7 @@ DreamTree CableRouter::merge_to_a_tree(vector<Polyline>& paths)
 						old_node->children[c]->parent = inter_pa;
 						inter_pa->children.push_back(old_node->children[c]);
 					}
-					deleteDreamTree(old_node);
+					//deleteDreamTree(old_node);
 				}
 				else if (CGAL::collinear(inter_ch->coord, old, inter_pa->coord))
 				{

@@ -8,7 +8,7 @@ using namespace CableRouter;
 #define GLOBAL_SIZE			8
 #define GLOBAL_CROSS_RATE	0.8
 
-#define VOLATILE_RATE		0.01
+#define VOLATILE_RATE		0.005
 
 #define ANT_SIZE			30
 
@@ -139,7 +139,8 @@ vector<ISData> CableRouter::parse_groups(MapInfo* data, vector<vector<int>>& gro
 		vector<Device> devs;
 		vector<Power> pwrs;
 
-		vector<int> vis(groups[i].size(), 0);
+		bool* vis = new bool[groups[i].size()];
+		fill(vis, vis + groups[i].size(), false);
 		for (int j = 0; j < groups[i].size(); j++)
 		{
 			int u = groups[i][j];
@@ -151,7 +152,7 @@ vector<ISData> CableRouter::parse_groups(MapInfo* data, vector<vector<int>>& gro
 				int v = groups[i][k];
 				if (G[u][v] <= DEV_GAP)
 				{
-					vis[k] = 1;
+					vis[k] = true;
 					if (data->devices[u].coord.hx() != data->devices[v].coord.hx())
 					{
 						for (int k = 0; k < n_all; k++)
@@ -180,8 +181,9 @@ vector<ISData> CableRouter::parse_groups(MapInfo* data, vector<vector<int>>& gro
 			}
 			if (choose == -1)
 				devs.push_back(data->devices[u]);
-			vis[j] = 1;
+			vis[j] = true;
 		}
+		delete[] vis;
 		pwrs = data->powers;
 		int dev_n = (int)devs.size();
 		int pwr_n = (int)pwrs.size();
@@ -405,9 +407,7 @@ void CableRouter::ImmuneSystem::init(ISData* d)
 	}
 	printf("Init pheromone end_node\n");
 
-	vector<vector<double>>& G = data.G;
-
-	int n = (int)G.size();
+	int n = (int)data.G.size();
 	auto dn = (int)data.devices.size();
 	vector<vector<int>> adj(n);
 
@@ -423,9 +423,9 @@ void CableRouter::ImmuneSystem::init(ISData* d)
 		}
 		for (int v = 0; v < dn; v++)
 		{
-			if (G[i][v] < MIN)
+			if (data.G[i][v] < MIN)
 			{
-				MIN = G[i][v];
+				MIN = data.G[i][v];
 				start = v;
 				pwr = i;
 			}
@@ -465,11 +465,11 @@ void CableRouter::ImmuneSystem::init(ISData* d)
 
 		for (int v = 0; v < dn; v++)
 		{
-			if (!vis[v] && G[u][v] != CR_INF)
+			if (!vis[v] && data.G[u][v] != CR_INF)
 			{
-				if (G[u][v] < disg[v])
+				if (data.G[u][v] < disg[v])
 				{
-					disg[v] = G[u][v];
+					disg[v] = data.G[u][v];
 					parent[v] = u;
 				}
 			}
@@ -479,7 +479,7 @@ void CableRouter::ImmuneSystem::init(ISData* d)
 	delete[] parent;
 	delete[] disg;
 
-	double value = affinity(adj, G, dn);
+	double value = affinity(adj, data.G, dn);
 	if (value > 0)
 	{
 		Antibody an;
@@ -494,9 +494,8 @@ void CableRouter::ImmuneSystem::run()
 {
 	vector<Device>& devices = data.devices;
 	vector<Power>& powers = data.powers;
-	vector<vector<double>>& G = data.G;
 
-	int n = (int) G.size();
+	int n = (int) data.G.size();
 	auto dn = (int) devices.size();
 
 	set<Antibody> mem;
@@ -593,7 +592,7 @@ void CableRouter::ImmuneSystem::run()
 			}
 		}
 
-		double value = affinity(adj, G, dn);
+		double value = affinity(adj, data.G, dn);
 		if (value > 0)
 		{
 			Antibody an;
@@ -635,7 +634,7 @@ void CableRouter::ImmuneSystem::run()
 			}
 			Antibody a;
 			a.adj = PruferDecode(code3);
-			a.value = affinity(a.adj, G, dn);
+			a.value = affinity(a.adj, data.G, dn);
 			if (a.value > 0)
 			{
 				a.prufer_code = code3;
@@ -661,7 +660,7 @@ void CableRouter::ImmuneSystem::run()
 			}
 			Antibody a;
 			a.adj = PruferDecode(code3);
-			a.value = affinity(a.adj, G, dn);
+			a.value = affinity(a.adj, data.G, dn);
 			if (a.value > 0)
 			{
 				a.prufer_code = code3;
