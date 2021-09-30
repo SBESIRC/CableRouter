@@ -22,19 +22,22 @@ DreamNodePtr CableRouter::newDreamNode(Point coord)
 vector<DreamNodePtr> CableRouter::getAllNodes(DreamTree tree)
 {
 	vector<DreamNodePtr> ret;
-
+	set<DreamNodePtr> visited;
 	queue<DreamNodePtr> q;
 	q.push((DreamNodePtr)tree);
 	while (!q.empty())
 	{
 		DreamNodePtr now = q.front();
 		q.pop();
-
 		ret.push_back(now);
 
-		for (int i = 0; i < now->children.size(); i++)
+		if (visited.find(now) == visited.end())
 		{
-			q.push(now->children[i]);
+			visited.insert(now);
+			for (int i = 0; i < now->children.size(); i++)
+			{
+				q.push(now->children[i]);
+			}
 		}
 	}
 	return ret;
