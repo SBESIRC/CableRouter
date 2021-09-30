@@ -8,31 +8,41 @@ using namespace CableRouter;
 #define MERGE_GAP	200
 #define SMALL_TURN	500
 
-DreamNode* CableRouter::newDreamNode(Point coord)
+DreamNodePtr CableRouter::newDreamNode(Point coord)
 {
-	DreamNode* n = new DreamNode();
+	DreamNodePtr n(new DreamNode());
 	n->parent = NULL;
 	n->line_num_to_parent = 0;
 	n->coord = coord;
-	n->children = vector<DreamNode*>();
+	n->children = vector<DreamNodePtr>();
 	n->is_device = false;
-	all_dream_nodes.push_back(n);
 	return n;
 }
 
-void CableRouter::deleteAllDreamNodes()
+vector<DreamNodePtr> CableRouter::getAllNodes(DreamTree tree)
 {
-	for (int i = 0; i < all_dream_nodes.size(); i++)
+	vector<DreamNodePtr> ret;
+
+	queue<DreamNodePtr> q;
+	q.push((DreamNodePtr)tree);
+	while (!q.empty())
 	{
-		delete all_dream_nodes[i];
-		all_dream_nodes[i] = NULL;
+		DreamNodePtr now = q.front();
+		q.pop();
+
+		ret.push_back(now);
+
+		for (int i = 0; i < now->children.size(); i++)
+		{
+			q.push(now->children[i]);
+		}
 	}
-	reset(all_dream_nodes);
+	return ret;
 }
 
 //void CableRouter::deleteDreamTree(DreamTree root)
 //{
-//	vector<DreamNode*> chs = root->children;
+//	vector<DreamNodePtr> chs = root->children;
 //	delete root;
 //	for (int i = 0; i < chs.size(); i++)
 //	{
@@ -44,15 +54,15 @@ void CableRouter::get_manhattan_tree(MapInfo* map, DreamTree tree, vector<Polyli
 {
 	vector<Segment> exist_lines = get_segments_from_polylines(exist);
 
-	queue<DreamNode*> q;
+	queue<DreamNodePtr> q;
 	for (int i = 0; i < tree->children.size(); i++)
 	{
 		q.push(tree->children[i]);
 	}
 	while (!q.empty())
 	{
-		DreamNode* now = q.front();
-		DreamNode* pa = now->parent;
+		DreamNodePtr now = q.front();
+		DreamNodePtr pa = now->parent;
 		q.pop();
 
 
@@ -69,7 +79,7 @@ void CableRouter::get_manhattan_tree(MapInfo* map, DreamTree tree, vector<Polyli
 		for (int j = 0; j < (int)path.size() - 1; j++)
 		{
 			exist_lines.push_back(Segment(path[j], path[j + 1]));
-			DreamNode* ch = NULL;
+			DreamNodePtr ch = NULL;
 			if (j + 1 == (int)path.size() - 1)
 				ch = now;
 			else
@@ -87,7 +97,7 @@ void CableRouter::get_manhattan_tree(MapInfo* map, DreamTree tree, vector<Polyli
 		}
 		if (path.size() > 2 && LEN(exist_lines.back()) < SMALL_TURN)
 		{
-			vector<DreamNode*> children = now->children;
+			vector<DreamNodePtr> children = now->children;
 			reset(now->children);
 			for (int i = 0; i < children.size(); i++)
 			{
@@ -106,7 +116,7 @@ void CableRouter::get_manhattan_tree(MapInfo* map, DreamTree tree, vector<Polyli
 				}
 				else
 				{
-					DreamNode* mid = newDreamNode(now->parent->coord);
+					DreamNodePtr mid = newDreamNode(now->parent->coord);
 					mid->parent = now;
 					mid->dir_from_parent = now->parent->dir_from_parent;
 					now->children.push_back(mid);
@@ -118,27 +128,55 @@ void CableRouter::get_manhattan_tree(MapInfo* map, DreamTree tree, vector<Polyli
 	}
 }
 
-bool compare_left_from_down_to_up(DreamNode* a, DreamNode* b)
+bool compare_left_from_down_to_up(pair<DreamNodePtr, DreamNodePtr> pair_a, pair<DreamNodePtr, DreamNodePtr> pair_b)
 {
 	int aturn;
+	DreamNodePtr a = pair_a.first;
+	DreamNodePtr b = pair_b.first;
+	DreamNodePtr pa = pair_a.second;
+	DreamNodePtr pb = pair_b.second;
 	if (a->is_device)
 		aturn = 0;
-	else if (a->children.size() > 0 && a->children[0]->dir_from_parent.hy() > 0)
-		aturn = 1;
-	else if (a->children.size() > 0 && a->children[0]->dir_from_parent.hy() < 0)
-		aturn = -1;
+	else if (a == pa)
+	{
+		if (a->parent && (a->parent->coord.hy() - a->coord.hy()) > 0)
+			aturn = 1;
+		else if (a->parent && (a->parent->coord.hy() - a->coord.hy()) < 0)
+			aturn = -1;
+		else
+			aturn = 0;
+	}
 	else
-		aturn = 0;
+	{
+		if (a->children.size() > 0 && a->children[0]->dir_from_parent.hy() > 0)
+			aturn = 1;
+		else if (a->children.size() > 0 && a->children[0]->dir_from_parent.hy() < 0)
+			aturn = -1;
+		else
+			aturn = 0;
+	}
 
 	int bturn;
 	if (b->is_device)
 		bturn = 0;
-	else if (b->children.size() > 0 && b->children[0]->dir_from_parent.hy() > 0)
-		bturn = 1;
-	else if (b->children.size() > 0 && b->children[0]->dir_from_parent.hy() < 0)
-		bturn = -1;
+	else if (b == pb)
+	{
+		if (b->parent && (b->parent->coord.hy() - b->coord.hy()) > 0)
+			bturn = 1;
+		else if (b->parent && (b->parent->coord.hy() - b->coord.hy()) < 0)
+			bturn = -1;
+		else
+			bturn = 0;
+	}
 	else
-		bturn = 0;
+	{
+		if (b->children.size() > 0 && b->children[0]->dir_from_parent.hy() > 0)
+			bturn = 1;
+		else if (b->children.size() > 0 && b->children[0]->dir_from_parent.hy() < 0)
+			bturn = -1;
+		else
+			bturn = 0;
+	}
 
 	if (aturn != bturn) return aturn < bturn;
 
@@ -147,27 +185,55 @@ bool compare_left_from_down_to_up(DreamNode* a, DreamNode* b)
 	return a->coord.hx() < b->coord.hx();
 }
 
-bool compare_right_from_down_to_up(DreamNode* a, DreamNode* b)
+bool compare_right_from_down_to_up(pair<DreamNodePtr, DreamNodePtr> pair_a, pair<DreamNodePtr, DreamNodePtr> pair_b)
 {
 	int aturn;
+	DreamNodePtr a = pair_a.first;
+	DreamNodePtr b = pair_b.first;
+	DreamNodePtr pa = pair_a.second;
+	DreamNodePtr pb = pair_b.second;
 	if (a->is_device)
 		aturn = 0;
-	else if (a->children.size() > 0 && a->children[0]->dir_from_parent.hy() > 0)
-		aturn = 1;
-	else if (a->children.size() > 0 && a->children[0]->dir_from_parent.hy() < 0)
-		aturn = -1;
+	else if (a == pa)
+	{
+		if (a->parent && (a->parent->coord.hy() - a->coord.hy()) > 0)
+			aturn = 1;
+		else if (a->parent && (a->parent->coord.hy() - a->coord.hy()) < 0)
+			aturn = -1;
+		else
+			aturn = 0;
+	}
 	else
-		aturn = 0;
+	{
+		if (a->children.size() > 0 && a->children[0]->dir_from_parent.hy() > 0)
+			aturn = 1;
+		else if (a->children.size() > 0 && a->children[0]->dir_from_parent.hy() < 0)
+			aturn = -1;
+		else
+			aturn = 0;
+	}
 
 	int bturn;
 	if (b->is_device)
 		bturn = 0;
-	else if (b->children.size() > 0 && b->children[0]->dir_from_parent.hy() > 0)
-		bturn = 1;
-	else if (b->children.size() > 0 && b->children[0]->dir_from_parent.hy() < 0)
-		bturn = -1;
+	else if (b == pb)
+	{
+		if (b->parent && (b->parent->coord.hy() - b->coord.hy()) > 0)
+			bturn = 1;
+		else if (b->parent && (b->parent->coord.hy() - b->coord.hy()) < 0)
+			bturn = -1;
+		else
+			bturn = 0;
+	}
 	else
-		bturn = 0;
+	{
+		if (b->children.size() > 0 && b->children[0]->dir_from_parent.hy() > 0)
+			bturn = 1;
+		else if (b->children.size() > 0 && b->children[0]->dir_from_parent.hy() < 0)
+			bturn = -1;
+		else
+			bturn = 0;
+	}
 
 	if (aturn != bturn) return aturn < bturn;
 
@@ -176,27 +242,55 @@ bool compare_right_from_down_to_up(DreamNode* a, DreamNode* b)
 	return a->coord.hx() > b->coord.hx();
 }
 
-bool compare_down_from_left_to_right(DreamNode* a, DreamNode* b)
+bool compare_down_from_left_to_right(pair<DreamNodePtr, DreamNodePtr> pair_a, pair<DreamNodePtr, DreamNodePtr> pair_b)
 {
 	int aturn;
+	DreamNodePtr a = pair_a.first;
+	DreamNodePtr b = pair_b.first;
+	DreamNodePtr pa = pair_a.second;
+	DreamNodePtr pb = pair_b.second;
 	if (a->is_device)
 		aturn = 0;
-	else if (a->children.size() > 0 && a->children[0]->dir_from_parent.hx() > 0)
-		aturn = 1;
-	else if (a->children.size() > 0 && a->children[0]->dir_from_parent.hx() < 0)
-		aturn = -1;
+	else if (a == pa)
+	{
+		if (a->parent && (a->parent->coord.hx() - a->coord.hx()) > 0)
+			aturn = 1;
+		else if (a->parent && (a->parent->coord.hx() - a->coord.hx()) < 0)
+			aturn = -1;
+		else
+			aturn = 0;
+	}
 	else
-		aturn = 0;
+	{
+		if (a->children.size() > 0 && a->children[0]->dir_from_parent.hx() > 0)
+			aturn = 1;
+		else if (a->children.size() > 0 && a->children[0]->dir_from_parent.hx() < 0)
+			aturn = -1;
+		else
+			aturn = 0;
+	}
 
 	int bturn;
 	if (b->is_device)
 		bturn = 0;
-	else if (b->children.size() > 0 && b->children[0]->dir_from_parent.hx() > 0)
-		bturn = 1;
-	else if (b->children.size() > 0 && b->children[0]->dir_from_parent.hx() < 0)
-		bturn = -1;
+	else if (b == pb)
+	{
+		if (b->parent && (b->parent->coord.hx() - b->coord.hx()) > 0)
+			bturn = 1;
+		else if (b->parent && (b->parent->coord.hx() - b->coord.hx()) < 0)
+			bturn = -1;
+		else
+			bturn = 0;
+	}
 	else
-		bturn = 0;
+	{
+		if (b->children.size() > 0 && b->children[0]->dir_from_parent.hx() > 0)
+			bturn = 1;
+		else if (b->children.size() > 0 && b->children[0]->dir_from_parent.hx() < 0)
+			bturn = -1;
+		else
+			bturn = 0;
+	}
 
 	if (aturn != bturn) return aturn < bturn;
 
@@ -205,27 +299,55 @@ bool compare_down_from_left_to_right(DreamNode* a, DreamNode* b)
 	return a->coord.hx() < b->coord.hx();
 }
 
-bool compare_up_from_left_to_right(DreamNode* a, DreamNode* b)
+bool compare_up_from_left_to_right(pair<DreamNodePtr, DreamNodePtr> pair_a, pair<DreamNodePtr, DreamNodePtr> pair_b)
 {
 	int aturn;
+	DreamNodePtr a = pair_a.first;
+	DreamNodePtr b = pair_b.first;
+	DreamNodePtr pa = pair_a.second;
+	DreamNodePtr pb = pair_b.second;
 	if (a->is_device)
 		aturn = 0;
-	else if (a->children.size() > 0 && a->children[0]->dir_from_parent.hx() > 0)
-		aturn = 1;
-	else if (a->children.size() > 0 && a->children[0]->dir_from_parent.hx() < 0)
-		aturn = -1;
+	else if (a == pa)
+	{
+		if (a->parent && (a->parent->coord.hx() - a->coord.hx()) > 0)
+			aturn = 1;
+		else if (a->parent && (a->parent->coord.hx() - a->coord.hx()) < 0)
+			aturn = -1;
+		else
+			aturn = 0;
+	}
 	else
-		aturn = 0;
+	{
+		if (a->children.size() > 0 && a->children[0]->dir_from_parent.hx() > 0)
+			aturn = 1;
+		else if (a->children.size() > 0 && a->children[0]->dir_from_parent.hx() < 0)
+			aturn = -1;
+		else
+			aturn = 0;
+	}
 
 	int bturn;
 	if (b->is_device)
 		bturn = 0;
-	else if (b->children.size() > 0 && b->children[0]->dir_from_parent.hx() > 0)
-		bturn = 1;
-	else if (b->children.size() > 0 && b->children[0]->dir_from_parent.hx() < 0)
-		bturn = -1;
+	else if (b == pb)
+	{
+		if (b->parent && (b->parent->coord.hx() - b->coord.hx()) > 0)
+			bturn = 1;
+		else if (b->parent && (b->parent->coord.hx() - b->coord.hx()) < 0)
+			bturn = -1;
+		else
+			bturn = 0;
+	}
 	else
-		bturn = 0;
+	{
+		if (b->children.size() > 0 && b->children[0]->dir_from_parent.hx() > 0)
+			bturn = 1;
+		else if (b->children.size() > 0 && b->children[0]->dir_from_parent.hx() < 0)
+			bturn = -1;
+		else
+			bturn = 0;
+	}
 
 	if (aturn != bturn) return aturn < bturn;
 
@@ -238,28 +360,20 @@ void CableRouter::avoid_coincidence(DreamTree tree)
 {
 	if (tree == NULL) return;
 
-	queue<DreamNode*> q;
-	q.push((DreamNode*)tree);
-	while (!q.empty())
+	vector<DreamNodePtr> all = getAllNodes(tree);
+	for (int i = 0; i < all.size(); i++)
 	{
-		DreamNode* now = q.front();
-		q.pop();
-
-		for (int i = 0; i < now->children.size(); i++)
-		{
-			q.push(now->children[i]);
-		}
-
+		DreamNodePtr now = all[i];
 
 		if (!now->is_device) continue;
 
-		vector<DreamNode*> children = now->children;
-		DreamNode* now_pa = now->parent;
+		vector<DreamNodePtr> children = now->children;
+		DreamNodePtr now_pa = now->parent;
 		if (now->parent) children.push_back(now->parent);
 
 		if (children.size() <= 1) continue;
 
-		vector<vector<DreamNode*>> dir_nodes(4);
+		vector<vector<DreamNodePtr>> dir_nodes(4);
 
 		for (int i = 0; i < children.size(); i++)
 		{
@@ -718,7 +832,6 @@ void CableRouter::avoid_coincidence(DreamTree tree)
 		}
 		}
 	}
-
 	avoid_coincidence_non_device(tree);
 }
 
@@ -727,60 +840,42 @@ void CableRouter::avoid_coincidence_non_device(DreamTree tree)
 	if (tree == NULL) return;
 
 	// init dream node search tree
+	vector<rbush::TreeNode<DreamNodePtr>* > dream_node_nodes;
 
-	vector<rbush::TreeNode<DreamNode*>* > dream_node_nodes;
+	vector<DreamNodePtr> all = getAllNodes(tree);
+	for (int i = 0; i < all.size(); i++)
+	{
+		DreamNodePtr now = all[i];
 
-	queue<DreamNode*> q;
-	for (int i = 0; i < tree->children.size(); i++)
-	{
-		q.push(tree->children[i]);
-	}
-	while (!q.empty())
-	{
-		DreamNode* now = q.front();
-		q.pop();
+		if (!now->parent) continue;
 
 		Segment seg = Segment(now->parent->coord, now->coord);
 
-		rbush::TreeNode<DreamNode*>* node = new rbush::TreeNode<DreamNode*>();
-		node->data = new DreamNode*(now);
+		rbush::TreeNode<DreamNodePtr>* node = new rbush::TreeNode<DreamNodePtr>();
+		node->data = &DreamNodePtr(now);
 		node->bbox.minX = DOUBLE(seg.bbox().xmin());
 		node->bbox.minY = DOUBLE(seg.bbox().ymin());
 		node->bbox.maxX = DOUBLE(seg.bbox().xmax());
 		node->bbox.maxY = DOUBLE(seg.bbox().ymax());
 		dream_node_nodes.push_back(node);
-
-		for (int i = 0; i < now->children.size(); i++)
-		{
-			q.push(now->children[i]);
-		}
 	}
 
-	auto dn_tree = new rbush::RBush<DreamNode*>(dream_node_nodes);
+	auto dn_tree = new rbush::RBush<DreamNodePtr>(dream_node_nodes);
 
 	// move non-device edges if overlap with other edges
 
-	reset(q);
-	for (int i = 0; i < tree->children.size(); i++)
+	for (int i = 0; i < all.size(); i++)
 	{
-		q.push(tree->children[i]);
-	}
-	while (!q.empty())
-	{
-		DreamNode* now = q.front();
-		q.pop();
+		DreamNodePtr now = all[i];
 
-		for (int i = 0; i < now->children.size(); i++)
-		{
-			q.push(now->children[i]);
-		}
+		if (!now->parent) continue;
 
 		if (now->is_device || now->parent->is_device) continue;
 
 		Segment seg_now = Segment(now->parent->coord, now->coord);
 		bool overlap = false;
 
-		vector<rbush::TreeNode<DreamNode*>* > search_ret;
+		vector<rbush::TreeNode<DreamNodePtr>* > search_ret;
 		if (dn_tree) {
 			rbush::Bbox bbox;
 			bbox.minX = DOUBLE(seg_now.bbox().xmin());
@@ -793,10 +888,11 @@ void CableRouter::avoid_coincidence_non_device(DreamTree tree)
 					search_ret.push_back(*fit);
 				}
 			}
+			delete feedback;
 		}
 		for (auto sit = search_ret.begin(); sit != search_ret.end(); sit++)
 		{
-			DreamNode* sn = *(*sit)->data;
+			DreamNodePtr sn = *(*sit)->data;
 			if (sn == now) continue;
 			Segment s = Segment(sn->parent->coord, sn->coord);
 			if (!CGAL::do_intersect(s, seg_now)) continue;
@@ -849,12 +945,21 @@ void CableRouter::avoid_coincidence_non_device(DreamTree tree)
 }
 
 void CableRouter::avoid_left(
-	vector<DreamNode*>& left, DreamNode* now, DreamNode* now_pa,
-	vector<DreamNode*>& down, vector<DreamNode*>& up, int fix)
+	vector<DreamNodePtr>& left, DreamNodePtr now, DreamNodePtr now_pa,
+	vector<DreamNodePtr>& down, vector<DreamNodePtr>& up, int fix)
 {
 	if (left.size() <= 1) return;
 
-	sort(left.begin(), left.end(), compare_left_from_down_to_up);
+	vector<pair<DreamNodePtr, DreamNodePtr>> pair_nodes;
+	for (int i = 0; i < left.size(); i++)
+	{
+		pair_nodes.push_back(make_pair(left[i], now_pa));
+	}
+	sort(pair_nodes.begin(), pair_nodes.end(), compare_left_from_down_to_up);
+	for (int i = 0; i < pair_nodes.size(); i++)
+	{
+		left[i] = pair_nodes[i].first;
+	}
 	if (fix == -1)
 	{
 		for (int i = 0; i < left.size(); i++)
@@ -874,7 +979,7 @@ void CableRouter::avoid_left(
 	{
 		if (i == fix) continue;
 
-		DreamNode* mid = newDreamNode(Point(now->coord.hx(), now->coord.hy() + (i - fix) * 1.0 * LINE_GAP));
+		DreamNodePtr mid = newDreamNode(Point(now->coord.hx(), now->coord.hy() + (i - fix) * 1.0 * LINE_GAP));
 
 		if (left[i] == now_pa)
 		{
@@ -909,7 +1014,7 @@ void CableRouter::avoid_left(
 		Point dd(left[i]->coord.hx(), left[i]->coord.hy() + (i - fix) * 1.0 * LINE_GAP);
 		if (left[i]->is_device)
 		{
-			DreamNode* mid2 = newDreamNode(dd);
+			DreamNodePtr mid2 = newDreamNode(dd);
 			if (left[i] == now_pa)
 			{
 				mid->parent = mid2;
@@ -940,12 +1045,21 @@ void CableRouter::avoid_left(
 }
 
 void CableRouter::avoid_right(
-	vector<DreamNode*>& right, DreamNode* now, DreamNode* now_pa,
-	vector<DreamNode*>& down, vector<DreamNode*>& up, int fix)
+	vector<DreamNodePtr>& right, DreamNodePtr now, DreamNodePtr now_pa,
+	vector<DreamNodePtr>& down, vector<DreamNodePtr>& up, int fix)
 {
 	if (right.size() <= 1) return;
 
-	sort(right.begin(), right.end(), compare_right_from_down_to_up);
+	vector<pair<DreamNodePtr, DreamNodePtr>> pair_nodes;
+	for (int i = 0; i < right.size(); i++)
+	{
+		pair_nodes.push_back(make_pair(right[i], now_pa));
+	}
+	sort(pair_nodes.begin(), pair_nodes.end(), compare_right_from_down_to_up);
+	for (int i = 0; i < pair_nodes.size(); i++)
+	{
+		right[i] = pair_nodes[i].first;
+	}
 	if (fix == -1)
 	{
 		for (int i = 0; i < right.size(); i++)
@@ -965,7 +1079,7 @@ void CableRouter::avoid_right(
 	{
 		if (i == fix) continue;
 
-		DreamNode* mid = newDreamNode(Point(now->coord.hx(), now->coord.hy() + (i - fix) * 1.0 * LINE_GAP));
+		DreamNodePtr mid = newDreamNode(Point(now->coord.hx(), now->coord.hy() + (i - fix) * 1.0 * LINE_GAP));
 
 		if (right[i] == now_pa)
 		{
@@ -1000,7 +1114,7 @@ void CableRouter::avoid_right(
 		Point dd(right[i]->coord.hx(), right[i]->coord.hy() + (i - fix) * 1.0 * LINE_GAP);
 		if (right[i]->is_device)
 		{
-			DreamNode* mid2 = newDreamNode(dd);
+			DreamNodePtr mid2 = newDreamNode(dd);
 			if (right[i] == now_pa)
 			{
 				mid->parent = mid2;
@@ -1031,12 +1145,21 @@ void CableRouter::avoid_right(
 }
 
 void CableRouter::avoid_down(
-	vector<DreamNode*>& down, DreamNode* now, DreamNode* now_pa,
-	vector<DreamNode*>& left, vector<DreamNode*>& right, int fix)
+	vector<DreamNodePtr>& down, DreamNodePtr now, DreamNodePtr now_pa,
+	vector<DreamNodePtr>& left, vector<DreamNodePtr>& right, int fix)
 {
 	if (down.size() <= 1) return;
 
-	sort(down.begin(), down.end(), compare_down_from_left_to_right);
+	vector<pair<DreamNodePtr, DreamNodePtr>> pair_nodes;
+	for (int i = 0; i < down.size(); i++)
+	{
+		pair_nodes.push_back(make_pair(down[i], now_pa));
+	}
+	sort(pair_nodes.begin(), pair_nodes.end(), compare_down_from_left_to_right);
+	for (int i = 0; i < pair_nodes.size(); i++)
+	{
+		down[i] = pair_nodes[i].first;
+	}
 	if (fix == -1)
 	{
 		for (int i = 0; i < down.size(); i++)
@@ -1056,7 +1179,7 @@ void CableRouter::avoid_down(
 	{
 		if (i == fix) continue;
 
-		DreamNode* mid = newDreamNode(Point(now->coord.hx() + (i - fix) * 1.0 * LINE_GAP, now->coord.hy()));
+		DreamNodePtr mid = newDreamNode(Point(now->coord.hx() + (i - fix) * 1.0 * LINE_GAP, now->coord.hy()));
 
 		if (down[i] == now_pa)
 		{
@@ -1091,7 +1214,7 @@ void CableRouter::avoid_down(
 		Point dd(down[i]->coord.hx() + (i - fix) * 1.0 * LINE_GAP, down[i]->coord.hy());
 		if (down[i]->is_device)
 		{
-			DreamNode* mid2 = newDreamNode(dd);
+			DreamNodePtr mid2 = newDreamNode(dd);
 			if (down[i] == now_pa)
 			{
 				mid->parent = mid2;
@@ -1122,12 +1245,21 @@ void CableRouter::avoid_down(
 }
 
 void CableRouter::avoid_up(
-	vector<DreamNode*>& up, DreamNode* now, DreamNode* now_pa,
-	vector<DreamNode*>& left, vector<DreamNode*>& right, int fix)
+	vector<DreamNodePtr>& up, DreamNodePtr now, DreamNodePtr now_pa,
+	vector<DreamNodePtr>& left, vector<DreamNodePtr>& right, int fix)
 {
 	if (up.size() <= 1) return;
 
-	sort(up.begin(), up.end(), compare_up_from_left_to_right);
+	vector<pair<DreamNodePtr, DreamNodePtr>> pair_nodes;
+	for (int i = 0; i < up.size(); i++)
+	{
+		pair_nodes.push_back(make_pair(up[i], now_pa));
+	}
+	sort(pair_nodes.begin(), pair_nodes.end(), compare_up_from_left_to_right);
+	for (int i = 0; i < pair_nodes.size(); i++)
+	{
+		up[i] = pair_nodes[i].first;
+	}
 	if (fix == -1)
 	{
 		for (int i = 0; i < up.size(); i++)
@@ -1147,7 +1279,7 @@ void CableRouter::avoid_up(
 	{
 		if (i == fix) continue;
 
-		DreamNode* mid = newDreamNode(Point(now->coord.hx() + (i - fix) * 1.0 * LINE_GAP, now->coord.hy()));
+		DreamNodePtr mid = newDreamNode(Point(now->coord.hx() + (i - fix) * 1.0 * LINE_GAP, now->coord.hy()));
 
 		if (up[i] == now_pa)
 		{
@@ -1182,7 +1314,7 @@ void CableRouter::avoid_up(
 		Point dd(up[i]->coord.hx() + (i - fix) * 1.0 * LINE_GAP, up[i]->coord.hy());
 		if (up[i]->is_device)
 		{
-			DreamNode* mid2 = newDreamNode(dd);
+			DreamNodePtr mid2 = newDreamNode(dd);
 			if (up[i] == now_pa)
 			{
 				mid->parent = mid2;
@@ -1212,18 +1344,18 @@ void CableRouter::avoid_up(
 	}
 }
 
-vector<pair<DreamNode*, Point>> CableRouter::intersect_dream_tree(DreamTree tree, Segment seg)
+vector<pair<DreamNodePtr, Point>> CableRouter::intersect_dream_tree(DreamTree tree, Segment seg)
 {
-	vector<pair<DreamNode*, Point>> res;
+	vector<pair<DreamNodePtr, Point>> res;
 
-	queue<DreamNode*> q;
+	queue<DreamNodePtr> q;
 	for (int i = 0; i < tree->children.size(); i++)
 	{
 		q.push(tree->children[i]);
 	}
 	while (!q.empty())
 	{
-		DreamNode* now = q.front();
+		DreamNodePtr now = q.front();
 		q.pop();
 
 		Segment seg_now = Segment(now->coord, now->parent->coord);
@@ -1279,7 +1411,7 @@ vector<pair<DreamNode*, Point>> CableRouter::intersect_dream_tree(DreamTree tree
 	return res;
 }
 
-void CableRouter::add_line_num(DreamNode* node)
+void CableRouter::add_line_num(DreamNodePtr node)
 {
 	while (node->parent != NULL)
 	{
@@ -1290,14 +1422,14 @@ void CableRouter::add_line_num(DreamNode* node)
 
 void CableRouter::init_line_num(DreamTree tree)
 {
-	queue<DreamNode*> q;
+	queue<DreamNodePtr> q;
 	for (int i = 0; i < tree->children.size(); i++)
 	{
 		q.push(tree->children[i]);
 	}
 	while (!q.empty())
 	{
-		DreamNode* now = q.front();
+		DreamNodePtr now = q.front();
 		q.pop();
 
 		if (now->is_device)
@@ -1319,10 +1451,10 @@ DreamTree CableRouter::merge_to_a_tree(vector<Polyline>& paths)
 
 	// init tree
 	DreamTree tree = newDreamNode(paths[0][0]);
-	DreamNode* parent = tree;
+	DreamNodePtr parent = tree;
 	for (int i = 1; i < paths[0].size(); i++)
 	{
-		DreamNode* no = newDreamNode(paths[0][i]);
+		DreamNodePtr no = newDreamNode(paths[0][i]);
 		no->parent = parent;
 		if (i == (int)paths[0].size() - 1)
 			no->is_device = true;
@@ -1333,13 +1465,13 @@ DreamTree CableRouter::merge_to_a_tree(vector<Polyline>& paths)
 	// add paths to tree
 	for (int i = 1; i < paths.size(); i++)
 	{
-		DreamNode* child = NULL;
+		DreamNodePtr child = NULL;
 		for (int j = (int)paths[i].size() - 1; j >= 1; j--)
 		{
 			Point old = paths[i][j];
 			Point young = paths[i][j - 1];
 
-			DreamNode* old_node = newDreamNode(old);
+			DreamNodePtr old_node = newDreamNode(old);
 			if (j == (int)paths[i].size() - 1)
 				old_node->is_device = true;
 			if (child != NULL)
@@ -1367,8 +1499,8 @@ DreamTree CableRouter::merge_to_a_tree(vector<Polyline>& paths)
 					MIN = dis;
 				}
 			}
-			DreamNode* inter_ch = intersections[u].first;
-			DreamNode* inter_pa = inter_ch->parent;
+			DreamNodePtr inter_ch = intersections[u].first;
+			DreamNodePtr inter_pa = inter_ch->parent;
 			Point inter_point = intersections[u].second;
 
 			if (inter_point == old)
@@ -1426,7 +1558,7 @@ DreamTree CableRouter::merge_to_a_tree(vector<Polyline>& paths)
 					}
 					else
 					{
-						DreamNode* inter = newDreamNode(inter_point);
+						DreamNodePtr inter = newDreamNode(inter_point);
 						old_node->parent = inter;
 						inter->children.push_back(old_node);
 						for (auto ch = inter_pa->children.begin(); ch != inter_pa->children.end(); ch++)
@@ -1462,7 +1594,7 @@ DreamTree CableRouter::merge_to_a_tree(vector<Polyline>& paths)
 
 					if (project_point == inter_ch->coord)
 					{
-						DreamNode* inter = newDreamNode(inter_point);
+						DreamNodePtr inter = newDreamNode(inter_point);
 						old_node->parent = inter;
 						inter->children.push_back(old_node);
 						inter->parent = inter_ch;
@@ -1470,7 +1602,7 @@ DreamTree CableRouter::merge_to_a_tree(vector<Polyline>& paths)
 					}
 					else if (project_point == inter_pa->coord)
 					{
-						DreamNode* inter = newDreamNode(inter_point);
+						DreamNodePtr inter = newDreamNode(inter_point);
 						old_node->parent = inter;
 						inter->children.push_back(old_node);
 						inter->parent = inter_pa;
@@ -1478,7 +1610,7 @@ DreamTree CableRouter::merge_to_a_tree(vector<Polyline>& paths)
 					}
 					else
 					{
-						DreamNode* project = newDreamNode(project_point);
+						DreamNodePtr project = newDreamNode(project_point);
 						old_node->parent = project;
 						project->children.push_back(old_node);
 						for (auto ch = inter_pa->children.begin(); ch != inter_pa->children.end(); ch++)
@@ -1507,14 +1639,14 @@ vector<Segment> CableRouter::get_dream_tree_lines(DreamTree tree, bool opened)
 {
 	vector<Segment> res;
 
-	queue<DreamNode*> q;
+	queue<DreamNodePtr> q;
 	for (int i = 0; i < tree->children.size(); i++)
 	{
 		q.push(tree->children[i]);
 	}
 	while (!q.empty())
 	{
-		DreamNode* now = q.front();
+		DreamNodePtr now = q.front();
 		q.pop();
 
 		Segment ss(now->coord, now->parent->coord);
@@ -1606,14 +1738,14 @@ vector<Segment> CableRouter::get_dream_tree_lines(DreamTree tree, bool opened)
 vector<Polyline> CableRouter::get_dream_tree_paths(DreamTree tree)
 {
 	vector<Polyline> res;
-	queue<DreamNode*> q;
+	queue<DreamNodePtr> q;
 	for (int i = 0; i < tree->children.size(); i++)
 	{
 		q.push(tree->children[i]);
 	}
 	while (!q.empty())
 	{
-		DreamNode* now = q.front();
+		DreamNodePtr now = q.front();
 		q.pop();
 
 		if (now->is_device)
@@ -1633,10 +1765,10 @@ vector<Polyline> CableRouter::get_dream_tree_paths(DreamTree tree)
 	return res;
 }
 
-Polyline CableRouter::get_path(DreamNode* node)
+Polyline CableRouter::get_path(DreamNodePtr node)
 {
 	Polyline res;
-	DreamNode* now = node;
+	DreamNodePtr now = node;
 	do
 	{
 		res.push_back(now->coord);
@@ -1650,14 +1782,14 @@ Polyline CableRouter::get_path(DreamNode* node)
 	return res;
 }
 
-void CableRouter::horizontal_count(DreamNode* now, int& up, int& down)
+void CableRouter::horizontal_count(DreamNodePtr now, int& up, int& down)
 {
 	if (now->line_num_to_parent <= 1)
 		return;
 
 	for (int i = 0; i < now->children.size(); i++)
 	{
-		DreamNode* next = now->children[i];
+		DreamNodePtr next = now->children[i];
 		if (now->coord.hy() == next->coord.hy())
 		{
 			horizontal_count(next, up, down);
@@ -1676,14 +1808,14 @@ void CableRouter::horizontal_count(DreamNode* now, int& up, int& down)
 	}
 }
 
-void CableRouter::vertical_count(DreamNode* now, int& left, int& right)
+void CableRouter::vertical_count(DreamNodePtr now, int& left, int& right)
 {
 	if (now->line_num_to_parent <= 1)
 		return;
 
 	for (int i = 0; i < now->children.size(); i++)
 	{
-		DreamNode* next = now->children[i];
+		DreamNodePtr next = now->children[i];
 		if (now->coord.hx() == next->coord.hx())
 		{
 			vertical_count(next, left, right);

@@ -26,13 +26,9 @@
 // test2/ 9 10 11 12
 // test3/ 0 1 2 3 4 5
 const std::string FOLD_NAME = "geojson/";
-const std::string FILE_NAME = "test1";
+const std::string FILE_NAME = "test_hz";
 ImageWidget::ImageWidget()
 {
-	//_CrtSetBreakAlloc(144568);
-	//_CrtSetBreakAlloc(4180561);
-	//_CrtSetBreakAlloc(4159756);
-	//_CrtSetBreakAlloc(353061);
 	//CableRouteEngine cre;
 	//ifstream f(FOLD_NAME + FILE_NAME + ".geojson");
 	//stringstream ss;
@@ -41,7 +37,6 @@ ImageWidget::ImageWidget()
 	//string datastr = ss.str();
 	//string res = cre.routing(datastr);
 	//printf("%s", res.c_str());
-	//_CrtDumpMemoryLeaks();
 	//return;
 	//readFiles(FILE_NAME);
 	data = read_from_geojson_file(FOLD_NAME + FILE_NAME + ".geojson");
@@ -479,15 +474,6 @@ void ImageWidget::Clean()
 
 void ImageWidget::ConvexHull()
 {
-	CableRouteEngine cre;
-	ifstream f(FOLD_NAME + FILE_NAME + ".geojson");
-	stringstream ss;
-	ss << f.rdbuf();
-	f.close();
-	string datastr = ss.str();
-	string res = cre.routing(datastr);
-	printf("%s", res.c_str());
-	return;
 	//reset(points_);
 	//int k = 0;
 	//for (int i = 0; i <= GlobalCount % engines[k].data.devices.size(); i++)
@@ -496,6 +482,10 @@ void ImageWidget::ConvexHull()
 	//}
 	//printf("dist = %lf\n", engines[k].data.G[engines[k].data.devices.size()][GlobalCount % engines[k].data.devices.size()]);
 	GlobalCount++;
+	Polyline poly = result_tree_[GlobalCount % result_tree_.size()];
+	printf("line size = %d\n", result_tree_[GlobalCount % result_tree_.size()].size());
+	printf("(%.15f, %.15f) -> ", poly[0].hx(), poly[0].hy());
+	printf("(%.15f, %.15f)\n", poly[poly.size() - 1].hx(), poly[poly.size() - 1].hy());
 }
 
 double ImageWidget::XtoCanvas(double x)
@@ -505,7 +495,7 @@ double ImageWidget::XtoCanvas(double x)
 
 double ImageWidget::YtoCanvas(double y)
 {
-	return 1500 - 1.0 * (y - range.minY) / (range.maxY - range.minY) * 1500 + 40;
+	return 1500 - 1.0 * (y - range.minY) / (range.maxY - range.minY) * 6000 + 40;
 }
 
 double ImageWidget::CanvastoX(double x)
@@ -515,7 +505,7 @@ double ImageWidget::CanvastoX(double x)
 
 double ImageWidget::CanvastoY(double y)
 {
-	return 1.0 * (1540 - y) / 1500 * (range.maxY - range.minY) + range.minY;
+	return 1.0 * (1540 - y) / 6000 * (range.maxY - range.minY) + range.minY;
 }
 
 void ImageWidget::Partition()
@@ -626,10 +616,10 @@ void ImageWidget::Connect()
 		vector<Device>& devices = engines[e].data.devices;
 		int dn = (int)devices.size();
 
-		vector<DreamNode*> dev_nodes;
+		vector<DreamNodePtr> dev_nodes;
 		for (int i = 0; i < dn; i++)
 		{
-			DreamNode* no = newDreamNode(devices[i].coord);
+			DreamNodePtr no = newDreamNode(devices[i].coord);
 			no->is_device = true;
 			dev_nodes.push_back(no);
 		}
@@ -679,9 +669,7 @@ void ImageWidget::Connect()
 		printf("avoid_coincidence end\n");
 		vector<Polyline> paths = get_dream_tree_paths(path_tree);
 		cables.insert(cables.end(), paths.begin(), paths.end());
-		//deleteDreamTree(path_tree);
 	}
-	deleteAllDreamNodes();
 	result_tree_ = cables;
 	printf("Routing end\n");
 	sec = timer.time();
@@ -735,14 +723,14 @@ void ImageWidget::Connect()
 
 
 
-	//queue<DreamNode*> q;
+	//queue<DreamNodePtr> q;
 	//for (int i = 0; i < dream_tree->children.size(); i++)
 	//{
 	//	q.push(dream_tree->children[i]);
 	//}
 	//while (!q.empty())
 	//{
-	//	DreamNode* now = q.front();
+	//	DreamNodePtr now = q.front();
 	//	q.pop();
 
 	//	printf("line num to parent = %d\n", now->line_num_to_parent);
@@ -903,6 +891,16 @@ void ImageWidget::Triangulation()
 
 void ImageWidget::Open()
 {
+	CableRouteEngine cre;
+	ifstream f(FOLD_NAME + FILE_NAME + ".geojson");
+	stringstream ss;
+	ss << f.rdbuf();
+	f.close();
+	string datastr = ss.str();
+	for (int i = 0; i < 100; i++)
+		string res = cre.routing(datastr);
+	//printf("%s", res.c_str());
+	return;
 	reset(result_triangulation_);
 
 	auto h = data.holes[25];

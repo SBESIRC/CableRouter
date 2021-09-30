@@ -6,11 +6,15 @@
 
 namespace CableRouter
 {
+	struct DreamNode;
+	typedef shared_ptr<DreamNode> DreamNodePtr;
+	typedef DreamNodePtr DreamTree;
+
 	struct DreamNode
 	{
-		DreamNode* parent;
+		DreamNodePtr parent;
 		Point coord;
-		vector<DreamNode*> children;
+		vector<DreamNodePtr> children;
 
 		// for inter group connect
 		int line_num_to_parent;
@@ -20,10 +24,6 @@ namespace CableRouter
 		Vector dir_from_parent = Vector(0.0, 0.0);
 	};
 
-	typedef DreamNode* DreamTree;
-
-	static vector<DreamNode*> all_dream_nodes;
-
 	enum NodeDir
 	{
 		N_LEFT = 0,
@@ -32,40 +32,39 @@ namespace CableRouter
 		N_UP = 3
 	};
 
-	DreamNode* newDreamNode(Point coord);
-	//void deleteDreamTree(DreamTree root);
-	void deleteAllDreamNodes();
+	DreamNodePtr newDreamNode(Point coord);
+	vector<DreamNodePtr> getAllNodes(DreamTree tree);
 
 	// inner connect
 	void get_manhattan_tree(MapInfo* map, DreamTree tree, vector<Polyline>& exist);
 	void avoid_coincidence(DreamTree tree);
 	void avoid_coincidence_non_device(DreamTree tree);
 	void avoid_left(
-		vector<DreamNode*>& left, DreamNode* now, DreamNode* now_pa,
-		vector<DreamNode*>& down, vector<DreamNode*>& up, int fix = -1);
+		vector<DreamNodePtr>& left, DreamNodePtr now, DreamNodePtr now_pa,
+		vector<DreamNodePtr>& down, vector<DreamNodePtr>& up, int fix = -1);
 	void avoid_right(
-		vector<DreamNode*>& right, DreamNode* now, DreamNode* now_pa,
-		vector<DreamNode*>& down, vector<DreamNode*>& up, int fix = -1);
+		vector<DreamNodePtr>& right, DreamNodePtr now, DreamNodePtr now_pa,
+		vector<DreamNodePtr>& down, vector<DreamNodePtr>& up, int fix = -1);
 	void avoid_down(
-		vector<DreamNode*>& down, DreamNode* now, DreamNode* now_pa,
-		vector<DreamNode*>& left, vector<DreamNode*>& right, int fix = -1);
+		vector<DreamNodePtr>& down, DreamNodePtr now, DreamNodePtr now_pa,
+		vector<DreamNodePtr>& left, vector<DreamNodePtr>& right, int fix = -1);
 	void avoid_up(
-		vector<DreamNode*>& up, DreamNode* now, DreamNode* now_pa,
-		vector<DreamNode*>& left, vector<DreamNode*>& right, int fix = -1);
+		vector<DreamNodePtr>& up, DreamNodePtr now, DreamNodePtr now_pa,
+		vector<DreamNodePtr>& left, vector<DreamNodePtr>& right, int fix = -1);
 
 	// inter connect
 	DreamTree merge_to_a_tree(vector<Polyline>& paths);
 
-	vector<pair<DreamNode*, Point>> intersect_dream_tree(DreamTree tree, Segment seg);
-	void add_line_num(DreamNode* node);
+	vector<pair<DreamNodePtr, Point>> intersect_dream_tree(DreamTree tree, Segment seg);
+	void add_line_num(DreamNodePtr node);
 	void init_line_num(DreamTree tree);
 
 	vector<Polyline> get_dream_tree_paths(DreamTree tree);
-	Polyline get_path(DreamNode* node);
+	Polyline get_path(DreamNodePtr node);
 
 	vector<Segment> get_dream_tree_lines(DreamTree tree, bool opened = false);
-	void horizontal_count(DreamNode* node, int& up, int& down);
-	void vertical_count(DreamNode* node, int& left, int& right);
+	void horizontal_count(DreamNodePtr node, int& up, int& down);
+	void vertical_count(DreamNodePtr node, int& left, int& right);
 }
 
 #endif

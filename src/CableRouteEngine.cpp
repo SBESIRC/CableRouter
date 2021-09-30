@@ -100,7 +100,7 @@ string CableRouter::CableRouteEngine::routing(string datastr, int loop_max_count
 	vector<Polyline> power_paths(map.powers.size());
 	for (int e = 0; e < systems.size(); e++)
 	{
-		for (int k = 0; k < 20; k++)
+		for (int k = 0; k < 10; k++)
 			systems[e].run();
 
 		if (systems[e].globlMem.size() < 1)
@@ -115,10 +115,10 @@ string CableRouter::CableRouteEngine::routing(string datastr, int loop_max_count
 		vector<Device>& devices = systems[e].data.devices;
 		int dn = (int)devices.size();
 
-		vector<DreamNode*> dev_nodes;
+		vector<DreamNodePtr> dev_nodes;
 		for (int i = 0; i < dn; i++)
 		{
-			DreamNode* no = newDreamNode(devices[i].coord);
+			DreamNodePtr no = newDreamNode(devices[i].coord);
 			no->is_device = true;
 			dev_nodes.push_back(no);
 		}
@@ -165,9 +165,7 @@ string CableRouter::CableRouteEngine::routing(string datastr, int loop_max_count
 		avoid_coincidence(path_tree);
 		vector<Polyline> paths = get_dream_tree_paths(path_tree);
 		cables.insert(cables.end(), paths.begin(), paths.end());
-		//deleteDreamTree(path_tree);
 	}
-	deleteAllDreamNodes();
 	deleteMapInfo(map);
 	return write_to_geojson_string(cables);
 
