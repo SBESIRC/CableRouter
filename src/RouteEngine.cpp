@@ -249,6 +249,7 @@ Polyline CableRouter::a_star_connect_p2p(MapInfo* const data, Point s, Point t, 
 	{
 		printf("NO PATH!\n");
 		delete[] nodes;
+		dt.clear();
 		return Polyline();
 	}
 
@@ -256,6 +257,7 @@ Polyline CableRouter::a_star_connect_p2p(MapInfo* const data, Point s, Point t, 
 	reverse(path.begin(), path.end());
 	//printf("Path size: %d\n", path.size());
 	delete[] nodes;
+	dt.clear();
 	return path;
 }
 
@@ -449,6 +451,7 @@ Polyline CableRouter::a_star_connect_p2s(MapInfo* const data, Point s, Segment t
 	{
 		printf("NO PATH!\n");
 		delete[] nodes;
+		dt.clear();
 		return Polyline();
 	}
 
@@ -465,6 +468,7 @@ Polyline CableRouter::a_star_connect_p2s(MapInfo* const data, Point s, Segment t
 	reverse(path.begin(), path.end());
 	//printf("Path size: %d\n", path.size());
 	delete[] nodes;
+	dt.clear();
 	return path;
 }
 

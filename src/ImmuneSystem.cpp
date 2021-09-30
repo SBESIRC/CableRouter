@@ -220,6 +220,7 @@ vector<ISData> CableRouter::parse_groups(MapInfo* data, vector<vector<int>>& gro
 	printf("Init group info end\n");
 
 	deleteGraph(G, n_all);
+	dt.clear();
 	return res;
 }
 

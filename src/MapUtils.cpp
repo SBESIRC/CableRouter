@@ -323,3 +323,38 @@ bool CableRouter::crossObstacle(MapInfo* const data, const Segment s)
 
 	return false;
 }
+
+void CableRouter::deleteMapInfo(MapInfo& map)
+{
+	auto cen_all = map.cen_line_tree->all();
+	for (int i = 0; i < (*cen_all).size(); i++)
+	{
+		delete (*cen_all)[i];
+	}
+	reset(*cen_all);
+	delete cen_all;
+
+	auto hole_all = map.hole_tree->all();
+	for (int i = 0; i < (*hole_all).size(); i++)
+	{
+		delete (*hole_all)[i];
+	}
+	reset(*hole_all);
+	delete hole_all;
+
+	auto area_all = map.area.area_edge_tree->all();
+	for (int i = 0; i < (*area_all).size(); i++)
+	{
+		delete (*area_all)[i];
+	}
+	reset(*area_all);
+	delete area_all;
+
+	auto room_all = map.room_tree->all();
+	for (int i = 0; i < (*room_all).size(); i++)
+	{
+		delete (*room_all)[i];
+	}
+	reset(*room_all);
+	delete room_all;
+}

@@ -60,7 +60,7 @@ string CableRouter::CableRouteEngine::routing(string datastr, int loop_max_count
 
 	// parse geojson file
 	map = read_from_geojson_string(datastr);
-
+	deleteMapInfo(map);
 	if (map.devices.size() == 0)
 	{
 		return "error: no Wiring Position";

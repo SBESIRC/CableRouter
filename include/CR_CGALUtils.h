@@ -155,6 +155,7 @@ namespace CableRouter
                     }
                 }
             }
+            delete feedback;
         }
         return ret;
     }
@@ -176,6 +177,7 @@ namespace CableRouter
                     ret.push_back(*fit);
                 }
             }
+            delete feedback;
         }
         return ret;
     }
