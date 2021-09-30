@@ -43,7 +43,7 @@ vector<vector<int>> CableRouter::GroupEngine::grouping(MapInfo* const data, cons
 	printf("Partition end\n");
 
 	deleteGraph(G, n_all);
-
+	dt.clear();
 	return partition_result;
 }
 
