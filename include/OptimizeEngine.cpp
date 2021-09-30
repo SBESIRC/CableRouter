@@ -57,16 +57,15 @@ void CableRouter::get_manhattan_tree(MapInfo* map, DreamTree tree, vector<Polyli
 {
 	vector<Segment> exist_lines = get_segments_from_polylines(exist);
 
-	queue<DreamNodePtr> q;
-	for (int i = 0; i < tree->children.size(); i++)
+	vector<DreamNodePtr> all = getAllNodes(tree);
+	for (int i = 0; i < all.size(); i++)
 	{
-		q.push(tree->children[i]);
-	}
-	while (!q.empty())
-	{
-		DreamNodePtr now = q.front();
+		DreamNodePtr now = all[i];
+
+		if (!now->parent) continue;
+		if (!now->is_device) continue;
+
 		DreamNodePtr pa = now->parent;
-		q.pop();
 
 
 		Polyline path = manhattan_connect(map, pa->coord, now->coord, pa->dir_from_parent, exist_lines);
@@ -92,12 +91,7 @@ void CableRouter::get_manhattan_tree(MapInfo* map, DreamTree tree, vector<Polyli
 			ch->dir_from_parent = Vector(path[j], path[j + 1]);
 			pa = ch;
 		}
-				
 
-		for (int i = 0; i < now->children.size(); i++)
-		{
-			q.push(now->children[i]);
-		}
 		if (path.size() > 2 && LEN(exist_lines.back()) < SMALL_TURN)
 		{
 			vector<DreamNodePtr> children = now->children;
@@ -1351,15 +1345,12 @@ vector<pair<DreamNodePtr, Point>> CableRouter::intersect_dream_tree(DreamTree tr
 {
 	vector<pair<DreamNodePtr, Point>> res;
 
-	queue<DreamNodePtr> q;
-	for (int i = 0; i < tree->children.size(); i++)
+	vector<DreamNodePtr> all = getAllNodes(tree);
+	for (int i = 0; i < all.size(); i++)
 	{
-		q.push(tree->children[i]);
-	}
-	while (!q.empty())
-	{
-		DreamNodePtr now = q.front();
-		q.pop();
+		DreamNodePtr now = all[i];
+
+		if (!now->parent) continue;
 
 		Segment seg_now = Segment(now->coord, now->parent->coord);
 		Rectangle rec_now;
@@ -1404,11 +1395,6 @@ vector<pair<DreamNodePtr, Point>> CableRouter::intersect_dream_tree(DreamTree tr
 				res.push_back(make_pair(now, ss.target()));
 			}
 		}
-
-		for (int i = 0; i < now->children.size(); i++)
-		{
-			q.push(now->children[i]);
-		}
 	}
 
 	return res;
@@ -1425,24 +1411,16 @@ void CableRouter::add_line_num(DreamNodePtr node)
 
 void CableRouter::init_line_num(DreamTree tree)
 {
-	queue<DreamNodePtr> q;
-	for (int i = 0; i < tree->children.size(); i++)
+	vector<DreamNodePtr> all = getAllNodes(tree);
+	for (int i = 0; i < all.size(); i++)
 	{
-		q.push(tree->children[i]);
-	}
-	while (!q.empty())
-	{
-		DreamNodePtr now = q.front();
-		q.pop();
+		DreamNodePtr now = all[i];
+
+		if (!now->parent) continue;
 
 		if (now->is_device)
 		{
 			add_line_num(now);
-		}
-
-		for (int i = 0; i < now->children.size(); i++)
-		{
-			q.push(now->children[i]);
 		}
 	}
 }
@@ -1642,15 +1620,12 @@ vector<Segment> CableRouter::get_dream_tree_lines(DreamTree tree, bool opened)
 {
 	vector<Segment> res;
 
-	queue<DreamNodePtr> q;
-	for (int i = 0; i < tree->children.size(); i++)
+	vector<DreamNodePtr> all = getAllNodes(tree);
+	for (int i = 0; i < all.size(); i++)
 	{
-		q.push(tree->children[i]);
-	}
-	while (!q.empty())
-	{
-		DreamNodePtr now = q.front();
-		q.pop();
+		DreamNodePtr now = all[i];
+
+		if (!now->parent) continue;
 
 		Segment ss(now->coord, now->parent->coord);
 
@@ -1728,11 +1703,6 @@ vector<Segment> CableRouter::get_dream_tree_lines(DreamTree tree, bool opened)
 		{
 			res.push_back(ss);
 		}
-
-		for (int i = 0; i < now->children.size(); i++)
-		{
-			q.push(now->children[i]);
-		}
 	}
 
 	return res;
@@ -1741,15 +1711,12 @@ vector<Segment> CableRouter::get_dream_tree_lines(DreamTree tree, bool opened)
 vector<Polyline> CableRouter::get_dream_tree_paths(DreamTree tree)
 {
 	vector<Polyline> res;
-	queue<DreamNodePtr> q;
-	for (int i = 0; i < tree->children.size(); i++)
+	vector<DreamNodePtr> all = getAllNodes(tree);
+	for (int i = 0; i < all.size(); i++)
 	{
-		q.push(tree->children[i]);
-	}
-	while (!q.empty())
-	{
-		DreamNodePtr now = q.front();
-		q.pop();
+		DreamNodePtr now = all[i];
+		
+		if (!now->parent) continue;
 
 		if (now->is_device)
 		{
@@ -1758,11 +1725,6 @@ vector<Polyline> CableRouter::get_dream_tree_paths(DreamTree tree)
 			{
 				res.push_back(pl);
 			}
-		}
-
-		for (int i = 0; i < now->children.size(); i++)
-		{
-			q.push(now->children[i]);
 		}
 	}
 	return res;
