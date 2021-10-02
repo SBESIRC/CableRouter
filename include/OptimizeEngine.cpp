@@ -384,6 +384,7 @@ void CableRouter::avoid_coincidence(DreamTree tree)
 		}
 
 		if (children.size() > 4) {
+			printf("ImmuneSystem£¬ ÄþÔÚ¸ÉÉñÄ§£¿\n");
 			avoid_left(dir_nodes[N_LEFT], now, now_pa, dir_nodes[N_DOWN], dir_nodes[N_UP]);
 			avoid_right(dir_nodes[N_RIGHT], now, now_pa, dir_nodes[N_DOWN], dir_nodes[N_UP]);
 			avoid_down(dir_nodes[N_DOWN], now, now_pa, dir_nodes[N_LEFT], dir_nodes[N_RIGHT]);
@@ -477,7 +478,7 @@ void CableRouter::avoid_coincidence(DreamTree tree)
 						dir_nodes[N_DOWN], dir_nodes[N_UP],
 						(int)dir_nodes[N_RIGHT].size() - 1);
 					avoid_left(		// to up
-						dir_nodes[N_RIGHT], now, now_pa,
+						dir_nodes[N_LEFT], now, now_pa,
 						dir_nodes[N_DOWN], dir_nodes[N_UP],
 						0);
 					avoid_up(		// to left
@@ -508,7 +509,7 @@ void CableRouter::avoid_coincidence(DreamTree tree)
 					if (dir_nodes[N_DOWN].size() > down_size)
 					{
 						avoid_left(		// to up
-							dir_nodes[N_RIGHT], now, now_pa,
+							dir_nodes[N_LEFT], now, now_pa,
 							dir_nodes[N_DOWN], dir_nodes[N_UP],
 							0);
 						avoid_down(		// to left
@@ -558,7 +559,7 @@ void CableRouter::avoid_coincidence(DreamTree tree)
 						dir_nodes[N_LEFT], dir_nodes[N_RIGHT],
 						(int)dir_nodes[N_UP].size() - 1);
 					avoid_left(		// to up
-						dir_nodes[N_RIGHT], now, now_pa,
+						dir_nodes[N_LEFT], now, now_pa,
 						dir_nodes[N_DOWN], dir_nodes[N_UP],
 						0);
 				}
@@ -574,7 +575,7 @@ void CableRouter::avoid_coincidence(DreamTree tree)
 							dir_nodes[N_LEFT], dir_nodes[N_RIGHT],
 							0);
 						avoid_left(		// to up
-							dir_nodes[N_RIGHT], now, now_pa,
+							dir_nodes[N_LEFT], now, now_pa,
 							dir_nodes[N_DOWN], dir_nodes[N_UP],
 							0);
 					}
@@ -687,7 +688,7 @@ void CableRouter::avoid_coincidence(DreamTree tree)
 				else if (dir_nodes[N_UP].size() == 0)
 				{
 					avoid_left(		// to up
-						dir_nodes[N_RIGHT], now, now_pa,
+						dir_nodes[N_LEFT], now, now_pa,
 						dir_nodes[N_DOWN], dir_nodes[N_UP],
 						0);
 					avoid_up(		// to right
@@ -746,7 +747,7 @@ void CableRouter::avoid_coincidence(DreamTree tree)
 						dir_nodes[N_LEFT], dir_nodes[N_RIGHT],
 						(int)dir_nodes[N_DOWN].size() - 1);
 					avoid_left(		// to up
-						dir_nodes[N_RIGHT], now, now_pa,
+						dir_nodes[N_LEFT], now, now_pa,
 						dir_nodes[N_DOWN], dir_nodes[N_UP],
 						0);
 				}
