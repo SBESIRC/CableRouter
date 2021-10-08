@@ -1,4 +1,4 @@
-#include "OptimizeEngine.h"
+ï»¿#include "OptimizeEngine.h"
 #include "RouteEngine.h"
 
 using namespace CableRouter;
@@ -384,7 +384,7 @@ void CableRouter::avoid_coincidence(DreamTree tree)
 		}
 
 		if (children.size() > 4) {
-			printf("ImmuneSystem£¬ ÄþÔÚ¸ÉÉñÄ§£¿\n");
+			printf("ImmuneSystem\n");
 			avoid_left(dir_nodes[N_LEFT], now, now_pa, dir_nodes[N_DOWN], dir_nodes[N_UP]);
 			avoid_right(dir_nodes[N_RIGHT], now, now_pa, dir_nodes[N_DOWN], dir_nodes[N_UP]);
 			avoid_down(dir_nodes[N_DOWN], now, now_pa, dir_nodes[N_LEFT], dir_nodes[N_RIGHT]);
@@ -805,7 +805,7 @@ void CableRouter::avoid_coincidence(DreamTree tree)
 		}
 		else if (max_size == 4)
 		{
-			printf("route engine ÄãÕÒ¸ö°àÉÏ°É\n");
+			printf("route engine\n");
 			switch (max_dir)
 			{
 			case N_LEFT:
