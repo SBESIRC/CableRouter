@@ -29,15 +29,15 @@ vector<DreamNodePtr> CableRouter::getAllNodes(DreamTree tree)
 	{
 		DreamNodePtr now = q.front();
 		q.pop();
+
+		if (visited.find(now) != visited.end()) continue;
+
+		visited.insert(now);
 		ret.push_back(now);
 
-		if (visited.find(now) == visited.end())
+		for (int i = 0; i < now->children.size(); i++)
 		{
-			visited.insert(now);
-			for (int i = 0; i < now->children.size(); i++)
-			{
-				q.push(now->children[i]);
-			}
+			q.push(now->children[i]);
 		}
 	}
 	return ret;
@@ -126,7 +126,7 @@ void CableRouter::get_manhattan_tree(MapInfo* map, DreamTree tree, vector<Polyli
 				double cos_theta = abap / sqrt(abab) / sqrt(apap);
 				if (EQUAL(abab, 0) ||
 					EQUAL(apap, 0) ||
-					(abap / sqrt(abab) >= 1 && cos_theta > sqrt(2.0) / 2))
+					(abap / abab >= 1 && cos_theta > sqrt(2.0) / 2))
 				{
 					children[i]->parent = now;
 					now->children.push_back(children[i]);
@@ -1648,11 +1648,12 @@ DreamTree CableRouter::merge_to_a_tree(vector<Polyline>& paths)
 vector<Segment> CableRouter::get_dream_tree_lines(DreamTree tree, bool opened)
 {
 	vector<Segment> res;
+	if (!tree) return res;
 
 	vector<DreamNodePtr> all = getAllNodes(tree);
-	for (int i = 0; i < all.size(); i++)
+	for (int idx = 0; idx < all.size(); idx++)
 	{
-		DreamNodePtr now = all[i];
+		DreamNodePtr now = all[idx];
 
 		if (!now->parent) continue;
 
@@ -1673,16 +1674,16 @@ vector<Segment> CableRouter::get_dream_tree_lines(DreamTree tree, bool opened)
 			{
 				int off = i - go_ahead / 2;
 				res.push_back(Segment(
-					Point(now->coord.hx(), now->coord.hy() + off * 500), 
-					Point(now->parent->coord.hx(), now->parent->coord.hy() + off * 500)
+					Point(now->coord.hx(), now->coord.hy() + off * LINE_GAP), 
+					Point(now->parent->coord.hx(), now->parent->coord.hy() + off * LINE_GAP)
 				));
 			}
 			for (int i = 0; i < turn_up; i++)
 			{
 				int off = go_ahead - go_ahead / 2 + i;
 				res.push_back(Segment(
-					Point(now->coord.hx(), now->coord.hy() + off * 500), 
-					Point(now->parent->coord.hx(), now->parent->coord.hy() + off * 500)
+					Point(now->coord.hx(), now->coord.hy() + off * LINE_GAP),
+					Point(now->parent->coord.hx(), now->parent->coord.hy() + off * LINE_GAP)
 				));
 			}
 			for (int i = 0; i < turn_down; i++)
@@ -1690,8 +1691,8 @@ vector<Segment> CableRouter::get_dream_tree_lines(DreamTree tree, bool opened)
 				int off = 0 - go_ahead / 2 - (go_ahead == 0 ? 0 : 1) - i;
 				//int off = 0 - go_ahead / 2 - 1 - i;
 				res.push_back(Segment(
-					Point(now->coord.hx(), now->coord.hy() + off * 500), 
-					Point(now->parent->coord.hx(), now->parent->coord.hy() + off * 500)
+					Point(now->coord.hx(), now->coord.hy() + off * LINE_GAP),
+					Point(now->parent->coord.hx(), now->parent->coord.hy() + off * LINE_GAP)
 				));
 			}
 		}
@@ -1706,16 +1707,16 @@ vector<Segment> CableRouter::get_dream_tree_lines(DreamTree tree, bool opened)
 			{
 				double off = i - go_ahead / 2;
 				res.push_back(Segment(
-					Point(now->coord.hx() + off * 500, now->coord.hy()),
-					Point(now->parent->coord.hx() + off * 500, now->parent->coord.hy())
+					Point(now->coord.hx() + off * LINE_GAP, now->coord.hy()),
+					Point(now->parent->coord.hx() + off * LINE_GAP, now->parent->coord.hy())
 				));
 			}
 			for (int i = 0; i < trun_right; i++)
 			{
 				double off = go_ahead - go_ahead / 2 + i;
 				res.push_back(Segment(
-					Point(now->coord.hx() + off * 500, now->coord.hy()),
-					Point(now->parent->coord.hx() + off * 500, now->parent->coord.hy())
+					Point(now->coord.hx() + off * LINE_GAP, now->coord.hy()),
+					Point(now->parent->coord.hx() + off * LINE_GAP, now->parent->coord.hy())
 				));
 			}
 			for (int i = 0; i < trun_left; i++)
@@ -1723,8 +1724,8 @@ vector<Segment> CableRouter::get_dream_tree_lines(DreamTree tree, bool opened)
 				double off = 0 - go_ahead / 2 - (go_ahead == 0 ? 0 : 1) - i;
 				//double off = 0 - go_ahead / 2 - 1 - i;
 				res.push_back(Segment(
-					Point(now->coord.hx() + off * 500, now->coord.hy()),
-					Point(now->parent->coord.hx() + off * 500, now->parent->coord.hy())
+					Point(now->coord.hx() + off * LINE_GAP, now->coord.hy()),
+					Point(now->parent->coord.hx() + off * LINE_GAP, now->parent->coord.hy())
 				));
 			}
 		}

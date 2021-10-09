@@ -158,10 +158,10 @@ Point CableRouter::project_point_to_segment(Point p, Segment s)
 	double abab =
 		DOUBLE((s.target().hx() - s.source().hx()) * (s.target().hx() - s.source().hx())) +
 		DOUBLE((s.target().hy() - s.source().hy()) * (s.target().hy() - s.source().hy()));
-	double r = apab / sqrt(abab);
-	if (r <= 0)
+	double r = apab / abab;
+	if (EQUAL(r, 0) || r < 0)
 		return s.source();
-	if (r >= 1)
+	if (EQUAL(r, 1) || r > 1)
 		return s.target();
 	else
 		return Point(
