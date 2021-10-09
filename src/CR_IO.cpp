@@ -281,7 +281,10 @@ string CableRouter::write_to_geojson_string(const vector<Polyline>& cables)
     for (auto it = cables.begin(); it != cables.end(); ++it) {
         json_features.append(cable_to_json(*it));
     }
-
+    if (cables.size() == 0)
+    {
+        json_features = Json::Value(Json::arrayValue);
+    }
     json_root["type"] = Json::Value("FeatureCollection");
     json_root["features"] = json_features;
 
