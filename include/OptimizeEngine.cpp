@@ -73,8 +73,8 @@ void CableRouter::get_manhattan_tree(MapInfo* map, DreamTree tree, vector<Polyli
 		{
 			Vector dir1(path[0], path[1]);
 			Vector dir2(pa->parent->coord, pa->coord);
-			if (dir1.hx() == 0 && dir2.hx() == 0 ||
-				dir1.hy() == 0 && dir2.hy() == 0)
+			if (EQUAL(dir1.hx(), 0) && EQUAL(dir2.hx(), 0) ||
+				EQUAL(dir1.hy(), 0) && EQUAL(dir2.hy(), 0))
 			{
 				DreamNodePtr fake = pa;
 				pa = fake->parent;
@@ -124,8 +124,8 @@ void CableRouter::get_manhattan_tree(MapInfo* map, DreamTree tree, vector<Polyli
 				double apap = DOUBLE(ap * ap);
 
 				double cos_theta = abap / sqrt(abab) / sqrt(apap);
-				if (abab == 0 ||
-					apap == 0 ||
+				if (EQUAL(abab, 0) ||
+					EQUAL(apap, 0) ||
 					(abap / sqrt(abab) >= 1 && cos_theta > sqrt(2.0) / 2))
 				{
 					children[i]->parent = now;
@@ -406,9 +406,9 @@ void CableRouter::avoid_coincidence(DreamTree tree)
 			Vector dir(now->coord, children[i]->coord);
 			//if (LEN(dir) <= MAX_OVERLAP) continue;
 			if (dir.hy() == 0 && dir.hx() < 0) dir_nodes[N_LEFT].push_back(children[i]);
-			else if (dir.hy() == 0 && dir.hx() > 0) dir_nodes[N_RIGHT].push_back(children[i]);
-			else if (dir.hx() == 0 && dir.hy() < 0) dir_nodes[N_DOWN].push_back(children[i]);
-			else if (dir.hx() == 0 && dir.hy() > 0) dir_nodes[N_UP].push_back(children[i]);
+			else if (EQUAL(dir.hy(), 0) && dir.hx() > 0) dir_nodes[N_RIGHT].push_back(children[i]);
+			else if (EQUAL(dir.hx(), 0) && dir.hy() < 0) dir_nodes[N_DOWN].push_back(children[i]);
+			else if (EQUAL(dir.hx(), 0) && dir.hy() > 0) dir_nodes[N_UP].push_back(children[i]);
 		}
 
 		if (children.size() > 4) {
@@ -1784,11 +1784,11 @@ void CableRouter::horizontal_count(DreamNodePtr now, int& up, int& down)
 	for (int i = 0; i < now->children.size(); i++)
 	{
 		DreamNodePtr next = now->children[i];
-		if (now->coord.hy() == next->coord.hy())
+		if (EQUAL(now->coord.hy(), next->coord.hy()))
 		{
 			horizontal_count(next, up, down);
 		}
-		else if (now->coord.hx() == next->coord.hx())
+		else if (EQUAL(now->coord.hx(), next->coord.hx()))
 		{
 			if (next->coord.hy() > now->coord.hy())
 			{
@@ -1810,11 +1810,11 @@ void CableRouter::vertical_count(DreamNodePtr now, int& left, int& right)
 	for (int i = 0; i < now->children.size(); i++)
 	{
 		DreamNodePtr next = now->children[i];
-		if (now->coord.hx() == next->coord.hx())
+		if (EQUAL(now->coord.hx(), next->coord.hx()))
 		{
 			vertical_count(next, left, right);
 		}
-		else if (now->coord.hy() == next->coord.hy())
+		else if (EQUAL(now->coord.hy(), next->coord.hy()))
 		{
 			if (next->coord.hx() > now->coord.hx())
 			{

@@ -16,7 +16,8 @@
 #ifndef _CABLEROUTER_CGALUTILS_H_
 #define _CABLEROUTER_CGALUTILS_H_
 
-#define CR_INF 1e10
+#define CR_INF  1e10
+#define CR_EPS  1e-12
 
 namespace CableRouter
 {
@@ -87,6 +88,7 @@ namespace CableRouter
     #define DIST_M(x, y)			                            (abs(DOUBLE((x).hx() - (y).hx())) + abs(DOUBLE((x).hy() - (y).hy())))
     #define LEN_2(x)                                            DOUBLE((x).squared_length())
     #define LEN(x)                                              sqrt(LEN_2((x)))
+    #define EQUAL(x, y)                                         (abs(DOUBLE((x) - (y))) < CR_EPS)
 
     Polygon construct_polygon(const vector<Point>* coords);
     bool polygons_intersect(const Polygon& p, const Polygon& q);

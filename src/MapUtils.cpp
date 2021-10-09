@@ -139,7 +139,7 @@ void CableRouter::addDeviceEdges(MapInfo* const data, double** G, bool center_we
 		{
 			int pi = data->devices[i].id;
 			int qi = data->devices[j].id;
-			if (G[pi][qi] == CR_INF)
+			if (G[pi][qi] >= CR_INF)
 			{
 				Point p = data->devices[i].coord;
 				Point q = data->devices[j].coord;

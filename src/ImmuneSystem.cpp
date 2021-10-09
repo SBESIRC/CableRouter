@@ -235,7 +235,7 @@ double CableRouter::ImmuneSystem::affinity(vector<vector<int>>& adj, vector<vect
 		for (int i = 0; i < adj[u].size(); i++)
 		{
 			int v = adj[u][i];
-			if (G[u][v] == CR_INF) return -1;
+			if (G[u][v] >= CR_INF) return -1;
 		}
 	}
 
@@ -360,8 +360,8 @@ double CableRouter::ImmuneSystem::affinity(vector<vector<int>>& adj, vector<vect
 	int beauty_n = 0;
 	for (int i = 0; i < segs.size(); i++)
 	{
-		if (segs[i].source().hx() == segs[i].target().hx() ||
-			segs[i].source().hy() == segs[i].target().hy())
+		if (EQUAL(segs[i].source().hx(), segs[i].target().hx()) ||
+			EQUAL(segs[i].source().hy(), segs[i].target().hy()))
 			beauty_n++;
 	}
 
@@ -400,7 +400,7 @@ void CableRouter::ImmuneSystem::init(ISData* d)
 	{
 		for (auto ph = v->begin(); ph != v->end(); ph++)
 		{
-			if ((*ph) == CR_INF)
+			if ((*ph) >= CR_INF)
 				(*ph) = 0;
 			else
 				(*ph) = 5.0 + 200000.0 / ((*ph) + 0.001);

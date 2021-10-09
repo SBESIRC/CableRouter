@@ -666,7 +666,7 @@ Polyline CableRouter::manhattan_smooth_p2p(MapInfo* const data, Polyline& path, 
 			int far = ((int)line.size() - next);
 			Point v = line[next];
 			bool is_end = (next == ((int)line.size() - 1));
-			if (u.hx() == v.hx() || u.hy() == v.hy())
+			if (EQUAL(u.hx(), v.hx()) || EQUAL(u.hy(), v.hy()))
 			{
 				//bool cross = crossObstacle(data, u, v);
 				bool cross = touchObstacle(data, u, v);
@@ -771,7 +771,7 @@ Polyline CableRouter::manhattan_smooth_basic(MapInfo* const data, Polyline& path
 		Point u = line[now];
 		Point v = line[next_id];
 
-		if (u.hx() == v.hx() || u.hy() == v.hy())
+		if (EQUAL(u.hx(), v.hx()) || EQUAL(u.hy(), v.hy()))
 		{
 			bool cross = crossObstacle(data, u, v);
 			//bool colli = tooCloseToSun(data, u, v, obstacle_lines);
@@ -867,12 +867,12 @@ Polyline CableRouter::line_simple(Polyline& line)
 	Polyline res;
 	res.push_back(line[0]);
 	int next = 1;
-	bool dirX = line[0].hx() == line[next].hx();
-	bool dirY = line[0].hy() == line[next].hy();
+	bool dirX = EQUAL(line[0].hx(), line[next].hx());
+	bool dirY = EQUAL(line[0].hy(), line[next].hy());
 	while (next + 1 != line.size())
 	{
-		bool dirrX = line[next].hx() == line[next + 1].hx();
-		bool dirrY = line[next].hy() == line[next + 1].hy();
+		bool dirrX = EQUAL(line[next].hx(), line[next + 1].hx());
+		bool dirrY = EQUAL(line[next].hy(), line[next + 1].hy());
 		if (!((dirX && dirrX) || (dirY && dirrY)))
 		{
 			res.push_back(line[next]);
@@ -892,7 +892,7 @@ Polyline CableRouter::manhattan_connect(MapInfo* const data, Point u, Point v, V
 
 	double dx = abs(u.hx() - v.hx());
 	double dy = abs(u.hy() - v.hy());
-	if (dx == 0 || dy == 0)
+	if (EQUAL(dx, 0) || EQUAL(dy, 0))
 	{
 		if (!crossObstacle(data, u, v)) {
 			res.push_back(u);
@@ -1027,7 +1027,7 @@ Polyline CableRouter::manhattan_smooth_p2s(MapInfo* const data, Polyline& path, 
 			int far = ((int)line.size() - next);
 			Point v = line[next];
 			bool is_end = (next == ((int)line.size() - 1));
-			if (u.hx() == v.hx() || u.hy() == v.hy())
+			if (EQUAL(u.hx(), v.hx()) || EQUAL(u.hy(), v.hy()))
 			{
 				//bool cross = crossObstacle(data, u, v);
 				bool cross = touchObstacle(data, u, v);
