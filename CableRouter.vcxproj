@@ -149,7 +149,6 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="include\OptimizeEngine.cpp" />
     <ClCompile Include="libraries\jsoncpp\src\lib_json\json_reader.cpp" />
     <ClCompile Include="libraries\jsoncpp\src\lib_json\json_value.cpp" />
     <ClCompile Include="libraries\jsoncpp\src\lib_json\json_writer.cpp" />
@@ -159,6 +158,7 @@
     <ClCompile Include="src\MapUtils.cpp" />
     <ClCompile Include="src\GroupEngine.cpp" />
     <ClCompile Include="src\GETree.cpp" />
+    <ClCompile Include="src\OptimizeEngine.cpp" />
     <ClCompile Include="src\RouteEngine.cpp" />
     <ClCompile Include="src\ImmuneSystem.cpp" />
   </ItemGroup>
