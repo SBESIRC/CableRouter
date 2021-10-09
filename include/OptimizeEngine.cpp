@@ -66,10 +66,29 @@ void CableRouter::get_manhattan_tree(MapInfo* map, DreamTree tree, vector<Polyli
 		if (!now->is_device) continue;
 
 		DreamNodePtr pa = now->parent;
-
-
+		
 		Polyline path = manhattan_connect(map, pa->coord, now->coord, pa->dir_from_parent, exist_lines);
 
+		if (path.size() > 1 && !pa->is_device && pa->parent)
+		{
+			Vector dir1(path[0], path[1]);
+			Vector dir2(pa->parent->coord, pa->coord);
+			if (dir1.hx() == 0 && dir2.hx() == 0 ||
+				dir1.hy() == 0 && dir2.hy() == 0)
+			{
+				DreamNodePtr fake = pa;
+				pa = fake->parent;
+				for (auto ch = pa->children.begin(); ch != pa->children.end(); ch++)
+				{
+					if ((*ch) == fake)
+					{
+						pa->children.erase(ch);
+						break;
+					}
+				}
+				path[0] = pa->coord;
+			}
+		}
 		for (auto ch = pa->children.begin(); ch != pa->children.end(); ch++)
 		{
 			if ((*ch) == now)
@@ -104,9 +123,10 @@ void CableRouter::get_manhattan_tree(MapInfo* map, DreamTree tree, vector<Polyli
 				double abab = DOUBLE(ab * ab);
 				double apap = DOUBLE(ap * ap);
 
+				double cos_theta = abap / sqrt(abab) / sqrt(apap);
 				if (abab == 0 ||
 					apap == 0 ||
-					(abap / sqrt(abab) >= 1 && abap / sqrt(abab) / sqrt(apap) > sqrt(2.0) / 2))
+					(abap / sqrt(abab) >= 1 && cos_theta > sqrt(2.0) / 2))
 				{
 					children[i]->parent = now;
 					now->children.push_back(children[i]);
@@ -145,9 +165,10 @@ bool compare_left_from_down_to_up(pair<DreamNodePtr, DreamNodePtr> pair_a, pair<
 	}
 	else
 	{
-		if (a->children.size() > 0 && a->children[0]->dir_from_parent.hy() > 0)
+		Vector dir(a->coord, a->children[0]->coord);
+		if (a->children.size() > 0 && dir.hy() > 0)
 			aturn = 1;
-		else if (a->children.size() > 0 && a->children[0]->dir_from_parent.hy() < 0)
+		else if (a->children.size() > 0 && dir.hy() < 0)
 			aturn = -1;
 		else
 			aturn = 0;
@@ -167,9 +188,10 @@ bool compare_left_from_down_to_up(pair<DreamNodePtr, DreamNodePtr> pair_a, pair<
 	}
 	else
 	{
-		if (b->children.size() > 0 && b->children[0]->dir_from_parent.hy() > 0)
+		Vector dir(b->coord, b->children[0]->coord);
+		if (b->children.size() > 0 && dir.hy() > 0)
 			bturn = 1;
-		else if (b->children.size() > 0 && b->children[0]->dir_from_parent.hy() < 0)
+		else if (b->children.size() > 0 && dir.hy() < 0)
 			bturn = -1;
 		else
 			bturn = 0;
@@ -202,9 +224,10 @@ bool compare_right_from_down_to_up(pair<DreamNodePtr, DreamNodePtr> pair_a, pair
 	}
 	else
 	{
-		if (a->children.size() > 0 && a->children[0]->dir_from_parent.hy() > 0)
+		Vector dir(a->coord, a->children[0]->coord);
+		if (a->children.size() > 0 && dir.hy() > 0)
 			aturn = 1;
-		else if (a->children.size() > 0 && a->children[0]->dir_from_parent.hy() < 0)
+		else if (a->children.size() > 0 && dir.hy() < 0)
 			aturn = -1;
 		else
 			aturn = 0;
@@ -224,9 +247,10 @@ bool compare_right_from_down_to_up(pair<DreamNodePtr, DreamNodePtr> pair_a, pair
 	}
 	else
 	{
-		if (b->children.size() > 0 && b->children[0]->dir_from_parent.hy() > 0)
+		Vector dir(b->coord, b->children[0]->coord);
+		if (b->children.size() > 0 && dir.hy() > 0)
 			bturn = 1;
-		else if (b->children.size() > 0 && b->children[0]->dir_from_parent.hy() < 0)
+		else if (b->children.size() > 0 && dir.hy() < 0)
 			bturn = -1;
 		else
 			bturn = 0;
@@ -259,9 +283,10 @@ bool compare_down_from_left_to_right(pair<DreamNodePtr, DreamNodePtr> pair_a, pa
 	}
 	else
 	{
-		if (a->children.size() > 0 && a->children[0]->dir_from_parent.hx() > 0)
+		Vector dir(a->coord, a->children[0]->coord);
+		if (a->children.size() > 0 && dir.hx() > 0)
 			aturn = 1;
-		else if (a->children.size() > 0 && a->children[0]->dir_from_parent.hx() < 0)
+		else if (a->children.size() > 0 && dir.hx() < 0)
 			aturn = -1;
 		else
 			aturn = 0;
@@ -281,9 +306,10 @@ bool compare_down_from_left_to_right(pair<DreamNodePtr, DreamNodePtr> pair_a, pa
 	}
 	else
 	{
-		if (b->children.size() > 0 && b->children[0]->dir_from_parent.hx() > 0)
+		Vector dir(b->coord, b->children[0]->coord);
+		if (b->children.size() > 0 && dir.hx() > 0)
 			bturn = 1;
-		else if (b->children.size() > 0 && b->children[0]->dir_from_parent.hx() < 0)
+		else if (b->children.size() > 0 && dir.hx() < 0)
 			bturn = -1;
 		else
 			bturn = 0;
@@ -316,9 +342,10 @@ bool compare_up_from_left_to_right(pair<DreamNodePtr, DreamNodePtr> pair_a, pair
 	}
 	else
 	{
-		if (a->children.size() > 0 && a->children[0]->dir_from_parent.hx() > 0)
+		Vector dir(a->coord, a->children[0]->coord);
+		if (a->children.size() > 0 && dir.hx() > 0)
 			aturn = 1;
-		else if (a->children.size() > 0 && a->children[0]->dir_from_parent.hx() < 0)
+		else if (a->children.size() > 0 && dir.hx() < 0)
 			aturn = -1;
 		else
 			aturn = 0;
@@ -338,9 +365,10 @@ bool compare_up_from_left_to_right(pair<DreamNodePtr, DreamNodePtr> pair_a, pair
 	}
 	else
 	{
-		if (b->children.size() > 0 && b->children[0]->dir_from_parent.hx() > 0)
+		Vector dir(b->coord, b->children[0]->coord);
+		if (b->children.size() > 0 && dir.hx() > 0)
 			bturn = 1;
-		else if (b->children.size() > 0 && b->children[0]->dir_from_parent.hx() < 0)
+		else if (b->children.size() > 0 && dir.hx() < 0)
 			bturn = -1;
 		else
 			bturn = 0;
@@ -358,9 +386,9 @@ void CableRouter::avoid_coincidence(DreamTree tree)
 	if (tree == NULL) return;
 
 	vector<DreamNodePtr> all = getAllNodes(tree);
-	for (int i = 0; i < all.size(); i++)
+	for (int idx = 0; idx < all.size(); idx++)
 	{
-		DreamNodePtr now = all[i];
+		DreamNodePtr now = all[idx];
 
 		if (!now->is_device) continue;
 
@@ -378,9 +406,9 @@ void CableRouter::avoid_coincidence(DreamTree tree)
 			Vector dir(now->coord, children[i]->coord);
 			//if (LEN(dir) <= MAX_OVERLAP) continue;
 			if (dir.hy() == 0 && dir.hx() < 0) dir_nodes[N_LEFT].push_back(children[i]);
-			if (dir.hy() == 0 && dir.hx() > 0) dir_nodes[N_RIGHT].push_back(children[i]);
-			if (dir.hx() == 0 && dir.hy() < 0) dir_nodes[N_DOWN].push_back(children[i]);
-			if (dir.hx() == 0 && dir.hy() > 0) dir_nodes[N_UP].push_back(children[i]);
+			else if (dir.hy() == 0 && dir.hx() > 0) dir_nodes[N_RIGHT].push_back(children[i]);
+			else if (dir.hx() == 0 && dir.hy() < 0) dir_nodes[N_DOWN].push_back(children[i]);
+			else if (dir.hx() == 0 && dir.hy() > 0) dir_nodes[N_UP].push_back(children[i]);
 		}
 
 		if (children.size() > 4) {
@@ -1007,7 +1035,7 @@ void CableRouter::avoid_left(
 		}
 
 		if (i < fix) down.push_back(mid);
-		if (i > fix) up.push_back(mid);
+		else if (i > fix) up.push_back(mid);
 
 		Point dd(left[i]->coord.hx(), left[i]->coord.hy() + (i - fix) * 1.0 * LINE_GAP);
 		if (left[i]->is_device)
@@ -1107,7 +1135,7 @@ void CableRouter::avoid_right(
 		}
 
 		if (i < fix) down.push_back(mid);
-		if (i > fix) up.push_back(mid);
+		else if (i > fix) up.push_back(mid);
 
 		Point dd(right[i]->coord.hx(), right[i]->coord.hy() + (i - fix) * 1.0 * LINE_GAP);
 		if (right[i]->is_device)
@@ -1207,7 +1235,7 @@ void CableRouter::avoid_down(
 		}
 
 		if (i < fix) left.push_back(mid);
-		if (i > fix) right.push_back(mid);
+		else if (i > fix) right.push_back(mid);
 
 		Point dd(down[i]->coord.hx() + (i - fix) * 1.0 * LINE_GAP, down[i]->coord.hy());
 		if (down[i]->is_device)
@@ -1307,7 +1335,7 @@ void CableRouter::avoid_up(
 		}
 
 		if (i < fix) left.push_back(mid);
-		if (i > fix) right.push_back(mid);
+		else if (i > fix) right.push_back(mid);
 
 		Point dd(up[i]->coord.hx() + (i - fix) * 1.0 * LINE_GAP, up[i]->coord.hy());
 		if (up[i]->is_device)

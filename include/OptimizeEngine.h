@@ -21,6 +21,7 @@ namespace CableRouter
 		bool is_device;
 
 		// for inner group connect
+		// not from this->parent when existing small turn
 		Vector dir_from_parent = Vector(0.0, 0.0);
 	};
 
