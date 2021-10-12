@@ -60,6 +60,7 @@ string CableRouter::CableRouteEngine::routing(string datastr, int loop_max_count
 
 	// parse geojson file
 	map = read_from_geojson_string(datastr);
+	deleteInvalidDevice(map);
 	if (map.devices.size() == 0)
 	{
 		return "error: no Wiring Position";
@@ -91,7 +92,10 @@ string CableRouter::CableRouteEngine::routing(string datastr, int loop_max_count
 	for (int i = 0; i < groups.size(); i++)
 	{
 		ImmuneSystem is;
-		is.init(&groups[i]);
+		if (!is.init(&groups[i]))
+		{
+			continue;
+		}
 		systems.push_back(is);
 	}
 

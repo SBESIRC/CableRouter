@@ -17,7 +17,7 @@
 #define _CABLEROUTER_CGALUTILS_H_
 
 #define CR_INF  1e10
-#define CR_EPS  1e-12
+#define CR_EPS  1e-14
 
 namespace CableRouter
 {

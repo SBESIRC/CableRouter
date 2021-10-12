@@ -390,7 +390,7 @@ double CableRouter::ImmuneSystem::affinity(vector<vector<int>>& adj, vector<vect
 	return value > 0 ? value : 0;
 }
 
-void CableRouter::ImmuneSystem::init(ISData* d)
+bool CableRouter::ImmuneSystem::init(ISData* d)
 {
 	data = *d;
 	// parse_groups pheromone
@@ -431,6 +431,11 @@ void CableRouter::ImmuneSystem::init(ISData* d)
 				pwr = i;
 			}
 		}
+	}
+	if (pwr == -1)
+	{
+		printf("Error: can't connect to power\n");
+		return false;
 	}
 	adj[start].push_back(pwr);
 	adj[pwr].push_back(start);
@@ -489,6 +494,8 @@ void CableRouter::ImmuneSystem::init(ISData* d)
 		an.value = value;
 		globlMem.insert(an);
 	}
+
+	return true;
 }
 
 void CableRouter::ImmuneSystem::run()

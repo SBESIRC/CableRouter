@@ -40,7 +40,7 @@ namespace CableRouter
 	class ImmuneSystem
 	{
 	public:
-		void init(ISData* data);
+		bool init(ISData* data);
 		void run();
 		ISData data;
 		set<Antibody> globlMem;

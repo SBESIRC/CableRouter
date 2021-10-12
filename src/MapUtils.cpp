@@ -358,3 +358,34 @@ void CableRouter::deleteMapInfo(MapInfo& map)
 	reset(*room_all);
 	delete room_all;
 }
+
+void CableRouter::deleteInvalidDevice(MapInfo& map)
+{
+	vector<Device> valid_dev;
+	for (int i = 0; i < map.devices.size(); i++)
+	{
+		Point pos = map.devices[i].coord;
+
+		if (!map.area.info.boundary.has_on_bounded_side(pos))
+			continue;
+
+		auto holes = point_search(map.hole_tree, pos);
+		bool valid = true;
+
+		for (auto hit = holes.begin(); hit != holes.end(); hit++)
+		{
+			auto h = *hit;
+			Polygon boundary = h->data->boundary;
+			if (!boundary.has_on_unbounded_side(pos))
+			{
+				valid = false;
+				break;
+			}
+		}
+		if (!valid)
+			continue;
+
+		valid_dev.push_back(Device(pos, (int)valid_dev.size()));
+	}
+	map.devices.swap(valid_dev);
+}
