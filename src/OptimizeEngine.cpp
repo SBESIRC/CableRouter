@@ -878,11 +878,11 @@ void CableRouter::avoid_coincidence_non_device(DreamTree tree)
 		Segment seg = Segment(now->parent->coord, now->coord);
 
 		rbush::TreeNode<DreamNodePtr>* node = new rbush::TreeNode<DreamNodePtr>();
-		node->data = &DreamNodePtr(now);
-		node->bbox.minX = DOUBLE(seg.bbox().xmin());
-		node->bbox.minY = DOUBLE(seg.bbox().ymin());
-		node->bbox.maxX = DOUBLE(seg.bbox().xmax());
-		node->bbox.maxY = DOUBLE(seg.bbox().ymax());
+		node->data = new DreamNodePtr(now);
+		node->bbox.minX = DOUBLE(seg.bbox().xmin() - LINE_GAP);
+		node->bbox.minY = DOUBLE(seg.bbox().ymin() - LINE_GAP);
+		node->bbox.maxX = DOUBLE(seg.bbox().xmax() + LINE_GAP);
+		node->bbox.maxY = DOUBLE(seg.bbox().ymax() + LINE_GAP);
 		dream_node_nodes.push_back(node);
 	}
 
@@ -965,6 +965,7 @@ void CableRouter::avoid_coincidence_non_device(DreamTree tree)
 	delete dn_tree;
 	for (int i = 0; i < dream_node_nodes.size(); i++)
 	{
+		delete dream_node_nodes[i]->data;
 		delete dream_node_nodes[i];
 		dream_node_nodes[i] = NULL;
 	}
