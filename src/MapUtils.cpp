@@ -362,9 +362,13 @@ void CableRouter::deleteMapInfo(MapInfo& map)
 void CableRouter::deleteInvalidDevice(MapInfo& map)
 {
 	vector<Device> valid_dev;
+	set<Point> exist;
 	for (int i = 0; i < map.devices.size(); i++)
 	{
 		Point pos = map.devices[i].coord;
+
+		if (exist.find(pos) != exist.end())
+			continue;
 
 		if (!map.area.info.boundary.has_on_bounded_side(pos))
 			continue;
@@ -386,6 +390,7 @@ void CableRouter::deleteInvalidDevice(MapInfo& map)
 			continue;
 
 		valid_dev.push_back(Device(pos, (int)valid_dev.size()));
+		exist.insert(pos);
 	}
 	map.devices.swap(valid_dev);
 }
