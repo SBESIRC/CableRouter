@@ -61,13 +61,14 @@ string CableRouter::CableRouteEngine::routing(string datastr, int loop_max_count
 	// parse geojson file
 	map = read_from_geojson_string(datastr);
 	deleteInvalidDevice(map);
+	deleteInvalidPower(map);
 	if (map.devices.size() == 0)
 	{
-		return "error: no Wiring Position";
+		return "error: no Valid Wiring Position";
 	}
 	else if (map.powers.size() == 0)
 	{
-		return "error: no Power Position";
+		return "error: no Valid Power Position";
 	}
 	else if (map.area.info.boundary.size() == 0)
 	{

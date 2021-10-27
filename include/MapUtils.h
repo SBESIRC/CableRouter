@@ -79,6 +79,8 @@ namespace CableRouter
 
 	void deleteMapInfo(MapInfo& map);
 	void deleteInvalidDevice(MapInfo& map);
+	void deleteInvalidPower(MapInfo& map);
+	bool isValidPoint(MapInfo& map, Point pos);
 
 	CDT			buildTriangulation	(MapInfo* const map);
 	double**	buildGraphAll		(MapInfo* const map, const CDT& cdt, int n, bool center_weighted = false, bool room_weighted = false);

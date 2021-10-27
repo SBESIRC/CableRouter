@@ -370,27 +370,65 @@ void CableRouter::deleteInvalidDevice(MapInfo& map)
 		if (exist.find(pos) != exist.end())
 			continue;
 
-		if (!map.area.info.boundary.has_on_bounded_side(pos))
-			continue;
-
-		auto holes = point_search(map.hole_tree, pos);
-		bool valid = true;
-
-		for (auto hit = holes.begin(); hit != holes.end(); hit++)
-		{
-			auto h = *hit;
-			Polygon boundary = h->data->boundary;
-			if (!boundary.has_on_unbounded_side(pos))
-			{
-				valid = false;
-				break;
-			}
-		}
-		if (!valid)
+		if (!isValidPoint(map, pos))
 			continue;
 
 		valid_dev.push_back(Device(pos, (int)valid_dev.size()));
 		exist.insert(pos);
 	}
 	map.devices.swap(valid_dev);
+}
+
+void CableRouter::deleteInvalidPower(MapInfo& map)
+{
+	vector<Power> valid_pwr;
+	set<Point> exist_pt;
+	// set<Segment> exist_seg;
+	for (int i = 0; i < map.powers.size(); i++)
+	{
+		if (!map.powers[i].is_valid())
+			continue;
+
+		if (map.powers[i].is_point())
+		{
+			Point pos = map.powers[i].points[0];
+
+			if (exist_pt.find(pos) != exist_pt.end())
+				continue;
+
+			if (!isValidPoint(map, pos))
+				continue;
+
+			valid_pwr.push_back(Power(pos));
+			exist_pt.insert(pos);
+		}
+
+		else if (map.powers[i].is_segment())
+		{
+			// To do
+		}
+	}
+	map.powers.swap(valid_pwr);
+}
+
+bool CableRouter::isValidPoint(MapInfo& map, Point pos)
+{
+	if (!map.area.info.boundary.has_on_bounded_side(pos))
+		return false;
+
+	auto holes = point_search(map.hole_tree, pos);
+	bool valid = true;
+
+	for (auto hit = holes.begin(); hit != holes.end(); hit++)
+	{
+		auto h = *hit;
+		Polygon boundary = h->data->boundary;
+		if (!boundary.has_on_unbounded_side(pos))
+		{
+			valid = false;
+			break;
+		}
+	}
+
+	return valid;
 }
