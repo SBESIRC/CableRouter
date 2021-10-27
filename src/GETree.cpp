@@ -200,6 +200,8 @@ double CableRouter::cohesion(vector<GENode>& tree, int root, double mean)
 			q.push(tree[now].children[i]);
 		}
 	}
+	if (size == 0) return 0;
+
 	return st / size;
 }
 

@@ -8,7 +8,7 @@ vector<vector<int>> CableRouter::GroupEngine::grouping(MapInfo* const data, cons
 {
 	getParam(param);
 
-	if (data->devices.size() < param->min_dev_size)
+	if (data->devices.size() <= param->min_dev_size)
 	{
 		vector<int> pts;
 		for (int i = 0; i < data->devices.size(); i++)
@@ -150,7 +150,7 @@ double CableRouter::GroupEngine::evaluate(vector<GENode>& tree, int root, int no
 	// factor 0
 	if (size1 < dev_min || size2 < dev_min)
 	{
-		return -1;
+		return -10;
 	}
 
 	double f1, f2, f3, f4, f5;
@@ -180,7 +180,7 @@ double CableRouter::GroupEngine::evaluate(vector<GENode>& tree, int root, int no
 	f4 = rest1 * 1.0 / dev_max * rest2 * 1.0 / dev_max;
 
 	// factor 5
-	f5 = 5.0 * tree[now].weight / (avg1 + avg2);
+	f5 = 5.0 * tree[now].weight / (avg1 + avg2 + 1);
 
 	return w1 * f1 + w2 * f2 + w3 * f3 + w4 * f4 + w5 * f5;
 }
