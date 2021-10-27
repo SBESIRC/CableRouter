@@ -8,9 +8,6 @@
 using namespace CableRouter;
 
 // FOR PARTITION
-#define MAX_DEV_IN_GROUP 25
-#define MIN_DEV_IN_GROUP 10
-
 #define ALPHA	30		// pos relation
 #define BETA	10		// size even
 #define OMEGA	50		// inner cohesion
@@ -77,7 +74,7 @@ string CableRouter::CableRouteEngine::routing(string datastr, int loop_max_count
 	
 	// grouping
 	param.max_dev_size = loop_max_count;
-	param.min_dev_size = MIN_DEV_IN_GROUP;
+	param.min_dev_size = max(1, loop_max_count / 2);
 	param.weight_pos = ALPHA;
 	param.weight_even = BETA;
 	param.weight_cohesion = OMEGA;
