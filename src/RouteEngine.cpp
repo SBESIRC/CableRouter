@@ -14,7 +14,7 @@ bool open_list_less(ASNode* a, ASNode* b)
 	return a->f() > b->f();
 }
 
-Polyline CableRouter::a_star_connect_p2p(MapInfo* const data, Point s, Point t, vector<Segment>& lines)
+ASPath CableRouter::a_star_connect_p2p(MapInfo* const data, Point s, Point t, vector<Segment>& lines)
 {
 	CDT dt;
 	set<Constraint> constraints;
@@ -37,6 +37,26 @@ Polyline CableRouter::a_star_connect_p2p(MapInfo* const data, Point s, Point t, 
 		for (int i = 0; i < h->size(); i++)
 		{
 			constraints.insert(Constraint(h->vertex(i), h->vertex((i + 1) % h->size())));
+		}
+	}
+
+	// rooms
+	for (auto r = data->rooms.begin(); r != data->rooms.end(); r++)
+	{
+		for (int i = 0; i < r->size(); i++)
+		{
+			Point source = r->vertex(i);
+			Point target = r->vertex((i + 1) % r->size());
+			int num = 1 + ((int)DIST(source, target)) / 2000;
+			Point start = source;
+			for (int i = 1; i <= num; i++)
+			{
+				Point end = Point(
+					1.0 * i / num * DOUBLE(target.hx() - source.hx()) + DOUBLE(source.hx()),
+					1.0 * i / num * DOUBLE(target.hy() - source.hy()) + DOUBLE(source.hy()));
+				constraints.insert(Constraint(start, end));
+				start = end;
+			}
 		}
 	}
 
@@ -124,6 +144,7 @@ Polyline CableRouter::a_star_connect_p2p(MapInfo* const data, Point s, Point t, 
 			if (v1->info().id == 0 || v2->info().id == 0)
 			{
 				nodes[n].g = DIST(s, nodes[n].mid);
+				nodes[n].cross_num = 0;
 				nodes[n].open = true;
 				nodes[n].is_start = true;
 				openlist.push_back(&nodes[n]);
@@ -136,6 +157,7 @@ Polyline CableRouter::a_star_connect_p2p(MapInfo* const data, Point s, Point t, 
 			if (!nodes[i].open && (v1->info().id == 0 || v2->info().id == 0))
 			{
 				nodes[i].g = DIST(s, nodes[i].mid);
+				nodes[i].cross_num = 0;
 				nodes[i].open = true;
 				nodes[i].is_start = true;
 				openlist.push_back(&nodes[i]);
@@ -156,6 +178,7 @@ Polyline CableRouter::a_star_connect_p2p(MapInfo* const data, Point s, Point t, 
 			if (v1->info().id == 0 || v2->info().id == 0)
 			{
 				nodes[n].g = DIST(s, nodes[n].mid);
+				nodes[n].cross_num = 0;
 				nodes[n].open = true;
 				nodes[n].is_start = true;
 				openlist.push_back(&nodes[n]);
@@ -168,6 +191,7 @@ Polyline CableRouter::a_star_connect_p2p(MapInfo* const data, Point s, Point t, 
 			if (!nodes[i].open && (v1->info().id == 0 || v2->info().id == 0))
 			{
 				nodes[i].g = DIST(s, nodes[i].mid);
+				nodes[i].cross_num = 0;
 				nodes[i].open = true;
 				nodes[i].is_start = true;
 				openlist.push_back(&nodes[i]);
@@ -225,21 +249,27 @@ Polyline CableRouter::a_star_connect_p2p(MapInfo* const data, Point s, Point t, 
 			if (next->close) continue;
 
 			double w = DIST(no->mid, next->mid);
+			bool cross_cons = false;
 			int k = 0;
 			while (no->face->neighbor(k) != next->face) k++;
-			if (dt.is_constrained(make_pair(no->face, k))) w += 10000;
+			if (dt.is_constrained(make_pair(no->face, k))) { 
+				w += 100000; 
+				cross_cons = true;
+			}
 
 			if (!next->open)
 			{
 				next->g = no->g + w;
 				next->parent = no->id;
 				next->open = true;
+				next->cross_num = no->cross_num + cross_cons ? 1 : 0;
 				openlist.push_back(next);
 				sort(openlist.begin(), openlist.end(), open_list_less);
 			}
 			else if (next->g > no->g + w)
 			{
 				next->g = no->g + w;
+				next->cross_num = no->cross_num + cross_cons ? 1 : 0;
 				if (!next->is_start) next->parent = no->id;
 				sort(openlist.begin(), openlist.end(), open_list_less);
 			}
@@ -250,15 +280,20 @@ Polyline CableRouter::a_star_connect_p2p(MapInfo* const data, Point s, Point t, 
 		printf("NO PATH!\n");
 		delete[] nodes;
 		dt.clear();
-		return Polyline();
+		return ASPath();
 	}
 
 	Polyline path = funnel_smooth(dt, nodes, s, t, end_node->id);
 	reverse(path.begin(), path.end());
+
+	ASPath ap;
+	ap.path = path;
+	ap.cross_num = end_node->cross_num;
+
 	//printf("Path size: %d\n", path.size());
 	delete[] nodes;
 	dt.clear();
-	return path;
+	return ap;
 }
 
 Polyline CableRouter::a_star_connect_p2s(MapInfo* const data, Point s, Segment t, vector<Segment>& lines)
@@ -756,12 +791,13 @@ Polyline CableRouter::manhattan_smooth_p2p(MapInfo* const data, Polyline& path, 
 	}
 	return res;
 }
-Polyline CableRouter::manhattan_smooth_basic(MapInfo* const data, Polyline& path, vector<Segment>& exist_lines)
+Polyline CableRouter::manhattan_smooth_basic(MapInfo* const data, ASPath& path, vector<Segment>& exist_lines)
 {
-	Polyline line = path;
+	Polyline line = path.path;
 	if (line.size() <= 1) return line;
 
 	Polyline res;
+	int passport = path.cross_num;
 	int loop_count = 0;
 	int now = 0;
 	int next_id = (int)line.size() - 1;
@@ -774,6 +810,14 @@ Polyline CableRouter::manhattan_smooth_basic(MapInfo* const data, Polyline& path
 		if (EQUAL(u.hx(), v.hx()) || EQUAL(u.hy(), v.hy()))
 		{
 			bool cross = crossObstacle(data, u, v);
+			int cross_r = crossRoom(data, u, v);
+			if (!cross && cross_r > 0)
+			{
+				if (cross_r <= passport)
+					passport -= cross_r;
+				else
+					cross = true;
+			}
 			//bool colli = tooCloseToSun(data, u, v, obstacle_lines);
 			if (!cross)
 			{
@@ -798,6 +842,25 @@ Polyline CableRouter::manhattan_smooth_basic(MapInfo* const data, Polyline& path
 		Point mid2(u.hx(), v.hy());
 		bool cross1 = crossObstacle(data, u, mid1) || crossObstacle(data, mid1, v);
 		bool cross2 = crossObstacle(data, u, mid2) || crossObstacle(data, mid2, v);
+
+		int cross_r1 = crossRoom(data, u, mid1) + crossRoom(data, mid1, v);
+		if (!cross1 && cross_r1 > 0)
+		{
+			if (cross_r1 <= passport)
+				passport -= cross_r1;
+			else
+				cross1 = true;
+		}
+
+		int cross_r2 = crossRoom(data, u, mid2) + crossRoom(data, mid2, v);
+		if (!cross2 && cross_r2 > 0)
+		{
+			if (cross_r2 <= passport)
+				passport -= cross_r2;
+			else
+				cross2 = true;
+		}
+
 		//bool colli1 = tooCloseToSun(data, u, mid1, obstacle_lines) || tooCloseToSun(data, mid1, v, obstacle_lines);
 		//bool colli2 = tooCloseToSun(data, u, mid2, obstacle_lines) || tooCloseToSun(data, mid2, v, obstacle_lines);
 		if (!cross2 && !cross1)
@@ -894,14 +957,14 @@ Polyline CableRouter::manhattan_connect(MapInfo* const data, Point u, Point v, V
 	double dy = abs(u.hy() - v.hy());
 	if (EQUAL(dx, 0) || EQUAL(dy, 0))
 	{
-		if (!crossObstacle(data, u, v)) {
+		if (!crossObstacle(data, u, v) && !crossRoom(data, u, v)) {
 			res.push_back(u);
 			res.push_back(v);
 		}
 		else
 		{
-			res = a_star_connect_p2p(data, u, v, lines);
-			res = manhattan_smooth_basic(data, res, lines);
+			ASPath ap = a_star_connect_p2p(data, u, v, lines);
+			res = manhattan_smooth_basic(data, ap, lines);
 			res = line_simple(res);
 		}
 	}
@@ -909,8 +972,12 @@ Polyline CableRouter::manhattan_connect(MapInfo* const data, Point u, Point v, V
 	{
 		Point mid1(v.hx(), u.hy());
 		Point mid2(u.hx(), v.hy());
-		bool cross1 = crossObstacle(data, u, mid1) || crossObstacle(data, mid1, v);
-		bool cross2 = crossObstacle(data, u, mid2) || crossObstacle(data, mid2, v);
+		bool cross1 = 
+			crossObstacle(data, u, mid1) || crossRoom(data, u, mid1) ||
+			crossObstacle(data, mid1, v) || crossRoom(data, mid1, v);
+		bool cross2 =
+			crossObstacle(data, u, mid2) || crossRoom(data, u, mid2) ||
+			crossObstacle(data, mid2, v) || crossRoom(data, mid2, v);
 		if (!cross2 && !cross1)
 		{
 			double w1, w2;
@@ -972,8 +1039,8 @@ Polyline CableRouter::manhattan_connect(MapInfo* const data, Point u, Point v, V
 		}
 		else
 		{
-			res = a_star_connect_p2p(data, u, v, lines);
-			res = manhattan_smooth_basic(data, res, lines);
+			ASPath ap = a_star_connect_p2p(data, u, v, lines);
+			res = manhattan_smooth_basic(data, ap, lines);
 			res = line_simple(res);
 		}
 	}
@@ -985,7 +1052,8 @@ Polyline CableRouter::manhattan_connect(MapInfo* const data, Point u, Point v, V
 Polyline CableRouter::obstacle_avoid_connect_p2p(MapInfo* const data, Point p, Point q, vector<Segment>& lines)
 {
 	vector<Segment> blank;
-	Polyline line = a_star_connect_p2p(data, p, q, blank);
+	ASPath ap = a_star_connect_p2p(data, p, q, blank);
+	Polyline line = ap.path;
 	line = line_break(line, 1000);
 	line = manhattan_smooth_p2p(data, line, lines);
 	line = line_simple(line);

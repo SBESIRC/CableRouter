@@ -20,6 +20,8 @@ namespace CableRouter
 		bool open = false;
 		bool close = false;
 
+		int cross_num = 0;
+
 		double g;
 		double h;
 		double f()
@@ -28,13 +30,19 @@ namespace CableRouter
 		}
 	};
 
+	struct ASPath
+	{
+		Polyline path;
+		int cross_num;
+	};
+
 	// General
 	Polyline	manhattan_connect(MapInfo* const map, Point s, Point t, Vector pre_dir, vector<Segment>& lines);
 	Polyline	funnel_smooth(CDT& dt, ASNode* nodes, Point s, Point t, int end_node_id);
 
 	// Point to Point
 	Polyline	obstacle_avoid_connect_p2p(MapInfo* const map, Point s, Point t, vector<Segment>& lines);
-	Polyline	a_star_connect_p2p(MapInfo* const map, Point s, Point t, vector<Segment>& lines);
+	ASPath		a_star_connect_p2p(MapInfo* const map, Point s, Point t, vector<Segment>& lines);
 	Polyline	manhattan_smooth_p2p(MapInfo* const map, Polyline& path, vector<Segment>& exist_lines);
 
 	// Point to Segment
@@ -45,7 +53,7 @@ namespace CableRouter
 	// Smooth
 	Polyline	line_break(Polyline& line, const double gap);
 	Polyline	line_simple(Polyline& line);
-	Polyline	manhattan_smooth_basic(MapInfo* const map, Polyline& path, vector<Segment>& exist_lines);
+	Polyline	manhattan_smooth_basic(MapInfo* const map, ASPath& path, vector<Segment>& exist_lines);
 
 	double		tooCloseToSun(MapInfo* const map, const Point p, const Point q, vector<Segment>& exist_lines, bool is_end = false);
 }

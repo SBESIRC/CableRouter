@@ -324,6 +324,32 @@ bool CableRouter::crossObstacle(MapInfo* const data, const Segment s)
 	return false;
 }
 
+int CableRouter::crossRoom(MapInfo* const data, const Point p, const Point q)
+{
+	return crossRoom(data, Segment(p, q));
+}
+
+int CableRouter::crossRoom(MapInfo* const data, const Segment s)
+{
+	int res = 0;
+	auto rooms = segment_search(data->room_tree, s.source(), s.target());
+	for (auto oit = rooms.begin(); oit != rooms.end(); oit++)
+	{
+		Polygon boundary = (*oit)->data->boundary;
+		for (auto eit = boundary.edges_begin(); eit != boundary.edges_end(); eit++)
+		{
+			if (!CGAL::do_intersect(s, *eit)) continue;
+			CGAL::Object result = CGAL::intersection(s, *eit);
+			Point pt;
+			if (CGAL::assign(pt, result))
+			{
+				res++;
+			}
+		}
+	}
+	return res;
+}
+
 void CableRouter::deleteMapInfo(MapInfo& map)
 {
 	auto cen_all = map.cen_line_tree->all();

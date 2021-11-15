@@ -93,6 +93,8 @@ namespace CableRouter
 	void		addWeightRooms		(MapInfo* const map, const Point p, const Point q, double& w);
 	bool		crossObstacle		(MapInfo* const map, const Segment s);
 	bool		crossObstacle		(MapInfo* const map, const Point p, const Point q);
+	int			crossRoom			(MapInfo* const map, const Segment s);
+	int			crossRoom			(MapInfo* const map, const Point p, const Point q);
 	bool		touchObstacle		(MapInfo* const map, const Point p, const Point q);
 }
 
