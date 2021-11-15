@@ -73,8 +73,8 @@ void CableRouter::get_manhattan_tree(MapInfo* map, DreamTree tree, vector<Polyli
 		{
 			Vector dir1(path[0], path[1]);
 			Vector dir2(pa->parent->coord, pa->coord);
-			if (EQUAL(dir1.hx(), 0) && EQUAL(dir2.hx(), 0) ||
-				EQUAL(dir1.hy(), 0) && EQUAL(dir2.hy(), 0))
+			double cos_theta = abs(DOUBLE(dir1 * dir2) / LEN(dir1) / LEN(dir2));
+			if (EQUAL(cos_theta, 1))
 			{
 				DreamNodePtr fake = pa;
 				pa = fake->parent;
@@ -124,9 +124,9 @@ void CableRouter::get_manhattan_tree(MapInfo* map, DreamTree tree, vector<Polyli
 				double apap = DOUBLE(ap * ap);
 
 				double cos_theta = abap / sqrt(abab) / sqrt(apap);
-				if (EQUAL(abab, 0) ||
+				if (EQUAL(abab, 0) || 
 					EQUAL(apap, 0) ||
-					(abap / abab >= 1 && cos_theta > sqrt(2.0) / 2))
+					abs(cos_theta) > sqrt(2.0) / 2)
 				{
 					children[i]->parent = now;
 					now->children.push_back(children[i]);
@@ -405,7 +405,7 @@ void CableRouter::avoid_coincidence(DreamTree tree)
 
 			Vector dir(now->coord, children[i]->coord);
 			//if (LEN(dir) <= MAX_OVERLAP) continue;
-			if (dir.hy() == 0 && dir.hx() < 0) dir_nodes[N_LEFT].push_back(children[i]);
+			if (EQUAL(dir.hy(), 0) && dir.hx() < 0) dir_nodes[N_LEFT].push_back(children[i]);
 			else if (EQUAL(dir.hy(), 0) && dir.hx() > 0) dir_nodes[N_RIGHT].push_back(children[i]);
 			else if (EQUAL(dir.hx(), 0) && dir.hy() < 0) dir_nodes[N_DOWN].push_back(children[i]);
 			else if (EQUAL(dir.hx(), 0) && dir.hy() > 0) dir_nodes[N_UP].push_back(children[i]);
@@ -1083,6 +1083,7 @@ void CableRouter::avoid_right(
 		pair_nodes.push_back(make_pair(right[i], now_pa));
 	}
 	sort(pair_nodes.begin(), pair_nodes.end(), compare_right_from_down_to_up);
+	reverse(pair_nodes.begin(), pair_nodes.end());
 	for (int i = 0; i < pair_nodes.size(); i++)
 	{
 		right[i] = pair_nodes[i].first;
@@ -1106,7 +1107,7 @@ void CableRouter::avoid_right(
 	{
 		if (i == fix) continue;
 
-		DreamNodePtr mid = newDreamNode(Point(now->coord.hx(), now->coord.hy() + (i - fix) * 1.0 * LINE_GAP));
+		DreamNodePtr mid = newDreamNode(Point(now->coord.hx(), now->coord.hy() - (i - fix) * 1.0 * LINE_GAP));
 
 		if (right[i] == now_pa)
 		{
@@ -1138,7 +1139,7 @@ void CableRouter::avoid_right(
 		if (i < fix) down.push_back(mid);
 		else if (i > fix) up.push_back(mid);
 
-		Point dd(right[i]->coord.hx(), right[i]->coord.hy() + (i - fix) * 1.0 * LINE_GAP);
+		Point dd(right[i]->coord.hx(), right[i]->coord.hy() - (i - fix) * 1.0 * LINE_GAP);
 		if (right[i]->is_device)
 		{
 			DreamNodePtr mid2 = newDreamNode(dd);
@@ -1183,6 +1184,7 @@ void CableRouter::avoid_down(
 		pair_nodes.push_back(make_pair(down[i], now_pa));
 	}
 	sort(pair_nodes.begin(), pair_nodes.end(), compare_down_from_left_to_right);
+	reverse(pair_nodes.begin(), pair_nodes.end());
 	for (int i = 0; i < pair_nodes.size(); i++)
 	{
 		down[i] = pair_nodes[i].first;
@@ -1206,7 +1208,7 @@ void CableRouter::avoid_down(
 	{
 		if (i == fix) continue;
 
-		DreamNodePtr mid = newDreamNode(Point(now->coord.hx() + (i - fix) * 1.0 * LINE_GAP, now->coord.hy()));
+		DreamNodePtr mid = newDreamNode(Point(now->coord.hx() - (i - fix) * 1.0 * LINE_GAP, now->coord.hy()));
 
 		if (down[i] == now_pa)
 		{
@@ -1238,7 +1240,7 @@ void CableRouter::avoid_down(
 		if (i < fix) left.push_back(mid);
 		else if (i > fix) right.push_back(mid);
 
-		Point dd(down[i]->coord.hx() + (i - fix) * 1.0 * LINE_GAP, down[i]->coord.hy());
+		Point dd(down[i]->coord.hx() - (i - fix) * 1.0 * LINE_GAP, down[i]->coord.hy());
 		if (down[i]->is_device)
 		{
 			DreamNodePtr mid2 = newDreamNode(dd);
