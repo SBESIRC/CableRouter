@@ -411,6 +411,55 @@ void CableRouter::deleteInvalidPower(MapInfo& map)
 	map.powers.swap(valid_pwr);
 }
 
+void CableRouter::correctInvalidPower(MapInfo& map)
+{
+	vector<Power> valid_pwr;
+	set<Point> exist_pt;
+	// set<Segment> exist_seg;
+	for (int i = 0; i < map.powers.size(); i++)
+	{
+		if (!map.powers[i].is_valid())
+			continue;
+
+		if (map.powers[i].is_point())
+		{
+			Point pos = map.powers[i].points[0];
+
+			if (exist_pt.find(pos) != exist_pt.end())
+				continue;
+
+			if (!map.area.info.boundary.has_on_bounded_side(pos))
+			{
+				Segment closet;
+				double MIN = -1;
+				for (auto eit = map.area.info.boundary.edges_begin(); eit != map.area.info.boundary.edges_end(); eit++)
+				{
+					double d = DIST(*eit, pos);
+					if (MIN < 0 || d < MIN)
+					{
+						MIN = d;
+						closet = *eit;
+					}
+				}
+				Point project = project_point_to_segment(pos, closet);
+				pos = shrink_segment(Segment(pos, project), 1.0 + 0.01 / MIN).target();
+			}
+
+			if (!isValidPoint(map, pos))
+				continue;
+
+			valid_pwr.push_back(Power(pos));
+			exist_pt.insert(pos);
+		}
+
+		else if (map.powers[i].is_segment())
+		{
+			// To do
+		}
+	}
+	map.powers.swap(valid_pwr);
+}
+
 bool CableRouter::isValidPoint(MapInfo& map, Point pos)
 {
 	if (!map.area.info.boundary.has_on_bounded_side(pos))

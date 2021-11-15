@@ -80,6 +80,7 @@ namespace CableRouter
 	void deleteMapInfo(MapInfo& map);
 	void deleteInvalidDevice(MapInfo& map);
 	void deleteInvalidPower(MapInfo& map);
+	void correctInvalidPower(MapInfo& map);
 	bool isValidPoint(MapInfo& map, Point pos);
 
 	CDT			buildTriangulation	(MapInfo* const map);

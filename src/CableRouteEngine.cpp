@@ -58,7 +58,8 @@ string CableRouter::CableRouteEngine::routing(string datastr, int loop_max_count
 	// parse geojson file
 	map = read_from_geojson_string(datastr);
 	deleteInvalidDevice(map);
-	deleteInvalidPower(map);
+	//deleteInvalidPower(map);
+	correctInvalidPower(map);
 	if (map.devices.size() == 0)
 	{
 		return "error: no Valid Wiring Position";
