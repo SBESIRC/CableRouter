@@ -126,7 +126,7 @@ void CableRouter::get_manhattan_tree(MapInfo* map, DreamTree tree, vector<Polyli
 				double cos_theta = abap / sqrt(abab) / sqrt(apap);
 				if (EQUAL(abab, 0) || 
 					EQUAL(apap, 0) ||
-					abs(cos_theta) > sqrt(2.0) / 2)
+					(cos_theta) > sqrt(2.0) / 2)
 				{
 					children[i]->parent = now;
 					now->children.push_back(children[i]);
@@ -135,7 +135,8 @@ void CableRouter::get_manhattan_tree(MapInfo* map, DreamTree tree, vector<Polyli
 				{
 					DreamNodePtr mid = newDreamNode(now->parent->coord);
 					mid->parent = now;
-					mid->dir_from_parent = now->parent->dir_from_parent;
+					if (abs(cos_theta) <= sqrt(2.0) / 2) mid->dir_from_parent = now->parent->dir_from_parent;
+					else mid->dir_from_parent = now->dir_from_parent;
 					now->children.push_back(mid);
 					children[i]->parent = mid;
 					mid->children.push_back(children[i]);
