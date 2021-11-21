@@ -171,7 +171,7 @@ void CableRouter::inner_connect(MapInfo* map, ImmuneSystem* group, vector<Polyli
 		get_manhattan_tree(&new_map, forest[i], cables);
 		//get_manhattan_tree(&data, path_tree, cables);
 		printf("avoid_coincidence begin\n");
-		//avoid_coincidence(path_tree);
+		avoid_coincidence(path_tree);
 		printf("avoid_coincidence end\n");
 		vector<Polyline> paths = get_dream_tree_paths(forest[i]);
 		if (ucs_id != -1)
