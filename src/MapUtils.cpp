@@ -38,6 +38,73 @@ bool CableRouter::touchObstacle(MapInfo* const data, const Point p, const Point 
 	return false;
 }
 
+MapInfo CableRouter::rotateMap(MapInfo* const data, Region ucs)
+{
+	MapInfo map;
+	PElement e;
+
+	Transformation rotate = get_tf_from_dir(ucs.align).inverse();
+
+	vector<rbush::TreeNode<PElement>*> hole_nodes;
+	vector<rbush::TreeNode<PElement>*> room_nodes;
+	vector<rbush::TreeNode<Segment>* > area_nodes;
+	vector<rbush::TreeNode<Segment>* > center_nodes;
+
+	for (auto d : data->devices)
+	{
+		Device dev(d.coord.transform(rotate), d.id);
+		map.devices.push_back(dev);
+	}
+
+	for (auto p : data->powers)
+	{
+		vector<Point> pts;
+		for (auto q : p.points)
+			pts.push_back(q.transform(rotate));
+		Power pwr(pts);
+		pwr.id = p.id;
+		map.powers.push_back(pwr);
+	}
+
+	for (auto h : data->holes)
+	{
+		e.boundary = CGAL::transform(rotate, h);
+		e.weight = CR_INF;
+		hole_nodes.push_back(get_rtree_node(&e));
+		map.holes.push_back(e.boundary);
+	}
+
+	e.boundary = CGAL::transform(rotate, data->area.info.boundary);
+	e.weight = data->area.info.weight;
+	map.area.info = e;
+	for (auto eit = e.boundary.edges_begin(); eit != e.boundary.edges_end(); eit++)
+	{
+		area_nodes.push_back(get_seg_rtree_node(&(*eit)));
+	}
+
+	for (auto c : data->centers)
+	{
+		Segment s = c.transform(rotate);
+		center_nodes.push_back(get_seg_rtree_node(&s));
+		map.centers.push_back(s);
+	}
+
+	for (auto r : data->rooms)
+	{
+		e.boundary = CGAL::transform(rotate, r);
+		e.weight = 10;
+		room_nodes.push_back(get_rtree_node(&e));
+		map.rooms.push_back(e.boundary);
+	}
+
+	map.cen_line_tree = new SegBush(center_nodes);
+	map.area.area_edge_tree = new SegBush(area_nodes);
+	map.hole_tree = new PEBush(hole_nodes);
+	map.room_tree = new PEBush(room_nodes);
+
+	return map;
+}
+
 CDT CableRouter::buildTriangulation(MapInfo* const data)
 {
 	printf("Triangulation begin\n");
@@ -348,6 +415,39 @@ int CableRouter::crossRoom(MapInfo* const data, const Segment s)
 		}
 	}
 	return res;
+}
+
+void CableRouter::preprocess(MapInfo& map)
+{
+	deleteInvalidDevice(map);
+	//deleteInvalidPower(data);
+	correctInvalidPower(map);
+	for (int i = 0; i < map.devices.size(); i++)
+	{
+		for (int rid = 0; rid < map.regions.size(); rid++)
+		{
+			if (!map.regions[rid].boundary.has_on_unbounded_side(map.devices[i].coord))
+			{
+				map.devices[i].region_id = rid;
+				break;
+			}
+		}
+	}
+	for (int i = 0; i < map.powers.size(); i++)
+	{
+		for (int rid = 0; rid < map.regions.size(); rid++)
+		{
+			if (!map.regions[rid].boundary.has_on_unbounded_side(map.powers[i].points[0]))
+			{
+				map.powers[i].region_id = rid;
+				break;
+			}
+		}
+	}
+	for (int i = 0; i < map.regions.size(); i++)
+	{
+		map.regions[i].align = Direction(1, i);
+	}
 }
 
 void CableRouter::deleteMapInfo(MapInfo& map)

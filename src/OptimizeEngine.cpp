@@ -53,6 +53,137 @@ vector<DreamNodePtr> CableRouter::getAllNodes(DreamTree tree)
 //	}
 //}
 
+void CableRouter::inner_connect(MapInfo* map, ImmuneSystem* group, vector<Polyline>& cables, vector<Polyline>& power_paths)
+{
+	// get group info
+	auto adj = group->globlMem.rbegin()->adj;
+	printf("Best value = %lf\n", group->globlMem.rbegin()->value);
+	vector<Device>& devices = group->data.devices;
+	int dn = (int)devices.size();
+
+	if (dn < 2) return;
+
+	// create nodes
+	vector<DreamNodePtr> dev_nodes;
+	for (int i = 0; i < dn; i++)
+	{
+		DreamNodePtr no = newDreamNode(devices[i].coord);
+		no->is_device = true;
+		no->ucs_id = devices[i].region_id;
+		dev_nodes.push_back(no);
+	}
+
+	// get root
+	int root;
+	for (int i = dn; i < adj.size(); i++)
+	{
+		bool found = false;
+		for (int j = 0; j < adj[i].size(); j++)
+		{
+			if (adj[i][j] < dn)
+			{
+				found = true;
+				root = adj[i][j];
+				power_paths[i - dn].push_back(devices[root].coord);
+				break;
+			}
+		}
+		if (found) break;
+	}
+
+	// get origin connect tree
+	vector<int> vis(dn, 0);
+	queue<int> dev_queue;
+
+	DreamTree path_tree = dev_nodes[root];
+	dev_queue.push(root);
+	while (!dev_queue.empty())
+	{
+		int now = dev_queue.front();
+		dev_queue.pop();
+		vis[now] = 1;
+		for (int i = 0; i < adj[now].size(); i++)
+		{
+			int ch = adj[now][i];
+			if (ch < dn && vis[ch] == 0)
+			{
+				dev_nodes[now]->children.push_back(dev_nodes[ch]);
+				dev_nodes[ch]->parent = dev_nodes[now];
+				vis[ch] = 1;
+				dev_queue.push(ch);
+			}
+		}
+	}
+
+	// devide by ucs
+	vector<DreamTree> forest;
+	forest.push_back(path_tree);
+	vector<DreamNodePtr> all = getAllNodes(path_tree);
+	for (int i = 0; i < all.size(); i++)
+	{
+		DreamNodePtr now = all[i];
+
+		if (!now->parent) continue;
+		if (!now->is_device) continue;
+
+		DreamNodePtr pa = now->parent;
+
+		if (now->ucs_id != pa->ucs_id)
+		{
+			DreamNodePtr new_now = newDreamNode(now->coord);
+			new_now->is_device = now->is_device;
+			new_now->ucs_id = now->ucs_id;
+
+			//DreamNodePtr new_pa = newDreamNode(pa->coord);
+			//new_pa->is_device = pa->is_device;
+			//new_pa->ucs_id = now->ucs_id;
+
+			//new_pa->children.push_back(new_now);
+			//new_now->parent = new_pa;
+			new_now->children = now->children;
+			for (auto c : new_now->children)
+				c->parent = new_now;
+
+			reset(now->children);
+			now->ucs_id = pa->ucs_id;
+
+			//forest.push_back(new_pa);
+			forest.push_back(new_now);
+		}
+	}
+
+
+	for (int i = 0; i < forest.size(); i++)
+	{
+		// ROTATE
+		Transformation rotate;
+		int ucs_id = forest[i]->ucs_id;
+		if (ucs_id != -1)
+		{
+			rotate = get_tf_from_dir(map->regions[ucs_id].align);
+			all = getAllNodes(forest[i]);
+			for (int i = 0; i < all.size(); i++)
+				all[i]->coord = all[i]->coord.transform(rotate.inverse());
+		}
+		// ROTATE
+		printf("get_manhattan_tree begin\n");
+		MapInfo new_map = ucs_id == -1 ? (*map) : rotateMap(map, map->regions[ucs_id]);
+		get_manhattan_tree(&new_map, forest[i], cables);
+		//get_manhattan_tree(&data, path_tree, cables);
+		printf("avoid_coincidence begin\n");
+		//avoid_coincidence(path_tree);
+		printf("avoid_coincidence end\n");
+		vector<Polyline> paths = get_dream_tree_paths(forest[i]);
+		if (ucs_id != -1)
+			for (int i = 0; i < paths.size(); i++)
+				for (int j = 0; j < paths[i].size(); j++)
+					paths[i][j] = paths[i][j].transform(rotate);
+		cables.insert(cables.end(), paths.begin(), paths.end());
+		if (ucs_id != -1)
+			deleteMapInfo(new_map);
+	}
+}
+
 void CableRouter::get_manhattan_tree(MapInfo* map, DreamTree tree, vector<Polyline>& exist)
 {
 	vector<Segment> exist_lines = get_segments_from_polylines(exist);

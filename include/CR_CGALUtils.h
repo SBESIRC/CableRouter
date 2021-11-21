@@ -53,9 +53,11 @@ namespace CableRouter
     typedef Kernel::Vector_2                                                Vector;
     typedef Kernel::Line_2                                                  Line;
     typedef Kernel::Iso_rectangle_2                                         Rectangle;
+    typedef Kernel::Direction_2                                             Direction;
     typedef vector<Point>                                                   Polyline;
     typedef CGAL::Polygon_2<Kernel>                                         Polygon;
     typedef CGAL::Polygon_with_holes_2<Kernel>                              Polygon_with_holes;
+    typedef CGAL::Aff_transformation_2<Kernel>                              Transformation;
 
     typedef CGAL::Triangulation_vertex_base_with_info_2<VertexInfo, Kernel> Vb;
     typedef CGAL::Triangulation_face_base_with_info_2<FaceInfo, Kernel>     Fbb;
@@ -112,6 +114,8 @@ namespace CableRouter
 
     vector<Segment> get_segments_from_polyline(Polyline& polyline);
     vector<Segment> get_segments_from_polylines(vector<Polyline>& polylines);
+
+    Transformation get_tf_from_dir(Direction dir);
 
     // T: has function swap()
     template <class T>

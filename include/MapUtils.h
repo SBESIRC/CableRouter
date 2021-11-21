@@ -19,7 +19,8 @@ namespace CableRouter
 
 	struct Power
 	{
-		int id;
+		int id = -1;
+		int region_id = -1;
 		vector<Point> points;
 		Power(vector<Point> pts)
 		{
@@ -51,17 +52,24 @@ namespace CableRouter
 	struct Device
 	{
 		int id;
+		int region_id;
 		Point coord;
 		Device(Point p, int i)
-			: coord(p), id(i) {}
+			: coord(p), id(i) , region_id(-1) {}
 		Device(Point p)
-			: coord(p), id(-1) {}
+			: coord(p), id(-1), region_id(-1) {}
 	};
 
 	struct FireArea
 	{
 		PElement info;
 		SegBush* area_edge_tree;
+	};
+
+	struct Region
+	{
+		Polygon boundary;
+		Direction align;
 	};
 
 	struct MapInfo
@@ -71,12 +79,14 @@ namespace CableRouter
 		vector<Segment> centers;
 		vector<Polygon> holes;
 		vector<Polygon> rooms;
+		vector<Region> regions;
 		FireArea area;
 		SegBush* cen_line_tree;
 		PEBush* hole_tree;
 		PEBush* room_tree;
 	};
 
+	void preprocess(MapInfo& map);
 	void deleteMapInfo(MapInfo& map);
 	void deleteInvalidDevice(MapInfo& map);
 	void deleteInvalidPower(MapInfo& map);
@@ -96,6 +106,9 @@ namespace CableRouter
 	int			crossRoom			(MapInfo* const map, const Segment s);
 	int			crossRoom			(MapInfo* const map, const Point p, const Point q);
 	bool		touchObstacle		(MapInfo* const map, const Point p, const Point q);
+
+	MapInfo		rotateMap			(MapInfo* const map, Region ucs);
+	
 }
 
 #endif

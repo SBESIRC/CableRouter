@@ -57,9 +57,7 @@ string CableRouter::CableRouteEngine::routing(string datastr, int loop_max_count
 
 	// parse geojson file
 	map = read_from_geojson_string(datastr);
-	deleteInvalidDevice(map);
-	//deleteInvalidPower(map);
-	correctInvalidPower(map);
+	preprocess(map);
 	if (map.devices.size() == 0)
 	{
 		return "error: no Valid Wiring Position";
@@ -99,8 +97,8 @@ string CableRouter::CableRouteEngine::routing(string datastr, int loop_max_count
 	}
 
 	vector<Polyline> cables;
-
 	vector<Polyline> power_paths(map.powers.size());
+
 	for (int e = 0; e < systems.size(); e++)
 	{
 		for (int k = 0; k < 10; k++)
@@ -112,62 +110,7 @@ string CableRouter::CableRouteEngine::routing(string datastr, int loop_max_count
 			continue;
 		}
 
-		auto adj = systems[e].globlMem.rbegin()->adj;
-		printf("Best value = %lf\n", systems[e].globlMem.rbegin()->value);
-
-		vector<Device>& devices = systems[e].data.devices;
-		int dn = (int)devices.size();
-
-		vector<DreamNodePtr> dev_nodes;
-		for (int i = 0; i < dn; i++)
-		{
-			DreamNodePtr no = newDreamNode(devices[i].coord);
-			no->is_device = true;
-			dev_nodes.push_back(no);
-		}
-		int root;
-		for (int i = dn; i < adj.size(); i++)
-		{
-			bool found = false;
-			for (int j = 0; j < adj[i].size(); j++)
-			{
-				if (adj[i][j] < dn)
-				{
-					found = true;
-					root = adj[i][j];
-					power_paths[i - dn].push_back(devices[root].coord);
-					break;
-				}
-			}
-			if (found) break;
-		}
-
-		vector<int> vis(dn, 0);
-		queue<int> dev_queue;
-
-		DreamTree path_tree = dev_nodes[root];
-		dev_queue.push(root);
-		while (!dev_queue.empty())
-		{
-			int now = dev_queue.front();
-			dev_queue.pop();
-			vis[now] = 1;
-			for (int i = 0; i < adj[now].size(); i++)
-			{
-				int ch = adj[now][i];
-				if (ch < dn && vis[ch] == 0)
-				{
-					dev_nodes[now]->children.push_back(dev_nodes[ch]);
-					dev_nodes[ch]->parent = dev_nodes[now];
-					vis[ch] = 1;
-					dev_queue.push(ch);
-				}
-			}
-		}
-		get_manhattan_tree(&map, path_tree, cables);
-		avoid_coincidence(path_tree);
-		vector<Polyline> paths = get_dream_tree_paths(path_tree);
-		cables.insert(cables.end(), paths.begin(), paths.end());
+		inner_connect(&map, &systems[e], cables, power_paths);
 	}
 	deleteMapInfo(map);
 	return write_to_geojson_string(cables);

@@ -272,3 +272,9 @@ vector<Segment> CableRouter::get_segments_from_polylines(vector<Polyline>& polyl
 	}
 	return res;
 }
+
+Transformation CableRouter::get_tf_from_dir(Direction dir)
+{
+	Transformation rotate(CGAL::ROTATION, dir, CR_EPS, 10);
+	return rotate;
+}

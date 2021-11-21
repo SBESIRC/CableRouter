@@ -1,5 +1,6 @@
 #include "CR_CGALUtils.h"
 #include "MapUtils.h"
+#include "ImmuneSystem.h"
 
 #ifndef _CABLEROUTER_OPTIMIZE_ENGINE_H_
 #define _CABLEROUTER_OPTIMIZE_ENGINE_H_
@@ -19,6 +20,7 @@ namespace CableRouter
 		// for inter group connect
 		int line_num_to_parent;
 		bool is_device;
+		int ucs_id;
 
 		// for inner group connect
 		// not from this->parent when existing small turn
@@ -37,6 +39,7 @@ namespace CableRouter
 	vector<DreamNodePtr> getAllNodes(DreamTree tree);
 
 	// inner connect
+	void inner_connect(MapInfo* map, ImmuneSystem* group, vector<Polyline>& cables, vector<Polyline>& power_paths);
 	void get_manhattan_tree(MapInfo* map, DreamTree tree, vector<Polyline>& exist);
 	void avoid_coincidence(DreamTree tree);
 	void avoid_coincidence_non_device(DreamTree tree);
