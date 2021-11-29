@@ -408,10 +408,14 @@ int CableRouter::crossRoom(MapInfo* const data, const Segment s)
 		{
 			if (!CGAL::do_intersect(s, *eit)) continue;
 			CGAL::Object result = CGAL::intersection(s, *eit);
-			Point pt;
+			Point pt; Segment seg;
 			if (CGAL::assign(pt, result))
 			{
 				res++;
+			}
+			else if (CGAL::assign(seg, result))
+			{
+				res += 1000;
 			}
 		}
 	}

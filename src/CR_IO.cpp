@@ -203,6 +203,8 @@ static void parse_geojson(MapInfo& map, const string& datastr)
             for (auto j = 0; j < vec_pts[0].size() - 1; ++j)
             {
                 Segment s(vec_pts[0][j], vec_pts[0][j + 1]);
+                if (s.source() == s.target())
+                    continue;
                 center_nodes.push_back(get_seg_rtree_node(&s));
                 map.centers.push_back(s);
             }
