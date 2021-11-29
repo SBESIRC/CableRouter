@@ -116,6 +116,8 @@ namespace CableRouter
     vector<Segment> get_segments_from_polylines(vector<Polyline>& polylines);
 
     Transformation get_tf_from_dir(Direction dir);
+    Direction to_first_quadrant(Direction dir);
+    Vector to_first_quadrant(Vector dir);
 
     // T: has function swap()
     template <class T>

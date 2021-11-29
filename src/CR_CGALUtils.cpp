@@ -278,3 +278,28 @@ Transformation CableRouter::get_tf_from_dir(Direction dir)
 	Transformation rotate(CGAL::ROTATION, dir, CR_EPS, 10);
 	return rotate;
 }
+
+Direction CableRouter::to_first_quadrant(Direction dir)
+{
+	if (EQUAL(dir.dx(), 0) || EQUAL(dir.dy(), 0))
+		return Direction(1, 0);
+
+	if (dir.dx() > 0 && dir.dy() > 0)
+		return dir;
+
+	if (dir.dx() > 0 && dir.dy() < 0)
+		return dir.perpendicular(CGAL::Orientation::COUNTERCLOCKWISE);
+
+	if (dir.dx() < 0 && dir.dy() > 0)
+		return dir.perpendicular(CGAL::Orientation::CLOCKWISE);
+
+	if (dir.dx() < 0 && dir.dy() < 0)
+		return -dir;
+
+	return dir;
+}
+
+Vector CableRouter::to_first_quadrant(Vector dir)
+{
+	return to_first_quadrant(dir.direction()).to_vector();
+}
