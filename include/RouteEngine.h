@@ -37,7 +37,7 @@ namespace CableRouter
 	};
 
 	// General
-	Polyline	manhattan_connect(MapInfo* const map, Point s, Point t, Vector pre_dir, vector<Segment>& lines);
+	Polyline	manhattan_connect(MapInfo* const map, Point s, Point t, Vector pre_dir, vector<Segment>& lines, Transformation rotate = Transformation());
 	Polyline	funnel_smooth(CDT& dt, ASNode* nodes, Point s, Point t, int end_node_id);
 
 	// Point to Point
@@ -52,8 +52,8 @@ namespace CableRouter
 
 	// Smooth
 	Polyline	line_break(Polyline& line, const double gap);
-	Polyline	line_simple(Polyline& line);
-	Polyline	manhattan_smooth_basic(MapInfo* const map, ASPath& path, vector<Segment>& exist_lines);
+	Polyline	line_simple(Polyline& line, Transformation rotate = Transformation());
+	Polyline	manhattan_smooth_basic(MapInfo* const map, ASPath& path, vector<Segment>& exist_lines, Transformation rotate = Transformation());
 
 	double		tooCloseToSun(MapInfo* const map, const Point p, const Point q, vector<Segment>& exist_lines, bool is_end = false);
 }
