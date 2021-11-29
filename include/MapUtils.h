@@ -3,8 +3,6 @@
 #ifndef _CABLEROUTER_MAPUTILS_H_
 #define _CABLEROUTER_MAPUTILS_H_
 
-#define FARWAY 10000
-
 namespace CableRouter
 {
 	// Polygon Element
@@ -69,7 +67,8 @@ namespace CableRouter
 	struct Region
 	{
 		Polygon boundary;
-		Direction align;
+		Direction align = Direction(1, 0);
+		bool align_center = false;
 	};
 
 	struct MapInfo
@@ -107,7 +106,7 @@ namespace CableRouter
 	int			crossRoom			(MapInfo* const map, const Point p, const Point q);
 	bool		touchObstacle		(MapInfo* const map, const Point p, const Point q);
 
-	MapInfo		rotateMap			(MapInfo* const map, Region ucs);
+	MapInfo		rotateMap			(MapInfo* const map, Direction align);
 	
 }
 

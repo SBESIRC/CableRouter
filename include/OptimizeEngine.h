@@ -20,7 +20,8 @@ namespace CableRouter
 		// for inter group connect
 		int line_num_to_parent;
 		bool is_device;
-		int ucs_id;
+		int region_id;
+		Vector center_align;
 
 		// for inner group connect
 		// not from this->parent when existing small turn

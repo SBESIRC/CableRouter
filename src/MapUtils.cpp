@@ -1,5 +1,6 @@
 #include "MapUtils.h"
 
+#define FARWAY 10000
 using namespace CableRouter;
 
 bool CableRouter::touchObstacle(MapInfo* const data, const Point p, const Point q)
@@ -38,12 +39,12 @@ bool CableRouter::touchObstacle(MapInfo* const data, const Point p, const Point 
 	return false;
 }
 
-MapInfo CableRouter::rotateMap(MapInfo* const data, Region ucs)
+MapInfo CableRouter::rotateMap(MapInfo* const data, Direction align)
 {
 	MapInfo map;
 	PElement e;
 
-	Transformation rotate = get_tf_from_dir(ucs.align).inverse();
+	Transformation rotate = get_tf_from_dir(align).inverse();
 
 	vector<rbush::TreeNode<PElement>*> hole_nodes;
 	vector<rbush::TreeNode<PElement>*> room_nodes;

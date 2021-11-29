@@ -228,6 +228,16 @@ static void parse_geojson(MapInfo& map, const string& datastr)
                 map.regions.push_back(r);
             }
         }
+        else if (cat.compare("CenterPolyline") == 0)
+        {
+            for (auto j = 0; j < vec_pts.size(); ++j)
+            {
+                Region r;
+                r.boundary = construct_polygon(&vec_pts[j]);
+                r.align_center = true;
+                map.regions.push_back(r);
+            }
+        }
         else
         {
             printf("No such category : %s\n", cat.c_str());

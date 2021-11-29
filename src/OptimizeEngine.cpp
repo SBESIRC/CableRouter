@@ -69,7 +69,7 @@ void CableRouter::inner_connect(MapInfo* map, ImmuneSystem* group, vector<Polyli
 	{
 		DreamNodePtr no = newDreamNode(devices[i].coord);
 		no->is_device = true;
-		no->ucs_id = devices[i].region_id;
+		no->region_id = devices[i].region_id;
 		dev_nodes.push_back(no);
 	}
 
@@ -115,7 +115,7 @@ void CableRouter::inner_connect(MapInfo* map, ImmuneSystem* group, vector<Polyli
 		}
 	}
 
-	// devide by ucs
+	// devide by region
 	vector<DreamTree> forest;
 	forest.push_back(path_tree);
 	vector<DreamNodePtr> all = getAllNodes(path_tree);
@@ -128,11 +128,11 @@ void CableRouter::inner_connect(MapInfo* map, ImmuneSystem* group, vector<Polyli
 
 		DreamNodePtr pa = now->parent;
 
-		if (now->ucs_id != pa->ucs_id)
+		if (now->region_id != pa->region_id)
 		{
 			DreamNodePtr new_now = newDreamNode(now->coord);
 			new_now->is_device = now->is_device;
-			new_now->ucs_id = now->ucs_id;
+			new_now->region_id = now->region_id;
 
 			//DreamNodePtr new_pa = newDreamNode(pa->coord);
 			//new_pa->is_device = pa->is_device;
@@ -145,7 +145,7 @@ void CableRouter::inner_connect(MapInfo* map, ImmuneSystem* group, vector<Polyli
 				c->parent = new_now;
 
 			reset(now->children);
-			now->ucs_id = pa->ucs_id;
+			now->region_id = pa->region_id;
 
 			//forest.push_back(new_pa);
 			forest.push_back(new_now);
@@ -153,34 +153,40 @@ void CableRouter::inner_connect(MapInfo* map, ImmuneSystem* group, vector<Polyli
 	}
 
 
-	for (int i = 0; i < forest.size(); i++)
+	for (auto &tree : forest)
 	{
-		// ROTATE
-		Transformation rotate;
-		int ucs_id = forest[i]->ucs_id;
-		if (ucs_id != -1)
+		vector<Polyline> paths;
+		int region_id = tree->region_id;
+		// normal connect
+		if (region_id == -1)
 		{
-			rotate = get_tf_from_dir(map->regions[ucs_id].align);
-			all = getAllNodes(forest[i]);
+			get_manhattan_tree(map, tree, cables);
+			avoid_coincidence(tree);
+			paths = get_dream_tree_paths(tree);
+		}
+		// connect by center line
+		else if (map->regions[region_id].align_center)
+		{
+			// to do
+		}
+		// connect by ucs
+		else
+		{
+			Direction align = to_first_quadrant(map->regions[region_id].align);
+			Transformation rotate = get_tf_from_dir(align);
+			all = getAllNodes(tree);
 			for (int i = 0; i < all.size(); i++)
 				all[i]->coord = all[i]->coord.transform(rotate.inverse());
-		}
-		// ROTATE
-		printf("get_manhattan_tree begin\n");
-		MapInfo new_map = ucs_id == -1 ? (*map) : rotateMap(map, map->regions[ucs_id]);
-		get_manhattan_tree(&new_map, forest[i], cables);
-		//get_manhattan_tree(&data, path_tree, cables);
-		printf("avoid_coincidence begin\n");
-		avoid_coincidence(path_tree);
-		printf("avoid_coincidence end\n");
-		vector<Polyline> paths = get_dream_tree_paths(forest[i]);
-		if (ucs_id != -1)
+			MapInfo new_map = rotateMap(map, align);
+			get_manhattan_tree(&new_map, tree, cables);
+			avoid_coincidence(tree);
+			paths = get_dream_tree_paths(tree);
 			for (int i = 0; i < paths.size(); i++)
 				for (int j = 0; j < paths[i].size(); j++)
 					paths[i][j] = paths[i][j].transform(rotate);
-		cables.insert(cables.end(), paths.begin(), paths.end());
-		if (ucs_id != -1)
 			deleteMapInfo(new_map);
+		}
+		cables.insert(cables.end(), paths.begin(), paths.end());
 	}
 }
 
