@@ -431,7 +431,7 @@ void CableRouter::preprocess(MapInfo& map)
 	{
 		for (int rid = 0; rid < map.regions.size(); rid++)
 		{
-			if (!map.regions[rid].boundary.has_on_unbounded_side(map.devices[i].coord))
+			if (!map.regions[rid].has_on_unbounded_side(map.devices[i].coord))
 			{
 				map.devices[i].region_id = rid;
 				break;
@@ -442,16 +442,30 @@ void CableRouter::preprocess(MapInfo& map)
 	{
 		for (int rid = 0; rid < map.regions.size(); rid++)
 		{
-			if (!map.regions[rid].boundary.has_on_unbounded_side(map.powers[i].points[0]))
+			if (!map.regions[rid].has_on_unbounded_side(map.powers[i].points[0]))
 			{
 				map.powers[i].region_id = rid;
 				break;
 			}
 		}
 	}
+	for (int i = 0; i < map.centers.size(); i++)
+	{
+		Segment c = shrink_segment(map.centers[i]);
+		for (int rid = 0; rid < map.regions.size(); rid++)
+		{
+			if (!map.regions[rid].has_on_unbounded_side(c.source()) &&
+				!map.regions[rid].has_on_unbounded_side(c.target()))
+			{
+				map.regions[rid].centers.push_back(map.centers[i]);
+				break;
+			}
+		}
+	}
+
 	for (int i = 0; i < map.regions.size(); i++)
 	{
-		map.regions[i].align = Direction(1, i);
+		map.regions[i].align = Direction(1, 0);
 	}
 }
 
@@ -611,4 +625,74 @@ bool CableRouter::isValidPoint(MapInfo& map, Point pos)
 	}
 
 	return valid;
+}
+
+bool CableRouter::Region::has_on_unbounded_side(Point pos)
+{
+	bool out = boundary.has_on_unbounded_side(pos);
+	for (auto& h : holes)
+		out |= h.has_on_bounded_side(pos);
+	return out;
+}
+
+vector<Polyline> CableRouter::getBoundaryOf(const Region& r1, const Region& r2)
+{
+	vector<Polyline> res;
+
+	vector<Polygon> pygs1 = r1.holes;
+	pygs1.push_back(r1.boundary);
+	vector<Polygon> pygs2 = r2.holes;
+	pygs2.push_back(r2.boundary);
+	for (auto& pg1 : pygs1)
+	{
+		for (auto& pg2 : pygs2)
+		{
+			auto pls = getBoundaryOf(pg1, pg2);
+			res.insert(res.end(), pls.begin(), pls.end());
+		}
+	}
+	return res;
+}
+
+vector<Polyline> CableRouter::getBoundaryOf(Polygon p1, Polygon p2)
+{
+	vector<Polyline> res;
+	if (p1.size() < 3 || p2.size() < 3) return res;
+	p2.reverse_orientation();
+	for (int i = 0; i < p1.size(); i++)
+	{
+		printf("%lf, %lf\n", p1.vertex(i).hx(), p1.vertex(i).hy());
+	}
+	for (int i = 0; i < p2.size(); i++)
+	{
+		printf("%lf, %lf\n", p2.vertex(i).hx(), p2.vertex(i).hy());
+	}
+	int i = 0, j = 0;
+	int n1 = p1.size(), n2 = p2.size();
+	int start = 0;
+	while (start < n1)
+	{
+		Polyline pl;
+		Point pt = p1.vertex(start);
+		j = 0;
+		while (j < n2 && !POINT_EQUAL(p2.vertex(j), pt)) j++;
+		if (j == n2)
+		{
+			start++;
+			continue;
+		}
+		pl.push_back(pt);
+		i = (start + 1) % n1;
+		j = (j + 1) % n2;
+		while (i != start && POINT_EQUAL(p1.vertex(i), p2.vertex(j)))
+		{
+			pl.push_back(p1.vertex(i));
+			i = (i + 1) % n1;
+			j = (j + 1) % n2;
+		}
+		if (i == start) pl.push_back(pt);
+		if (pl.size() > 1) res.push_back(pl);
+		start += pl.size();
+	}
+	return res;
 }

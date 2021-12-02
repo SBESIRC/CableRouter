@@ -67,8 +67,16 @@ namespace CableRouter
 	struct Region
 	{
 		Polygon boundary;
+		vector<Polygon> holes;
+
+		// if ucs
 		Direction align = Direction(1, 0);
+
+		// if center
 		bool align_center = false;
+		vector<Segment> centers;
+
+		bool has_on_unbounded_side(Point pos);
 	};
 
 	struct MapInfo
@@ -107,7 +115,8 @@ namespace CableRouter
 	bool		touchObstacle		(MapInfo* const map, const Point p, const Point q);
 
 	MapInfo		rotateMap			(MapInfo* const map, Direction align);
-	
+	vector<Polyline> getBoundaryOf(const Region& r1, const Region& r2);
+	vector<Polyline> getBoundaryOf(Polygon p1, Polygon p2);
 }
 
 #endif
