@@ -655,7 +655,7 @@ Polyline CableRouter::funnel_smooth(CDT& dt, ASNode* nodes, Point s, Point t, in
 	return path;
 }
 
-Polyline CableRouter::line_break(Polyline& line, const double gap)
+Polyline CableRouter::line_break(Polyline line, const double gap)
 {
 	if (line.size() < 2)
 		return line;
@@ -812,26 +812,23 @@ Polyline CableRouter::manhattan_smooth_basic(MapInfo* const data, ASPath& path, 
 		Point rot_u = u.transform(rotate_inv);
 		Point rot_v = v.transform(rotate_inv);
 
-		if (EQUAL(rot_u.hx(), rot_v.hx()) || EQUAL(rot_u.hy(), rot_v.hy()))
+		if (APPRO_EQUAL(rot_u.hx(), rot_v.hx()) || APPRO_EQUAL(rot_u.hy(), rot_v.hy()))
 		{
 			bool cross = crossObstacle(data, u, v);
 			int cross_r = crossRoom(data, u, v);
-			if (!cross && cross_r > 0)
-			{
-				if (cross_r <= passport)
-					passport -= cross_r;
-				else
-					cross = true;
-			}
+			if (!cross && cross_r > max(passport, 0))
+				cross = true;
 			//bool colli = tooCloseToSun(data, u, v, obstacle_lines);
 			if (!cross)
 			{
+				passport -= cross_r;
 				now = next_id;
 				res.push_back(line[now]);
 				next_id = (int)line.size() - 1;
 			}
 			else if (next_id - 1 == now)
 			{
+				passport -= cross_r;
 				now = next_id;
 				res.push_back(line[now]);
 				next_id = (int)line.size() - 1;
@@ -849,22 +846,12 @@ Polyline CableRouter::manhattan_smooth_basic(MapInfo* const data, ASPath& path, 
 		bool cross2 = crossObstacle(data, u, mid2) || crossObstacle(data, mid2, v);
 
 		int cross_r1 = crossRoom(data, u, mid1) + crossRoom(data, mid1, v);
-		if (!cross1 && cross_r1 > 0)
-		{
-			if (cross_r1 <= passport)
-				passport -= cross_r1;
-			else
-				cross1 = true;
-		}
+		if (!cross1 && cross_r1 > max(passport, 0))
+			cross1 = true;
 
 		int cross_r2 = crossRoom(data, u, mid2) + crossRoom(data, mid2, v);
-		if (!cross2 && cross_r2 > 0)
-		{
-			if (cross_r2 <= passport)
-				passport -= cross_r2;
-			else
-				cross2 = true;
-		}
+		if (!cross2 && cross_r2 > max(passport, 0))
+			cross2 = true;
 
 		//bool colli1 = tooCloseToSun(data, u, mid1, obstacle_lines) || tooCloseToSun(data, mid1, v, obstacle_lines);
 		//bool colli2 = tooCloseToSun(data, u, mid2, obstacle_lines) || tooCloseToSun(data, mid2, v, obstacle_lines);
@@ -881,10 +868,14 @@ Polyline CableRouter::manhattan_smooth_basic(MapInfo* const data, ASPath& path, 
 			w2 += cross_num(exist_lines, u, mid2);
 			w2 += cross_num(exist_lines, mid2, v);
 			Point next;
-			if (w1 < w2)
+			if (w1 < w2) {
 				next = mid1;
-			else
+				passport -= cross_r1;
+			}
+			else {
 				next = mid2;
+				passport -= cross_r2;
+			}
 			line.insert(line.begin() + next_id, next);
 			now = next_id;
 			res.push_back(line[now]);
@@ -892,6 +883,7 @@ Polyline CableRouter::manhattan_smooth_basic(MapInfo* const data, ASPath& path, 
 		}
 		else if (!cross1)
 		{
+			passport -= cross_r1;
 			line.insert(line.begin() + next_id, mid1);
 			now = next_id;
 			res.push_back(line[now]);
@@ -899,6 +891,7 @@ Polyline CableRouter::manhattan_smooth_basic(MapInfo* const data, ASPath& path, 
 		}
 		else if (!cross2)
 		{
+			passport -= cross_r2;
 			line.insert(line.begin() + next_id, mid2);
 			now = next_id;
 			res.push_back(line[now]);
@@ -914,6 +907,7 @@ Polyline CableRouter::manhattan_smooth_basic(MapInfo* const data, ASPath& path, 
 			}
 			else
 			{
+				passport -= crossRoom(data, u, v);
 				now = next_id;
 				res.push_back(line[now]);
 				next_id = (int)line.size() - 1;
@@ -928,32 +922,46 @@ Polyline CableRouter::manhattan_smooth_basic(MapInfo* const data, ASPath& path, 
 	return res;
 }
 
-Polyline CableRouter::line_simple(Polyline& line, Transformation rotate)
+Polyline CableRouter::line_simple(Polyline line)
 {
+	Polyline res;
+
+	// remove duplicated points
+	if (line.size() <= 1) return line;
+
+	Point last = line[0];
+	res.push_back(last);
+	for (int i = 1; i < line.size(); i++)
+	{
+		if (line[i] != last)
+		{
+			last = line[i];
+			res.push_back(last);
+		}
+	}
+	line = res;
+
+	// remove colinear points
 	if (line.size() <= 2) return line;
 
-	auto rotate_inv = rotate.inverse();
-
-	Polyline res;
+	reset(res);
 	res.push_back(line[0]);
 	int next = 1;
 
-	Point rot_u = line[0].transform(rotate_inv);
-	Point rot_v = line[next].transform(rotate_inv);
+	Point u = line[0];
+	Point v = line[next];
 
-	bool dirX = EQUAL(rot_u.hx(), rot_v.hx());
-	bool dirY = EQUAL(rot_u.hy(), rot_v.hy());
+	Vector dir = v - u;
 	while (next + 1 != line.size())
 	{
-		rot_u = rot_v;
-		rot_v = line[next + 1].transform(rotate_inv);
-		bool dirrX = EQUAL(rot_u.hx(), rot_v.hx());
-		bool dirrY = EQUAL(rot_u.hy(), rot_v.hy());
-		if (!((dirX && dirrX) || (dirY && dirrY)))
+		u = v;
+		v = line[next + 1];
+		Vector dirr = v - u;
+		float cos_theta = dir * dirr / LEN(dir) / LEN(dirr);
+		if (!APPRO_EQUAL(cos_theta, 1))
 		{
 			res.push_back(line[next]);
-			dirX = dirrX;
-			dirY = dirrY;
+			dir = dirr;
 		}
 		next++;
 	}
@@ -973,7 +981,7 @@ Polyline CableRouter::manhattan_connect(MapInfo* const data, Point u, Point v, V
 
 	double dx = abs(rot_u.hx() - rot_v.hx());
 	double dy = abs(rot_u.hy() - rot_v.hy());
-	if (EQUAL(dx, 0) || EQUAL(dy, 0))
+	if (APPRO_EQUAL(dx, 0) || APPRO_EQUAL(dy, 0))
 	{
 		if (!crossObstacle(data, u, v) && !crossRoom(data, u, v)) {
 			res.push_back(u);
@@ -983,7 +991,7 @@ Polyline CableRouter::manhattan_connect(MapInfo* const data, Point u, Point v, V
 		{
 			ASPath ap = a_star_connect_p2p(data, u, v, lines);
 			res = manhattan_smooth_basic(data, ap, lines, rotate);
-			res = line_simple(res, rotate);
+			res = line_simple(res);
 		}
 	}
 	else
@@ -1059,7 +1067,7 @@ Polyline CableRouter::manhattan_connect(MapInfo* const data, Point u, Point v, V
 		{
 			ASPath ap = a_star_connect_p2p(data, u, v, lines);
 			res = manhattan_smooth_basic(data, ap, lines, rotate);
-			res = line_simple(res, rotate);
+			res = line_simple(res);
 		}
 	}
 

@@ -51,8 +51,8 @@ namespace CableRouter
 	Polyline	manhattan_smooth_p2s(MapInfo* const map, Polyline& path, Segment des, vector<Segment>& exist_lines);
 
 	// Smooth
-	Polyline	line_break(Polyline& line, const double gap);
-	Polyline	line_simple(Polyline& line, Transformation rotate = Transformation());
+	Polyline	line_break(Polyline line, const double gap);
+	Polyline	line_simple(Polyline line);
 	Polyline	manhattan_smooth_basic(MapInfo* const map, ASPath& path, vector<Segment>& exist_lines, Transformation rotate = Transformation());
 
 	double		tooCloseToSun(MapInfo* const map, const Point p, const Point q, vector<Segment>& exist_lines, bool is_end = false);
