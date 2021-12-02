@@ -111,8 +111,8 @@ static void parse_geojson(MapInfo& map, const string& datastr)
 
     vector<rbush::TreeNode<PElement>*> hole_nodes;
     vector<rbush::TreeNode<PElement>*> room_nodes;
-    vector<rbush::TreeNode<Segment>* > area_nodes;
-    vector<rbush::TreeNode<Segment>* > center_nodes;
+    vector<rbush::TreeNode<SElement>* > area_nodes;
+    vector<rbush::TreeNode<SElement>* > center_nodes;
 
     for (auto i = 0; i < size; i++)
     {
@@ -195,7 +195,10 @@ static void parse_geojson(MapInfo& map, const string& datastr)
             map.area.info = e;
             for (auto eit = e.boundary.edges_begin(); eit != e.boundary.edges_end(); eit++)
             {
-                area_nodes.push_back(get_seg_rtree_node(&(*eit)));
+                SElement se;
+                se.seg = *eit;
+                se.weight = CR_INF;
+                area_nodes.push_back(get_seg_rtree_node(&se));
             }
         }
         else if (cat.compare("CenterLine") == 0)
@@ -205,7 +208,10 @@ static void parse_geojson(MapInfo& map, const string& datastr)
                 Segment s(vec_pts[0][j], vec_pts[0][j + 1]);
                 if (s.source() == s.target())
                     continue;
-                center_nodes.push_back(get_seg_rtree_node(&s));
+                SElement se;
+                se.seg = s;
+                se.weight = 8000;
+                center_nodes.push_back(get_seg_rtree_node(&se));
                 map.centers.push_back(s);
             }
         }
@@ -215,7 +221,7 @@ static void parse_geojson(MapInfo& map, const string& datastr)
             {
                 PElement e;
                 e.boundary = construct_polygon(&vec_pts[j]);
-                e.weight = 10;
+                e.weight = 16000;
                 room_nodes.push_back(get_rtree_node(&e));
                 map.rooms.push_back(e.boundary);
             }

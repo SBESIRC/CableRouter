@@ -2,17 +2,6 @@
 
 using namespace CableRouter;
 
-rbush::TreeNode<Segment>* CableRouter::get_seg_rtree_node(const Segment* seg)
-{
-	rbush::TreeNode<Segment>* node = new rbush::TreeNode<Segment>();
-	node->data = new Segment(*seg);
-	node->bbox.minX = min(DOUBLE(seg->source().hx()), DOUBLE(seg->target().hx()));
-	node->bbox.minY = min(DOUBLE(seg->source().hy()), DOUBLE(seg->target().hy()));
-	node->bbox.maxX = max(DOUBLE(seg->source().hx()), DOUBLE(seg->target().hx()));
-	node->bbox.maxY = max(DOUBLE(seg->source().hy()), DOUBLE(seg->target().hy()));
-	return node;
-}
-
 rbush::TreeNode<Point>* CableRouter::get_point_rtree_node(const Point* p)
 {
 	rbush::TreeNode<Point>* node = new rbush::TreeNode<Point>();

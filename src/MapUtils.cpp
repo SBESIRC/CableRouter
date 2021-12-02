@@ -11,7 +11,7 @@ bool CableRouter::touchObstacle(MapInfo* const data, const Point p, const Point 
 	auto edges = segment_search(data->area.area_edge_tree, s.source(), s.target());
 	for (auto eit = edges.begin(); eit != edges.end(); eit++)
 	{
-		Segment seg = *(*eit)->data;
+		Segment seg = (*eit)->data->seg;
 		if (CGAL::do_intersect(s, seg)) return true;
 	}
 
@@ -42,14 +42,15 @@ bool CableRouter::touchObstacle(MapInfo* const data, const Point p, const Point 
 MapInfo CableRouter::rotateMap(MapInfo* const data, Direction align)
 {
 	MapInfo map;
-	PElement e;
+	PElement pe;
+	SElement se;
 
 	Transformation rotate = get_tf_from_dir(align).inverse();
 
 	vector<rbush::TreeNode<PElement>*> hole_nodes;
 	vector<rbush::TreeNode<PElement>*> room_nodes;
-	vector<rbush::TreeNode<Segment>* > area_nodes;
-	vector<rbush::TreeNode<Segment>* > center_nodes;
+	vector<rbush::TreeNode<SElement>* > area_nodes;
+	vector<rbush::TreeNode<SElement>* > center_nodes;
 
 	for (auto d : data->devices)
 	{
@@ -69,33 +70,37 @@ MapInfo CableRouter::rotateMap(MapInfo* const data, Direction align)
 
 	for (auto h : data->holes)
 	{
-		e.boundary = CGAL::transform(rotate, h);
-		e.weight = CR_INF;
-		hole_nodes.push_back(get_rtree_node(&e));
-		map.holes.push_back(e.boundary);
+		pe.boundary = CGAL::transform(rotate, h);
+		pe.weight = CR_INF;
+		hole_nodes.push_back(get_rtree_node(&pe));
+		map.holes.push_back(pe.boundary);
 	}
 
-	e.boundary = CGAL::transform(rotate, data->area.info.boundary);
-	e.weight = data->area.info.weight;
-	map.area.info = e;
-	for (auto eit = e.boundary.edges_begin(); eit != e.boundary.edges_end(); eit++)
+	pe.boundary = CGAL::transform(rotate, data->area.info.boundary);
+	pe.weight = data->area.info.weight;
+	map.area.info = pe;
+	for (auto eit = pe.boundary.edges_begin(); eit != pe.boundary.edges_end(); eit++)
 	{
-		area_nodes.push_back(get_seg_rtree_node(&(*eit)));
+		se.seg = *eit;
+		se.weight = data->area.info.weight;
+		area_nodes.push_back(get_seg_rtree_node(&se));
 	}
 
 	for (auto c : data->centers)
 	{
 		Segment s = c.transform(rotate);
-		center_nodes.push_back(get_seg_rtree_node(&s));
+		se.seg = s;
+		se.weight = 8000;
+		center_nodes.push_back(get_seg_rtree_node(&se));
 		map.centers.push_back(s);
 	}
 
 	for (auto r : data->rooms)
 	{
-		e.boundary = CGAL::transform(rotate, r);
-		e.weight = 10;
-		room_nodes.push_back(get_rtree_node(&e));
-		map.rooms.push_back(e.boundary);
+		pe.boundary = CGAL::transform(rotate, r);
+		pe.weight = 16000;
+		room_nodes.push_back(get_rtree_node(&pe));
+		map.rooms.push_back(pe.boundary);
 	}
 
 	map.cen_line_tree = new SegBush(center_nodes);
@@ -321,13 +326,13 @@ void CableRouter::removeObstacles(MapInfo* const data, double** G, int n)
 
 void CableRouter::addWeightCenters(MapInfo* const data, const Point p, const Point q, double& w)
 {
-	vector<rbush::TreeNode<Segment>* > centers = segment_search(data->cen_line_tree, p, q);
+	vector<rbush::TreeNode<SElement>* > centers = segment_search(data->cen_line_tree, p, q);
 
 	for (auto eit = centers.begin(); eit != centers.end(); eit++)
 	{
-		if (CGAL::do_intersect(Segment(p, q), *(*eit)->data))
+		if (CGAL::do_intersect(Segment(p, q), (*eit)->data->seg))
 		{
-			w += 8000;
+			w += (*eit)->data->weight;
 		}
 	}
 }
@@ -344,8 +349,7 @@ void CableRouter::addWeightRooms(MapInfo* const data, const Point p, const Point
 		{
 			if (CGAL::do_intersect(Segment(p, q), *eit))
 			{
-				//w += (*oit)->data->weight;
-				w += 16000;
+				w += (*oit)->data->weight;
 			}
 		}
 	}
@@ -362,7 +366,7 @@ bool CableRouter::crossObstacle(MapInfo* const data, const Segment s)
 	auto edges = segment_search(data->area.area_edge_tree, s.source(), s.target());
 	for (auto eit = edges.begin(); eit != edges.end(); eit++)
 	{
-		Segment seg = *(*eit)->data;
+		Segment seg = (*eit)->data->seg;
 		if (!CGAL::do_intersect(s, seg)) continue;
 		CGAL::Object result = CGAL::intersection(s, seg);
 		Point pt;
@@ -659,14 +663,6 @@ vector<Polyline> CableRouter::getBoundaryOf(Polygon p1, Polygon p2)
 	vector<Polyline> res;
 	if (p1.size() < 3 || p2.size() < 3) return res;
 	p2.reverse_orientation();
-	for (int i = 0; i < p1.size(); i++)
-	{
-		printf("%lf, %lf\n", p1.vertex(i).hx(), p1.vertex(i).hy());
-	}
-	for (int i = 0; i < p2.size(); i++)
-	{
-		printf("%lf, %lf\n", p2.vertex(i).hx(), p2.vertex(i).hy());
-	}
 	int i = 0, j = 0;
 	int n1 = p1.size(), n2 = p2.size();
 	int start = 0;

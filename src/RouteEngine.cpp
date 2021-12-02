@@ -792,6 +792,7 @@ Polyline CableRouter::manhattan_smooth_p2p(MapInfo* const data, Polyline& path, 
 	}
 	return res;
 }
+
 Polyline CableRouter::manhattan_smooth_basic(MapInfo* const data, ASPath& path, vector<Segment>& exist_lines, Transformation rotate)
 {
 	Polyline line = path.path;
@@ -1220,7 +1221,7 @@ double CableRouter::tooCloseToSun(MapInfo* const data, const Point p, const Poin
 	auto edges = segment_search(data->area.area_edge_tree, p, q);
 	for (auto eit = edges.begin(); eit != edges.end(); eit++)
 	{
-		obstacle_lines.push_back(*(*eit)->data);
+		obstacle_lines.push_back((*eit)->data->seg);
 	}
 
 	// holes

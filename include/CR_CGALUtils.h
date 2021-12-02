@@ -121,6 +121,8 @@ namespace CableRouter
     Direction to_first_quadrant(Direction dir);
     Vector to_first_quadrant(Vector dir);
 
+    rbush::TreeNode<Point>* get_point_rtree_node(const Point* pt);
+
     // T: has function swap()
     template <class T>
     void reset(T& ele)
@@ -142,8 +144,19 @@ namespace CableRouter
         return node;
     }
 
-    rbush::TreeNode<Segment>* get_seg_rtree_node(const Segment* seg);
-    rbush::TreeNode<Point>* get_point_rtree_node(const Point* pt);
+    // T: SElement
+    template <class T>
+    rbush::TreeNode<T>* get_seg_rtree_node(const T* ele)
+    {
+        Segment seg = ele->seg;
+        rbush::TreeNode<T>* node = new rbush::TreeNode<T>();
+        node->data = new T(*ele);
+        node->bbox.minX = min(DOUBLE(seg.source().hx()), DOUBLE(seg.target().hx()));
+        node->bbox.minY = min(DOUBLE(seg.source().hy()), DOUBLE(seg.target().hy()));
+        node->bbox.maxX = max(DOUBLE(seg.source().hx()), DOUBLE(seg.target().hx()));
+        node->bbox.maxY = max(DOUBLE(seg.source().hy()), DOUBLE(seg.target().hy()));
+        return node;
+    }
 
     // T: PElement
     template <class T>
@@ -170,7 +183,7 @@ namespace CableRouter
         return ret;
     }
 
-    // T: PElement
+    // T: PElement SElement
     template <class T>
     vector<rbush::TreeNode<T>* > segment_search(rbush::RBush<T>* const tree, const Point& p, const Point& q)
     {

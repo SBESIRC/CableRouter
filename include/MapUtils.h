@@ -12,7 +12,13 @@ namespace CableRouter
 		double weight;
 	};
 
-	typedef rbush::RBush<Segment> SegBush;
+	struct SElement
+	{
+		Segment seg;
+		double weight;
+	};
+
+	typedef rbush::RBush<SElement> SegBush;
 	typedef rbush::RBush<PElement> PEBush;
 
 	struct Power
