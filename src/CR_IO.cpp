@@ -222,23 +222,33 @@ static void parse_geojson(MapInfo& map, const string& datastr)
         }
         else if (cat.compare("UCSPolyline") == 0)
         {
+            Region r;
             for (auto j = 0; j < vec_pts.size(); ++j)
             {
-                Region r;
-                r.boundary = construct_polygon(&vec_pts[j]);
-                r.align = Direction(1, 0);
-                map.regions.push_back(r);
+                Polygon pyg = construct_polygon(&vec_pts[j]);
+                if (j == 0) r.boundary = pyg;
+                else {
+                    pyg.reverse_orientation();
+                    r.holes.push_back(pyg);
+                }
             }
+            //r.align = Direction(1, 0);
+            map.regions.push_back(r);
         }
         else if (cat.compare("CenterPolyline") == 0)
         {
+            Region r;
             for (auto j = 0; j < vec_pts.size(); ++j)
             {
-                Region r;
-                r.boundary = construct_polygon(&vec_pts[j]);
-                r.align_center = true;
-                map.regions.push_back(r);
+                Polygon pyg = construct_polygon(&vec_pts[j]);
+                if (j == 0) r.boundary = pyg;
+                else {
+                    pyg.reverse_orientation();
+                    r.holes.push_back(pyg);
+                }
             }
+            r.align_center = true;
+            map.regions.push_back(r);
         }
         else
         {
