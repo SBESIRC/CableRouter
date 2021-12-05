@@ -11,7 +11,7 @@ using namespace CableRouter;
 DreamNodePtr CableRouter::newDreamNode(Point coord)
 {
 	DreamNodePtr n(new DreamNode());
-	n->parent = NULL;
+	n->parent = nullptr;
 	n->line_num_to_parent = 0;
 	n->coord = coord;
 	n->children = vector<DreamNodePtr>();

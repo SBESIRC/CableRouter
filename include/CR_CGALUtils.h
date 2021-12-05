@@ -92,7 +92,7 @@ namespace CableRouter
     #define LEN(x)                                              sqrt(LEN_2((x)))
     #define EQUAL(x, y)                                         (abs(DOUBLE((x) - (y))) < CR_EPS)
     #define APPRO_EQUAL(x, y)                                   (abs(DOUBLE((x) - (y))) < 1e-4)
-    #define POINT_EQUAL(x, y)                                   (EQUAL((x).hx(), (y).hx()) && EQUAL((x).hy(), (y).hy()))
+    #define POINT_EQUAL(x, y)                                   (APPRO_EQUAL((x).hx(), (y).hx()) && APPRO_EQUAL((x).hy(), (y).hy()))
 
     Polygon construct_polygon(const vector<Point>* coords);
     bool polygons_intersect(const Polygon& p, const Polygon& q);

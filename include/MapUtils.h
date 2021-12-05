@@ -93,6 +93,7 @@ namespace CableRouter
 		vector<Polygon> holes;
 		vector<Polygon> rooms;
 		vector<Region> regions;
+		vector<Segment> borders;
 		FireArea area;
 		SegBush* cen_line_tree;
 		PEBush* hole_tree;

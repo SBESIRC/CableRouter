@@ -323,7 +323,6 @@ void CableRouter::removeObstacles(MapInfo* const data, double** G, int n)
 	printf("Shifting obstacle points end\n");
 }
 
-
 void CableRouter::addWeightCenters(MapInfo* const data, const Point p, const Point q, double& w)
 {
 	vector<rbush::TreeNode<SElement>* > centers = segment_search(data->cen_line_tree, p, q);
@@ -453,6 +452,13 @@ void CableRouter::preprocess(MapInfo& map)
 			}
 		}
 	}
+
+	for (int i = 0; i < map.regions.size(); i++)
+	{
+		map.regions[i].align = Direction(1, 0);
+		reset(map.regions[i].centers);
+	}
+
 	for (int i = 0; i < map.centers.size(); i++)
 	{
 		Segment c = shrink_segment(map.centers[i]);
@@ -467,9 +473,16 @@ void CableRouter::preprocess(MapInfo& map)
 		}
 	}
 
+	reset(map.borders);
 	for (int i = 0; i < map.regions.size(); i++)
 	{
-		map.regions[i].align = Direction(1, 0);
+		for (int j = i + 1; j < map.regions.size(); j++)
+		{
+			auto res = getBoundaryOf(map.regions[i], map.regions[j]);
+			for (auto pl : res)
+				for (int k = 0; k < pl.size() - 1; k++)
+					map.borders.push_back(Segment(pl[k], pl[k + 1]));
+		}
 	}
 }
 
