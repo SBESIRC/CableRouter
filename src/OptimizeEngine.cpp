@@ -176,6 +176,7 @@ void CableRouter::inner_connect(MapInfo* map, ImmuneSystem* group, vector<Polyli
 				printf("begin get_center_align_tree\n");
 				get_center_align_tree(map, tree, cables);
 				printf("end get_center_align_tree\n");
+				avoid_coincidence(tree);
 			}
 			paths = get_dream_tree_paths(tree);
 			printf("end get_dream_tree_paths\n");
@@ -438,11 +439,19 @@ void CableRouter::get_center_align_tree(MapInfo* map, DreamTree tree, vector<Pol
 
 bool compare_left_from_down_to_up(pair<DreamNodePtr, DreamNodePtr> pair_a, pair<DreamNodePtr, DreamNodePtr> pair_b)
 {
-	int aturn;
 	DreamNodePtr a = pair_a.first;
 	DreamNodePtr b = pair_b.first;
-	DreamNodePtr pa = pair_a.second;
-	DreamNodePtr pb = pair_b.second;
+	DreamNodePtr na = pair_a.second;
+	DreamNodePtr nb = pair_b.second;
+	DreamNodePtr pa = na->parent;
+	DreamNodePtr pb = nb->parent;
+
+	double cos_a = VEC_COS(a->coord - na->coord, Vector(0, -1));
+	double cos_b = VEC_COS(b->coord - nb->coord, Vector(0, -1));
+	if (!APPRO_EQUAL(cos_a, cos_b)) return cos_a > cos_b;
+
+	int aturn;
+
 	if (a->is_device)
 		aturn = 0;
 	else if (a == pa)
@@ -497,11 +506,18 @@ bool compare_left_from_down_to_up(pair<DreamNodePtr, DreamNodePtr> pair_a, pair<
 
 bool compare_right_from_down_to_up(pair<DreamNodePtr, DreamNodePtr> pair_a, pair<DreamNodePtr, DreamNodePtr> pair_b)
 {
-	int aturn;
 	DreamNodePtr a = pair_a.first;
 	DreamNodePtr b = pair_b.first;
-	DreamNodePtr pa = pair_a.second;
-	DreamNodePtr pb = pair_b.second;
+	DreamNodePtr na = pair_a.second;
+	DreamNodePtr nb = pair_b.second;
+	DreamNodePtr pa = na->parent;
+	DreamNodePtr pb = nb->parent;
+
+	double cos_a = VEC_COS(a->coord - na->coord, Vector(0, -1));
+	double cos_b = VEC_COS(b->coord - nb->coord, Vector(0, -1));
+	if (!APPRO_EQUAL(cos_a, cos_b)) return cos_a > cos_b;
+
+	int aturn;
 	if (a->is_device)
 		aturn = 0;
 	else if (a == pa)
@@ -556,11 +572,18 @@ bool compare_right_from_down_to_up(pair<DreamNodePtr, DreamNodePtr> pair_a, pair
 
 bool compare_down_from_left_to_right(pair<DreamNodePtr, DreamNodePtr> pair_a, pair<DreamNodePtr, DreamNodePtr> pair_b)
 {
-	int aturn;
 	DreamNodePtr a = pair_a.first;
 	DreamNodePtr b = pair_b.first;
-	DreamNodePtr pa = pair_a.second;
-	DreamNodePtr pb = pair_b.second;
+	DreamNodePtr na = pair_a.second;
+	DreamNodePtr nb = pair_b.second;
+	DreamNodePtr pa = na->parent;
+	DreamNodePtr pb = nb->parent;
+
+	double cos_a = VEC_COS(a->coord - na->coord, Vector(-1, 0));
+	double cos_b = VEC_COS(b->coord - nb->coord, Vector(-1, 0));
+	if (!APPRO_EQUAL(cos_a, cos_b)) return cos_a > cos_b;
+
+	int aturn;
 	if (a->is_device)
 		aturn = 0;
 	else if (a == pa)
@@ -615,11 +638,18 @@ bool compare_down_from_left_to_right(pair<DreamNodePtr, DreamNodePtr> pair_a, pa
 
 bool compare_up_from_left_to_right(pair<DreamNodePtr, DreamNodePtr> pair_a, pair<DreamNodePtr, DreamNodePtr> pair_b)
 {
-	int aturn;
 	DreamNodePtr a = pair_a.first;
 	DreamNodePtr b = pair_b.first;
-	DreamNodePtr pa = pair_a.second;
-	DreamNodePtr pb = pair_b.second;
+	DreamNodePtr na = pair_a.second;
+	DreamNodePtr nb = pair_b.second;
+	DreamNodePtr pa = na->parent;
+	DreamNodePtr pb = nb->parent;
+
+	double cos_a = VEC_COS(a->coord - na->coord, Vector(-1, 0));
+	double cos_b = VEC_COS(b->coord - nb->coord, Vector(-1, 0));
+	if (!APPRO_EQUAL(cos_a, cos_b)) return cos_a > cos_b;
+
+	int aturn;
 	if (a->is_device)
 		aturn = 0;
 	else if (a == pa)
@@ -696,10 +726,10 @@ void CableRouter::avoid_coincidence(DreamTree tree)
 
 			Vector dir(now->coord, children[i]->coord);
 			//if (LEN(dir) <= MAX_OVERLAP) continue;
-			if (EQUAL(dir.hy(), 0) && dir.hx() < 0) dir_nodes[N_LEFT].push_back(children[i]);
-			else if (EQUAL(dir.hy(), 0) && dir.hx() > 0) dir_nodes[N_RIGHT].push_back(children[i]);
-			else if (EQUAL(dir.hx(), 0) && dir.hy() < 0) dir_nodes[N_DOWN].push_back(children[i]);
-			else if (EQUAL(dir.hx(), 0) && dir.hy() > 0) dir_nodes[N_UP].push_back(children[i]);
+			if (VEC_COS(dir, Vector(-1, 0)) >= 0.707) dir_nodes[N_LEFT].push_back(children[i]);
+			else if (VEC_COS(dir, Vector(1, 0)) >= 0.707) dir_nodes[N_RIGHT].push_back(children[i]);
+			else if (VEC_COS(dir, Vector(0, -1)) >= 0.707) dir_nodes[N_DOWN].push_back(children[i]);
+			else if (VEC_COS(dir, Vector(0, 1)) >= 0.707) dir_nodes[N_UP].push_back(children[i]);
 		}
 
 		if (children.size() > 4) {
@@ -1271,7 +1301,7 @@ void CableRouter::avoid_left(
 	vector<pair<DreamNodePtr, DreamNodePtr>> pair_nodes;
 	for (int i = 0; i < left.size(); i++)
 	{
-		pair_nodes.push_back(make_pair(left[i], now_pa));
+		pair_nodes.push_back(make_pair(left[i], now));
 	}
 	sort(pair_nodes.begin(), pair_nodes.end(), compare_left_from_down_to_up);
 	for (int i = 0; i < pair_nodes.size(); i++)
@@ -1371,7 +1401,7 @@ void CableRouter::avoid_right(
 	vector<pair<DreamNodePtr, DreamNodePtr>> pair_nodes;
 	for (int i = 0; i < right.size(); i++)
 	{
-		pair_nodes.push_back(make_pair(right[i], now_pa));
+		pair_nodes.push_back(make_pair(right[i], now));
 	}
 	sort(pair_nodes.begin(), pair_nodes.end(), compare_right_from_down_to_up);
 	reverse(pair_nodes.begin(), pair_nodes.end());
@@ -1472,7 +1502,7 @@ void CableRouter::avoid_down(
 	vector<pair<DreamNodePtr, DreamNodePtr>> pair_nodes;
 	for (int i = 0; i < down.size(); i++)
 	{
-		pair_nodes.push_back(make_pair(down[i], now_pa));
+		pair_nodes.push_back(make_pair(down[i], now));
 	}
 	sort(pair_nodes.begin(), pair_nodes.end(), compare_down_from_left_to_right);
 	reverse(pair_nodes.begin(), pair_nodes.end());
@@ -1573,7 +1603,7 @@ void CableRouter::avoid_up(
 	vector<pair<DreamNodePtr, DreamNodePtr>> pair_nodes;
 	for (int i = 0; i < up.size(); i++)
 	{
-		pair_nodes.push_back(make_pair(up[i], now_pa));
+		pair_nodes.push_back(make_pair(up[i], now));
 	}
 	sort(pair_nodes.begin(), pair_nodes.end(), compare_up_from_left_to_right);
 	for (int i = 0; i < pair_nodes.size(); i++)
