@@ -841,8 +841,7 @@ Polyline CableRouter::center_connect_p2p(MapInfo* const data, Polyline center, P
 				right = last.direction().perpendicular(CGAL::Orientation::CLOCKWISE).to_vector();
 			}
 			dir /= LEN(dir);
-			right /= LEN(right);
-			double cos_theta = dir * right;
+			double cos_theta = VEC_COS(dir, right);
 			if (cos_theta == 0) printf("RouteEngine::ERROR: center_connect_p2p -\n   cos_theta == 0\n");
 			dir *= (offset / cos_theta);
 			Transformation translate(CGAL::TRANSLATION, dir);
@@ -1020,7 +1019,7 @@ Polyline CableRouter::line_simple(Polyline line)
 		u = v;
 		v = line[next + 1];
 		Vector dirr = v - u;
-		float cos_theta = dir * dirr / LEN(dir) / LEN(dirr);
+		double cos_theta = VEC_COS(dir, dirr);
 		if (!APPRO_EQUAL(cos_theta, 1))
 		{
 			res.push_back(line[next]);

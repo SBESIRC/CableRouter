@@ -221,7 +221,7 @@ void CableRouter::get_manhattan_tree(MapInfo* map, DreamTree tree, vector<Polyli
 		{
 			Vector dir1(path[0], path[1]);
 			Vector dir2(pa->parent->coord, pa->coord);
-			double cos_theta = abs(DOUBLE(dir1 * dir2) / LEN(dir1) / LEN(dir2));
+			double cos_theta = abs(VEC_COS(dir1, dir2));
 			if (EQUAL(cos_theta, 1))
 			{
 				DreamNodePtr fake = pa;
