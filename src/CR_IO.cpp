@@ -221,7 +221,7 @@ static void parse_geojson(MapInfo& map, const string& datastr)
             {
                 PElement e;
                 e.boundary = construct_polygon(&vec_pts[j]);
-                e.weight = 16000;
+                e.weight = 24000;
                 room_nodes.push_back(get_rtree_node(&e));
                 map.rooms.push_back(e.boundary);
             }
@@ -237,6 +237,10 @@ static void parse_geojson(MapInfo& map, const string& datastr)
                     pyg.reverse_orientation();
                     r.holes.push_back(pyg);
                 }
+                PElement e;
+                e.boundary = pyg;
+                e.weight = 4000;
+                room_nodes.push_back(get_rtree_node(&e));
             }
             //r.align = Direction(1, 0);
             map.regions.push_back(r);
@@ -252,6 +256,10 @@ static void parse_geojson(MapInfo& map, const string& datastr)
                     pyg.reverse_orientation();
                     r.holes.push_back(pyg);
                 }
+                PElement e;
+                e.boundary = pyg;
+                e.weight = 4000;
+                room_nodes.push_back(get_rtree_node(&e));
             }
             r.align_center = true;
             map.regions.push_back(r);

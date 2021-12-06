@@ -167,7 +167,18 @@ void CableRouter::inner_connect(MapInfo* map, ImmuneSystem* group, vector<Polyli
 		// connect by center line
 		else if (map->regions[region_id].align_center)
 		{
-			// to do
+			if (map->regions[region_id].centers.size() == 0) {
+				get_manhattan_tree(map, tree, cables);
+				avoid_coincidence(tree);
+			}
+			else
+			{
+				printf("begin get_center_align_tree\n");
+				get_center_align_tree(map, tree, cables);
+				printf("end get_center_align_tree\n");
+			}
+			paths = get_dream_tree_paths(tree);
+			printf("end get_dream_tree_paths\n");
 		}
 		// connect by ucs
 		else
@@ -279,6 +290,148 @@ void CableRouter::get_manhattan_tree(MapInfo* map, DreamTree tree, vector<Polyli
 					mid->children.push_back(children[i]);
 				}
 			}
+		}
+	}
+}
+
+void CableRouter::get_center_align_tree(MapInfo* map, DreamTree tree, vector<Polyline>& exist)
+{
+	vector<DreamNodePtr> all = getAllNodes(tree);
+	vector<Segment> exist_lines = get_segments_from_polylines(exist);
+	int rid = tree->region_id;
+	vector<Segment> centers = map->regions[rid].centers;
+	CenterGraph cg;
+
+	for (int i = 0; i < all.size(); i++)
+	{
+		// find nearest point on center-lines
+		int nearest_cen;
+		Point nearest_pt;
+		double MIN = CR_INF;
+		for (int cid = 0; cid < centers.size(); cid++)
+		{
+			Point proj = project_point_to_segment(all[i]->coord, centers[cid]);
+			double dis = DIST(proj, all[i]->coord);
+			if (dis < MIN)
+			{
+				MIN = dis;
+				nearest_cen = cid;
+				nearest_pt = proj;
+			}
+		}
+		// get the point id in pts
+		// if new point, add it to pts
+		bool p_exist = false;
+		for (int id = 0; id < cg.points.size(); id++)
+		{
+			if (!p_exist && POINT_EQUAL(cg.points[id], nearest_pt))
+			{
+				p_exist = true;
+				all[i]->projection_id = id;
+			}
+			if (p_exist) break;
+		}
+		if (!p_exist)
+		{
+			all[i]->projection_id = cg.points.size();
+			cg.points.push_back(nearest_pt);
+			cg.adj.push_back(set<int>());
+			cg.size++;
+		}
+		// break the center-line in centers
+		Segment cen = centers[nearest_cen];
+		if (!POINT_EQUAL(nearest_pt, cen.source()) && !POINT_EQUAL(nearest_pt, cen.target()))
+		{
+			centers[nearest_cen] = Segment(cen.source(), nearest_pt);
+			centers.push_back(Segment(nearest_pt, cen.target()));
+		}
+	}
+
+	for (int i = 0; i < centers.size(); i++)
+	{
+		Point p = centers[i].source();
+		Point q = centers[i].target();
+		int pid = -1;
+		int qid = -1;
+		bool p_exist = false, q_exist = false;
+		for (int id = 0; id < cg.points.size(); id++)
+		{
+			if (!p_exist && POINT_EQUAL(cg.points[id], p))
+			{
+				p_exist = true;
+				pid = id;
+			}
+			if (!q_exist && POINT_EQUAL(cg.points[id], q))
+			{
+				q_exist = true;
+				qid = id;
+			}
+			if (p_exist && q_exist) break;
+		}
+		if (!p_exist)
+		{
+			pid = cg.points.size();
+			cg.points.push_back(p);
+			cg.adj.push_back(set<int>());
+			cg.size++;
+		}
+		if (!q_exist)
+		{
+			qid = cg.points.size();
+			cg.points.push_back(q);
+			cg.adj.push_back(set<int>());
+			cg.size++;
+		}
+		cg.adj[pid].insert(qid);
+		cg.adj[qid].insert(pid);
+	}
+
+	for (int i = 0; i < all.size(); i++)
+	{
+		DreamNodePtr now = all[i];
+
+		if (!now->parent) continue;
+		if (!now->is_device) continue;
+
+		DreamNodePtr pa = now->parent;
+
+		// Method 1
+		//Vector dir_pa = pa->center_align / LEN(pa->center_align);
+		//Vector dir_now = now->center_align / LEN(now->center_align);
+		//Direction align = (dir_pa + dir_now).direction();
+		////printf("begin rotate\n");
+		//Transformation rotate = get_tf_from_dir(align);
+		////printf("end rotate\n");
+		//Polyline path = manhattan_connect(map, pa->coord, now->coord, pa->dir_from_parent, exist_lines, rotate);
+
+		// Method2
+		//ASPath ap = a_star_connect_p2p(map, pa->coord, now->coord, exist_lines);
+		//Polyline path = line_simple(ap.path);
+
+		// Method3
+		Polyline center_line = get_shortest_center_line(&cg, pa->projection_id, now->projection_id);
+		Polyline path = center_connect_p2p(map, center_line, pa->coord, now->coord, exist_lines);
+
+		for (auto ch = pa->children.begin(); ch != pa->children.end(); ch++)
+		{
+			if ((*ch) == now)
+			{
+				pa->children.erase(ch);
+				break;
+			}
+		}
+		for (int j = 0; j < (int)path.size() - 1; j++)
+		{
+			exist_lines.push_back(Segment(path[j], path[j + 1]));
+			DreamNodePtr ch = NULL;
+			if (j + 1 == (int)path.size() - 1)
+				ch = now;
+			else
+				ch = newDreamNode(path[j + 1]);
+			pa->children.push_back(ch);
+			ch->parent = pa;
+			ch->dir_from_parent = Vector(path[j], path[j + 1]);
+			pa = ch;
 		}
 	}
 }
@@ -1968,4 +2121,54 @@ void CableRouter::vertical_count(DreamNodePtr now, int& left, int& right)
 			}
 		}
 	}
+}
+
+Polyline CableRouter::get_shortest_center_line(CenterGraph* G, int s, int t)
+{
+	Polyline res;
+	int n = G->size;
+
+	double* dis = new double[n];
+	bool* vis = new bool[n];
+	int* parent = new int[n];
+	fill(dis, dis + n, CR_INF);
+	fill(vis, vis + n, false);
+	fill(parent, parent + n, -1);
+	dis[s] = 0;
+	for (int i = 0; i < n; i++)
+	{
+		double MIN = CR_INF;
+		int u = -1;
+		for (int j = 0; j < n; j++)
+		{
+			if (!vis[j] && dis[j] < MIN)
+			{
+				MIN = dis[j];
+				u = j;
+			}
+		}
+		if (u == -1) break;
+		vis[u] = true;
+
+		for (auto v : G->adj[u])
+		{
+			double d = DIST(G->points[u], G->points[v]);
+			if (!vis[v] && dis[u] + d < dis[v])
+			{
+				dis[v] = dis[u] + d;
+				parent[v] = u;
+			}
+		}
+	}
+	int now = t;
+	while (now != -1)
+	{
+		res.push_back(G->points[now]);
+		now = parent[now];
+	}
+	delete[] dis;
+	delete[] vis;
+	delete[] parent;
+	reverse(res.begin(), res.end());
+	return res;
 }

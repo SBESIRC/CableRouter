@@ -20,12 +20,19 @@ namespace CableRouter
 		// for inter group connect
 		int line_num_to_parent;
 		bool is_device;
-		int region_id;
-		Vector center_align;
+		int region_id = -1;
+		int projection_id = -1;
 
 		// for inner group connect
 		// not from this->parent when existing small turn
 		Vector dir_from_parent = Vector(0.0, 0.0);
+	};
+
+	struct CenterGraph
+	{
+		vector<set<int>> adj;
+		vector<Point> points;
+		int size = 0;
 	};
 
 	enum NodeDir
@@ -42,6 +49,7 @@ namespace CableRouter
 	// inner connect
 	void inner_connect(MapInfo* map, ImmuneSystem* group, vector<Polyline>& cables, vector<Polyline>& power_paths);
 	void get_manhattan_tree(MapInfo* map, DreamTree tree, vector<Polyline>& exist);
+	void get_center_align_tree(MapInfo* map, DreamTree tree, vector<Polyline>& exist);
 	void avoid_coincidence(DreamTree tree);
 	void avoid_coincidence_non_device(DreamTree tree);
 	void avoid_left(
@@ -70,6 +78,9 @@ namespace CableRouter
 	vector<Segment> get_dream_tree_lines(DreamTree tree, bool opened = false);
 	void horizontal_count(DreamNodePtr node, int& up, int& down);
 	void vertical_count(DreamNodePtr node, int& left, int& right);
+
+	// center line
+	Polyline get_shortest_center_line(CenterGraph* graph, int s, int t);
 }
 
 #endif

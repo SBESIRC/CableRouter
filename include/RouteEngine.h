@@ -44,6 +44,7 @@ namespace CableRouter
 	Polyline	obstacle_avoid_connect_p2p(MapInfo* const map, Point s, Point t, vector<Segment>& lines);
 	ASPath		a_star_connect_p2p(MapInfo* const map, Point s, Point t, vector<Segment>& lines);
 	Polyline	manhattan_smooth_p2p(MapInfo* const map, Polyline& path, vector<Segment>& exist_lines);
+	Polyline	center_connect_p2p(MapInfo* const map, Polyline center, Point s, Point t, vector<Segment>& lines);
 
 	// Point to Segment
 	Polyline	obstacle_avoid_connect_p2s(MapInfo* const map, Point s, Segment t, vector<Segment>& lines);
