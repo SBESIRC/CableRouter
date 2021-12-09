@@ -800,6 +800,8 @@ Polyline CableRouter::center_connect_p2p(MapInfo* const data, Polyline center, P
 
 	if (n < 2) return Polyline{ s,t };
 
+	res.push_back(s);
+
 	Vector source = center[1] - center[0];
 
 	Vector right_s = source.direction().perpendicular(CGAL::Orientation::CLOCKWISE).to_vector();
@@ -845,13 +847,12 @@ Polyline CableRouter::center_connect_p2p(MapInfo* const data, Polyline center, P
 			if (cos_theta == 0) printf("RouteEngine::ERROR: center_connect_p2p -\n   cos_theta == 0\n");
 			dir *= (offset / cos_theta);
 			Transformation translate(CGAL::TRANSLATION, dir);
-			center[i] = center[i].transform(translate);
+			res.push_back(center[i].transform(translate));
 		}
 	}
-	res.push_back(s);
-	res.insert(res.end(), center.begin(), center.end());
 	res.push_back(t);
-	return res;
+	
+	return line_simple(res);
 }
 
 Polyline CableRouter::manhattan_smooth_basic(MapInfo* const data, ASPath& path, vector<Segment>& exist_lines, Transformation rotate)
@@ -1276,7 +1277,7 @@ Polyline CableRouter::manhattan_smooth_p2s(MapInfo* const data, Polyline& path, 
 
 double CableRouter::tooCloseToSun(MapInfo* const data, const Point p, const Point q, vector<Segment>& exist, bool is_end)
 {
-	vector<Segment> obstacle_lines = exist;
+	vector<Segment> obstacle_lines;
 
 	// area
 	auto edges = segment_search(data->area.area_edge_tree, p, q);
