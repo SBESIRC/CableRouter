@@ -850,6 +850,10 @@ Polyline CableRouter::center_connect_p2p(MapInfo* const data, Polyline center, P
 			res.push_back(center[i].transform(translate));
 		}
 	}
+	else
+	{
+		res.insert(res.end(), center.begin(), center.end());
+	}
 	res.push_back(t);
 	
 	return line_simple(res);

@@ -2200,5 +2200,5 @@ Polyline CableRouter::get_shortest_center_line(CenterGraph* G, int s, int t)
 	delete[] vis;
 	delete[] parent;
 	reverse(res.begin(), res.end());
-	return res;
+	return line_simple(res);
 }
