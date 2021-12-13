@@ -101,7 +101,7 @@ string CableRouter::CableRouteEngine::routing(string datastr, int loop_max_count
 
 	for (int e = 0; e < systems.size(); e++)
 	{
-		for (int k = 0; k < 10; k++)
+		for (int k = 0; k < 50; k++)
 			systems[e].run();
 
 		if (systems[e].globlMem.size() < 1)
