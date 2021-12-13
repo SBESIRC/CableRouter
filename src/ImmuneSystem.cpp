@@ -261,11 +261,11 @@ double CableRouter::ImmuneSystem::affinity(vector<vector<int>>& adj, vector<vect
 	int start_dev = -1;
 	for (int s = dn; s < adj.size(); s++)
 	{
-		for (auto t = adj[s].begin(); t != adj[s].end(); t++)
+		for (auto t : adj[s])
 		{
-			if (*t < dn) {
+			if (t < dn) {
 				start = s;
-				start_dev = *t;
+				start_dev = t;
 			}
 		}
 	}
@@ -282,32 +282,20 @@ double CableRouter::ImmuneSystem::affinity(vector<vector<int>>& adj, vector<vect
 	fill(dis, dis + n, CR_INF);
 	fill(parent, parent + n, -1);
 	dis[start] = 0;
-	for (int i = 0; i < n; i++)
+	vis[start] = true;
+	queue<int> q;
+	q.push(start);
+	while (!q.empty())
 	{
-		double MIN = CR_INF;
-		int u = -1;
-		for (int j = 0; j < n; j++)
+		int now = q.front();
+		q.pop();
+		for (auto v : adj[now])
 		{
-			if (!vis[j] && dis[j] < MIN)
-			{
-				MIN = dis[j];
-				u = j;
-			}
-		}
-		if (u == -1) break;
-		vis[u] = true;
-
-		for (int j = 0; j < adj[u].size(); j++)
-		{
-			int v = adj[u][j];
-			if (!vis[v] && G[u][v] != CR_INF)
-			{
-				if (dis[v] > dis[u] + G[u][v])
-				{
-					dis[v] = dis[u] + G[u][v];
-					parent[v] = u;
-				}
-			}
+			if (vis[v]) continue;
+			dis[v] = dis[now] + G[now][v];
+			parent[v] = now;
+			vis[v] = true;
+			q.push(v);
 		}
 	}
 
@@ -385,7 +373,8 @@ double CableRouter::ImmuneSystem::affinity(vector<vector<int>>& adj, vector<vect
 
 	//printf("len_source = %lf, len_sum = %lf, back = %lf\n", len_source, len_sum, back);
 
-	double value = 1000000.0 / (len_sum + 1) + 2000.0 / (back + 100) + 0.0 / (len_source - len_sum + 1) - 40 * cross_n + 0.0 * beauty_n;
+	//double value = 1000000.0 / (len_sum + 1) + 2000.0 / (back + 100) + 0.0 / (len_source - len_sum + 1) - 40 * cross_n + 0.0 * beauty_n;
+	double value = 1000000.0 / (len_sum + back + 1000) - 40 * cross_n + 0.0 * beauty_n;
 
 	return value > 0 ? value : 0;
 }
