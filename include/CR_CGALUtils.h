@@ -10,6 +10,7 @@
 #include <CGAL/Polygon_2.h>
 #include <CGAL/Iso_rectangle_2.h>
 #include <CGAL/Timer.h>
+#include <CGAL/Random.h>
 
 #include "RBush.hpp"
 

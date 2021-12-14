@@ -302,12 +302,12 @@ double CableRouter::ImmuneSystem::affinity(vector<vector<int>>& adj, vector<vect
 	// back path
 	vector<Segment> segs;
 	double back = 0.0;
-	pair<double, double> dir = make_pair(
-		DOUBLE(data.devices[start_dev].coord.hx() - data.powers[start - dn].points[0].hx()),
-		DOUBLE(data.devices[start_dev].coord.hy() - data.powers[start - dn].points[0].hy()));
 	for (int i = 0; i < dn; i++)
 	{
 		if (i == start_dev) continue;
+		pair<double, double> dir = make_pair(
+			DOUBLE(data.devices[parent[i]].coord.hx() - data.powers[start - dn].points[0].hx()),
+			DOUBLE(data.devices[parent[i]].coord.hy() - data.powers[start - dn].points[0].hy()));
 		pair<double, double> path = make_pair(
 			DOUBLE(data.devices[i].coord.hx() - data.devices[parent[i]].coord.hx()),
 			DOUBLE(data.devices[i].coord.hy() - data.devices[parent[i]].coord.hy()));
@@ -374,7 +374,7 @@ double CableRouter::ImmuneSystem::affinity(vector<vector<int>>& adj, vector<vect
 	//printf("len_source = %lf, len_sum = %lf, back = %lf\n", len_source, len_sum, back);
 
 	//double value = 1000000.0 / (len_sum + 1) + 2000.0 / (back + 100) + 0.0 / (len_source - len_sum + 1) - 40 * cross_n + 0.0 * beauty_n;
-	double value = 1000000.0 / (len_sum + back + 1000) - 40 * cross_n + 0.0 * beauty_n;
+	double value = 1000000.0 / (len_sum + 1.5 * back + 1000) - 40 * cross_n + 0.0 * beauty_n;
 
 	return value > 0 ? value : 0;
 }
@@ -501,7 +501,6 @@ void CableRouter::ImmuneSystem::run()
 		printf("Ant searching begin\n");
 
 	int M = ANT_SIZE;
-	srand((unsigned int)(time(NULL)));
 	for (int k = 0; k < M; k++)
 	{
 		vector<vector<int>> adj(n);
@@ -512,8 +511,7 @@ void CableRouter::ImmuneSystem::run()
 		fill(vis, vis + dn, false);
 		fill(parent, parent + dn, -1);
 		fill(disg, disg + dn, 0);
-		int start = rand() % dn;
-		while (start < 0 || start >= dn) start = rand() % dn;
+		int start = cgal_rand.get_int(0, dn);
 		disg[start] = 1;
 
 		for (int i = 0; i < dn; i++)
@@ -529,8 +527,7 @@ void CableRouter::ImmuneSystem::run()
 					rou.push_back(make_pair(j, sum));
 				}
 			}
-			double x = rand() * 1.0 / RAND_MAX * sum;
-			while (x > sum) x = rand() * 1.0 / RAND_MAX * sum;
+			double x = cgal_rand.get_double(0, sum);
 			for (int j = 0; j < rou.size(); j++)
 			{
 				if (x <= rou[j].second)
@@ -577,8 +574,7 @@ void CableRouter::ImmuneSystem::run()
 				rou.push_back(make_pair(make_pair(i, v), sum));
 			}
 		}
-		double x = rand() * 1.0 / RAND_MAX * sum;
-		while (x > sum) x = rand() * 1.0 / RAND_MAX * sum;
+		double x = cgal_rand.get_double(0, sum);
 		for (int j = 0; j < rou.size(); j++)
 		{
 			if (x <= rou[j].second)
@@ -615,12 +611,12 @@ void CableRouter::ImmuneSystem::run()
 
 		for (auto aj = localMem.begin(); aj != localMem.end(); aj++)
 		{
-			if (rand() * 1.0 / RAND_MAX > LOCAL_CROSS_RATE) continue;
+			if (cgal_rand.get_double() > LOCAL_CROSS_RATE) continue;
 			vector<int> code2 = aj->prufer_code;
 			vector<int> code3;
 			for (int x = 0; x < code1.size(); x++)
 			{
-				if (rand() * 1.0 / RAND_MAX < 0.5)
+				if (cgal_rand.get_double() < 0.5)
 				{
 					code3.push_back(code1[x]);
 				}
@@ -641,12 +637,12 @@ void CableRouter::ImmuneSystem::run()
 
 		for (auto aj = globlMem.begin(); aj != globlMem.end(); aj++)
 		{
-			if (rand() * 1.0 / RAND_MAX > GLOBAL_CROSS_RATE) continue;
+			if (cgal_rand.get_double() > GLOBAL_CROSS_RATE) continue;
 			vector<int> code2 = aj->prufer_code;
 			vector<int> code3;
 			for (int x = 0; x < code1.size(); x++)
 			{
-				if (rand() * 1.0 / RAND_MAX < 0.5)
+				if (cgal_rand.get_double() < 0.5)
 				{
 					code3.push_back(code1[x]);
 				}

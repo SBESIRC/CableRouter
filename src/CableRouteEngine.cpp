@@ -44,11 +44,15 @@ bool path_compare(std::pair<Point, Point> a, std::pair<Point, Point> b)
 		b_right * abs(DOUBLE(b.second.hy() - b.first.hy()));
 }
 
-string CableRouter::CableRouteEngine::routing(string datastr, int loop_max_count)
+string CableRouter::CableRouteEngine::routing(string datastr, int loop_max_count, int iteration_count)
 {
 	if (loop_max_count < 1)
 	{
 		return "error: loop max count < 1";
+	}
+	if (iteration_count < 1)
+	{
+		return "error: iteration count < 1";
 	}
 
 	MapInfo map;
@@ -101,7 +105,7 @@ string CableRouter::CableRouteEngine::routing(string datastr, int loop_max_count
 
 	for (int e = 0; e < systems.size(); e++)
 	{
-		for (int k = 0; k < 50; k++)
+		for (int k = 0; k < iteration_count; k++)
 			systems[e].run();
 
 		if (systems[e].globlMem.size() < 1)

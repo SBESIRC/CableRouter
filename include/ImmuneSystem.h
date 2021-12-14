@@ -46,6 +46,7 @@ namespace CableRouter
 		set<Antibody> globlMem;
 
 	private:
+		CGAL::Random cgal_rand = CGAL::Random();
 		vector<vector<double>> pheromone;
 		set<Antibody> localMem;
 
