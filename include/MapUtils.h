@@ -122,8 +122,15 @@ namespace CableRouter
 	bool		touchObstacle		(MapInfo* const map, const Point p, const Point q);
 
 	MapInfo		rotateMap			(MapInfo* const map, Direction align);
-	vector<Polyline> getBoundaryOf(const Region& r1, const Region& r2);
-	vector<Polyline> getBoundaryOf(Polygon p1, Polygon p2);
+
+	vector<Polyline> getBoundaryOf	(const Region& r1, const Region& r2);
+	vector<Polyline> getBoundaryOf	(Polygon p1, Polygon p2);
+
+	vector<vector<int>>		getFittingLines		(vector<Device> dev, double gap, Direction align = Direction(1, 0));
+	vector<vector<Device>>	getFittingLines		(MapInfo* const map, double gap);
+	vector<vector<Device>>	breakFittingLine	(const vector<Device>& input, MapInfo* const map);
+	vector<vector<Device>>	breakFittingLine	(const vector<Device>& input, vector<Segment>& lines, vector<int>& vis);
+	vector<vector<Device>>	breakFittingLines	(MapInfo* const map, vector<vector<Device>> groups);
 }
 
 #endif

@@ -1,6 +1,6 @@
 #include "MapUtils.h"
 
-#define FARWAY 10000
+#define FARWAY 12000
 using namespace CableRouter;
 
 bool CableRouter::touchObstacle(MapInfo* const data, const Point p, const Point q)
@@ -321,6 +321,20 @@ void CableRouter::removeObstacles(MapInfo* const data, double** G, int n)
 	delete[] dis;
 	delete[] vis;
 	printf("Shifting obstacle points end\n");
+
+	auto fl = getFittingLines(data, 500);
+	for (auto l : fl)
+	{
+		for (int i = 0; i + 1 < l.size(); i++)
+		{
+			int u = l[i].id, v = l[i + 1].id;
+			double w = G[u][v];
+			if (APPRO_EQUAL(w, DIST(data->devices[u].coord, data->devices[v].coord)))
+			{
+				G[u][v] = G[v][u] = w / 1.5;
+			}
+		}
+	}
 }
 
 void CableRouter::addWeightCenters(MapInfo* const data, const Point p, const Point q, double& w)
@@ -702,6 +716,219 @@ vector<Polyline> CableRouter::getBoundaryOf(Polygon p1, Polygon p2)
 		if (i == start) pl.push_back(pt);
 		if (pl.size() > 1) res.push_back(pl);
 		start += pl.size();
+	}
+	return res;
+}
+
+bool compare_device_by_x(Device a, Device b)
+{
+	return a.coord.hx() < b.coord.hx();
+}
+
+bool compare_device_by_y(Device a, Device b)
+{
+	return a.coord.hy() < b.coord.hy();
+}
+
+vector<vector<int>> CableRouter::getFittingLines(vector<Device> devices, double gap, Direction align)
+{
+	vector<vector<int>> res;
+
+	if (devices.size() < 2) return res;
+
+	Transformation rotate = get_tf_from_dir(align).inverse();
+	for (auto& d : devices)
+		d.coord = d.coord.transform(rotate);
+	vector<Device> line;
+	double last;
+
+	sort(devices.begin(), devices.end(), compare_device_by_x);
+	last = devices[0].coord.hx();
+	line = { devices[0] };
+	for (int i = 1; i < devices.size(); i++)
+	{
+		double now = devices[i].coord.hx();
+		if (now - last < gap)
+		{
+			last = (last * line.size() + now) / (line.size() + 1);
+			line.push_back(devices[i]);
+		}
+		else
+		{
+			if (line.size() > 1) {
+				sort(line.begin(), line.end(), compare_device_by_y);
+				vector<int> ll;
+				for (auto d : line)
+					ll.push_back(d.id);
+				res.push_back(ll);
+			}
+			last = now;
+			line = { devices[i] };
+		}
+	}
+
+	sort(devices.begin(), devices.end(), compare_device_by_y);
+	last = devices[0].coord.hy();
+	line = { devices[0] };
+	for (int i = 1; i < devices.size(); i++)
+	{
+		double now = devices[i].coord.hy();
+		if (now - last < gap)
+		{
+			last = (last * line.size() + now) / (line.size() + 1);
+			line.push_back(devices[i]);
+		}
+		else
+		{
+			if (line.size() > 1) {
+				sort(line.begin(), line.end(), compare_device_by_x);
+				vector<int> ll;
+				for (auto d : line)
+					ll.push_back(d.id);
+				res.push_back(ll);
+			}
+			last = now;
+			line = { devices[i] };
+		}
+	}
+	return res;
+}
+
+vector<vector<Device>> CableRouter::getFittingLines(MapInfo* const map, double gap)
+{
+	vector<vector<Device>> res;
+
+	if (map->devices.size() < 2) return res;
+
+	vector<vector<Device>> devices(map->regions.size() + 1);
+	for (auto d : map->devices)
+	{
+		int rid = d.region_id;
+		if (rid == -1) rid = map->regions.size();
+		devices[rid].push_back(d);
+	}
+	for (int rid = 0; rid < map->regions.size(); rid++)
+	{
+		if (map->regions[rid].align_center)
+			continue;
+		auto lines = getFittingLines(devices[rid], gap, map->regions[rid].align);
+		for (auto l : lines)
+		{
+			vector<Device> line;
+			for (auto id : l)
+				line.push_back(map->devices[id]);
+			res.push_back(line);
+		}
+	}
+	auto lines = getFittingLines(devices.back(), gap);
+	for (auto l : lines)
+	{
+		vector<Device> line;
+		for (auto id : l)
+			line.push_back(map->devices[id]);
+		res.push_back(line);
+	}
+	return breakFittingLines(map, res);
+}
+
+vector<vector<Device>> CableRouter::breakFittingLine(const vector<Device>& input, MapInfo* const map)
+{
+	vector<vector<Device>> res;
+
+	if (input.size() < 2) return res;
+
+	vector<Device> l;
+	Device last = input[0];
+	l = { input[0] };
+	for (int i = 1; i < input.size(); i++)
+	{
+		Device now = input[i];
+		Segment s(last.coord, now.coord);
+		if (LEN(s) > FARWAY || crossObstacle(map, s))
+		{
+			if (l.size() > 1)
+				res.push_back(l);
+			last = now;
+			l = { input[i] };
+		}
+		else
+		{
+			last = now;
+			l.push_back(input[i]);
+		}
+	}
+	if (l.size() > 1)
+		res.push_back(l);
+
+	return res;
+}
+
+vector<vector<Device>> CableRouter::breakFittingLine(const vector<Device>& input, vector<Segment>& lines, vector<int>& vis)
+{
+	vector<vector<Device>> res;
+
+	if (input.size() < 2) return res;
+
+	vector<Device> l;
+	Device last = input[0];
+	l = { input[0] };
+	for (int i = 1; i < input.size(); i++)
+	{
+		Device now = input[i];
+		Segment s(last.coord, now.coord);
+		if (vis[last.id] || vis[now.id] || cross_lines(lines, last.coord, now.coord))
+		{
+			if (l.size() > 1)
+				res.push_back(l);
+			last = now;
+			l = { input[i] };
+		}
+		else
+		{
+			last = now;
+			l.push_back(input[i]);
+		}
+	}
+	if (l.size() > 1)
+		res.push_back(l);
+
+	return res;
+}
+
+vector<vector<Device>> CableRouter::breakFittingLines(MapInfo* const map, vector<vector<Device>> groups)
+{
+	vector<vector<Device>> res;
+	if (groups.size() < 1) return res;
+
+	for (int i = 0; i < groups.size(); i++)
+	{
+		auto break_lines = breakFittingLine(groups[i], map);
+		res.insert(res.end(), break_lines.begin(), break_lines.end());
+	}
+
+	vector<Segment> lines;
+	vector<int> vis(map->devices.size(), 0);
+	priority_queue<vector<Device>, vector<vector<Device>>, vector_less<vector<Device>>> q;
+	for (auto l : res)
+		q.push(l);
+	reset(res);
+	while (!q.empty())
+	{
+		auto top = q.top();
+		q.pop();
+		auto break_lines = breakFittingLine(top, lines, vis);
+		if (break_lines.size() == 1)
+		{
+			res.push_back(break_lines.front());
+			for (auto l : break_lines)
+				for (int i = 0; i < l.size(); i++)
+				{
+					vis[l[i].id] = 1;
+					if (i > 0) lines.push_back(Segment(l[i].coord, l[i - 1].coord));
+				}
+		}
+		else
+			for (auto l : break_lines) q.push(l);
 	}
 	return res;
 }

@@ -115,6 +115,7 @@ namespace CableRouter
 
     int self_cross_num(vector<Segment>& segs);
     int cross_num(vector<Segment>& segs, const Point p, const Point q);
+    bool cross_lines(vector<Segment>& segs, const Point p, const Point q);
 
     vector<Segment> get_segments_from_polyline(Polyline& polyline);
     vector<Segment> get_segments_from_polylines(vector<Polyline>& polylines);
@@ -131,6 +132,26 @@ namespace CableRouter
     {
         ele.swap(T());
     }
+
+    // T: has function size()
+    template <class T>
+    struct vector_less
+    {
+        bool operator() (T a, T b)
+        {
+            return a.size() < b.size();
+        }
+    };
+
+    // T: has function size()
+    template <class T>
+    struct vector_greater
+    {
+        bool operator() (T a, T b)
+        {
+            return a.size() > b.size();
+        }
+    };
 
     // T: PElement
     template <class T>
