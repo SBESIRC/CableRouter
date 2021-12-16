@@ -916,8 +916,9 @@ vector<vector<Device>> CableRouter::breakFittingLines(MapInfo* const map, vector
 	{
 		auto top = q.top();
 		q.pop();
+		auto size = top.size();
 		auto break_lines = breakFittingLine(top, lines, vis);
-		if (break_lines.size() == 1)
+		if (break_lines.size() == 1 && break_lines[0].size() == size)
 		{
 			res.push_back(break_lines.front());
 			for (auto l : break_lines)
