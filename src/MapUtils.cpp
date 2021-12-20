@@ -766,6 +766,13 @@ vector<vector<int>> CableRouter::getFittingLines(vector<Device> devices, double 
 			line = { devices[i] };
 		}
 	}
+	if (line.size() > 1) {
+		sort(line.begin(), line.end(), compare_device_by_y);
+		vector<int> ll;
+		for (auto d : line)
+			ll.push_back(d.id);
+		res.push_back(ll);
+	}
 
 	sort(devices.begin(), devices.end(), compare_device_by_y);
 	last = devices[0].coord.hy();
@@ -791,6 +798,14 @@ vector<vector<int>> CableRouter::getFittingLines(vector<Device> devices, double 
 			line = { devices[i] };
 		}
 	}
+	if (line.size() > 1) {
+		sort(line.begin(), line.end(), compare_device_by_x);
+		vector<int> ll;
+		for (auto d : line)
+			ll.push_back(d.id);
+		res.push_back(ll);
+	}
+
 	return res;
 }
 
