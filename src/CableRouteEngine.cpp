@@ -9,7 +9,7 @@ using namespace CableRouter;
 
 // FOR PARTITION
 #define ALPHA	30		// pos relation
-#define BETA	10		// size even
+#define BETA	15		// size even
 #define OMEGA	50		// inner cohesion
 #define DELTA	30		// size big
 #define GAMMA	10		// cut line len
