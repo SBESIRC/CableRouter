@@ -8,7 +8,7 @@ using namespace CableRouter;
 #define GLOBAL_SIZE			8
 #define GLOBAL_CROSS_RATE	0.8
 
-#define VOLATILE_RATE		0.005
+#define VOLATILE_RATE		0.05
 
 #define ANT_SIZE			30
 
