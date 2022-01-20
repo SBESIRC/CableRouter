@@ -13,6 +13,7 @@ namespace CableRouter
 
 	struct DreamNode
 	{
+		int id = -1;
 		DreamNodePtr parent;
 		Point coord;
 		vector<DreamNodePtr> children;

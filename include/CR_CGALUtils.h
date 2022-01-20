@@ -93,8 +93,12 @@ namespace CableRouter
     #define LEN(x)                                              sqrt(LEN_2((x)))
     #define EQUAL(x, y)                                         (abs(DOUBLE((x) - (y))) < CR_EPS)
     #define APPRO_EQUAL(x, y)                                   (abs(DOUBLE((x) - (y))) < 1e-4)
+    #define CLOSE(x, y)                                         (abs(DOUBLE((x) - (y))) < 5)
     #define POINT_EQUAL(x, y)                                   (APPRO_EQUAL((x).hx(), (y).hx()) && APPRO_EQUAL((x).hy(), (y).hy()))
+    #define POINT_CLOSE(x, y)                                   (CLOSE((x).hx(), (y).hx()) && CLOSE((x).hy(), (y).hy()))
     #define VEC_COS(x, y)                                       ((x) * (y) / LEN((x)) / LEN((y)))
+
+    bool compare_point_by_x_y(Point a, Point b);
 
     Polygon construct_polygon(const vector<Point>* coords);
     bool polygons_intersect(const Polygon& p, const Polygon& q);
@@ -123,6 +127,9 @@ namespace CableRouter
     Transformation get_tf_from_dir(Direction dir);
     Direction to_first_quadrant(Direction dir);
     Vector to_first_quadrant(Vector dir);
+
+    vector<Point> polyline_intersect(Polyline polyline, const vector<Segment> segs);
+    vector<Point> points_simple(const vector<Point> pts);
 
     rbush::TreeNode<Point>* get_point_rtree_node(const Point* pt);
 

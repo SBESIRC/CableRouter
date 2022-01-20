@@ -13,6 +13,12 @@ rbush::TreeNode<Point>* CableRouter::get_point_rtree_node(const Point* p)
 	return node;
 }
 
+bool CableRouter::compare_point_by_x_y(Point a, Point b)
+{
+	if (a.hx() != b.hx()) return a.hx() < b.hx();
+	return a.hy() < b.hy();
+}
+
 Polygon CableRouter::construct_polygon(const vector<Point>* coords) {
 	CGAL_assertion(coords->front() == coords->back());
 	Polygon pgn(coords->begin(), coords->end() - 1);
@@ -308,4 +314,54 @@ Direction CableRouter::to_first_quadrant(Direction dir)
 Vector CableRouter::to_first_quadrant(Vector dir)
 {
 	return to_first_quadrant(dir.direction()).to_vector();
+}
+
+vector<Point> CableRouter::polyline_intersect(Polyline polyline, const vector<Segment> segs)
+{
+	vector<Point> res;
+
+	auto lines = get_segments_from_polyline(polyline);
+	for (auto si : lines)
+	{
+		vector<Point> pts;
+		for (auto sj : segs)
+		{
+			if (!CGAL::do_intersect(si, sj)) continue;
+			CGAL::Object result = CGAL::intersection(si, sj);
+			Point pt;
+			if (CGAL::assign(pt, result))
+			{
+				pts.push_back(pt);
+			}
+		}
+		sort(pts.begin(), pts.end(), compare_point_by_x_y);
+		if (si.source().hx() > si.target().hx())
+			reverse(pts.begin(), pts.end());
+		else if (si.source().hx() == si.target().hx() && si.source().hy() > si.target().hy())
+			reverse(pts.begin(), pts.end());
+		res.insert(res.end(), pts.begin(), pts.end());
+	}
+	return res;
+}
+
+vector<Point> CableRouter::points_simple(const vector<Point> pts)
+{
+	vector<Point> res;
+
+	if (pts.size() < 2) return pts;
+
+	Point last = pts[0];
+	res.push_back(last);
+
+	for (int i = 1; i < pts.size(); i++)
+	{
+		Point now = pts[i];
+		if (!POINT_EQUAL(last, now))
+		{
+			last = now;
+			res.push_back(last);
+		}
+	}
+
+	return res;
 }

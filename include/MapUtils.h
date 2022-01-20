@@ -131,6 +131,8 @@ namespace CableRouter
 	vector<vector<Device>>	breakFittingLine	(const vector<Device>& input, MapInfo* const map);
 	vector<vector<Device>>	breakFittingLine	(const vector<Device>& input, vector<Segment>& lines, vector<int>& vis);
 	vector<vector<Device>>	breakFittingLines	(MapInfo* const map, vector<vector<Device>> groups);
+
+	vector<Segment>	rearrangeCenters(const vector<Segment> centers);
 }
 
 #endif

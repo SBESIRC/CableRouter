@@ -486,17 +486,27 @@ void CableRouter::preprocess(MapInfo& map)
 			}
 		}
 	}
+	for (int i = 0; i < map.regions.size(); i++)
+	{
+		if (map.regions[i].align_center)
+			map.regions[i].centers = rearrangeCenters(map.regions[i].centers);
+	}
 
 	reset(map.borders);
 	for (int i = 0; i < map.regions.size(); i++)
 	{
-		for (int j = i + 1; j < map.regions.size(); j++)
-		{
-			auto res = getBoundaryOf(map.regions[i], map.regions[j]);
-			for (auto pl : res)
-				for (int k = 0; k < pl.size() - 1; k++)
-					map.borders.push_back(Segment(pl[k], pl[k + 1]));
-		}
+		//for (int j = i + 1; j < map.regions.size(); j++)
+		//{
+		//	auto res = getBoundaryOf(map.regions[i], map.regions[j]);
+		//	for (auto pl : res)
+		//		for (int k = 0; k < pl.size() - 1; k++)
+		//			map.borders.push_back(Segment(pl[k], pl[k + 1]));
+		//}
+		auto pygs = map.regions[i].holes;
+		pygs.push_back(map.regions[i].boundary);
+		for (auto pyg : pygs)
+			for (auto eit = pyg.edges_begin(); eit != pyg.edges_end(); eit++)
+				map.borders.push_back(*eit);
 	}
 }
 
@@ -946,5 +956,101 @@ vector<vector<Device>> CableRouter::breakFittingLines(MapInfo* const map, vector
 		else
 			for (auto l : break_lines) q.push(l);
 	}
+	return res;
+}
+
+vector<Segment> CableRouter::rearrangeCenters(const vector<Segment> centers)
+{
+	vector<Segment> res;
+	vector<vector<Point>> break_pts(centers.size());
+	for (int i = 0; i < centers.size(); i++)
+	{
+		break_pts[i].push_back(centers[i].source());
+		break_pts[i].push_back(centers[i].target());
+	}
+	for (int i = 0; i < centers.size(); i++)
+	{
+		for (int j = i + 1; j < centers.size(); j++)
+		{
+			Segment si = centers[i], sj = centers[j];
+			if (DIST(si, sj) < 1e-4 &&
+				!POINT_EQUAL(si.source(), sj.source()) && 
+				!POINT_EQUAL(si.source(), sj.target()) &&
+				!POINT_EQUAL(si.target(), sj.source()) && 
+				!POINT_EQUAL(si.target(), sj.target()))
+			{
+				if (!CGAL::do_intersect(si, sj))
+				{
+					Point pt; Segment seg; int sid;
+					if (DIST(si.source(), sj) < 1e-4)
+					{
+						pt = si.source();
+						seg = sj;
+						sid = j;
+					}
+					else if (DIST(si.target(), sj) < 1e-4)
+					{
+						pt = si.target();
+						seg = sj;
+						sid = j;
+					}
+					else if (DIST(sj.source(), si) < 1e-4)
+					{
+						pt = sj.source();
+						seg = si;
+						sid = i;
+					}
+					else
+					{
+						pt = sj.target();
+						seg = si;
+						sid = i;
+					}
+					pt = project_point_to_segment(pt, seg);
+					if (!POINT_EQUAL(seg.source(), pt) &&
+						!POINT_EQUAL(seg.target(), pt))
+						break_pts[sid].push_back(pt);
+				}
+				else
+				{
+					CGAL::Object result = CGAL::intersection(si, sj);
+					Point pt;
+					if (CGAL::assign(pt, result))
+					{
+						if (!POINT_EQUAL(si.source(), pt) &&
+							!POINT_EQUAL(si.target(), pt))
+							break_pts[i].push_back(pt);
+						if (!POINT_EQUAL(sj.source(), pt) &&
+							!POINT_EQUAL(sj.target(), pt))
+							break_pts[j].push_back(pt);
+					}
+					else
+					{
+						printf("Error::CableRouter::rearrangeCenters:: WTF???\n");
+					}
+				}
+			}
+		}
+	}
+	for (int i = 0; i < break_pts.size(); i++)
+	{
+		auto pts = break_pts[i];
+		if (pts.size() == 2) {
+			res.push_back(centers[i]);
+			continue;
+		}
+		sort(pts.begin(), pts.end(), compare_point_by_x_y);
+		Point last = pts[0];
+		for (int j = 1; j < pts.size(); j++)
+		{
+			Point now = pts[j];
+			if (!POINT_EQUAL(last, now))
+			{
+				res.push_back(Segment(last, now));
+				last = now;
+			}
+		}
+	}
+
 	return res;
 }

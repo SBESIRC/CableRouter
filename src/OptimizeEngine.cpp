@@ -68,6 +68,7 @@ void CableRouter::inner_connect(MapInfo* map, ImmuneSystem* group, vector<Polyli
 	for (int i = 0; i < dn; i++)
 	{
 		DreamNodePtr no = newDreamNode(devices[i].coord);
+		no->id = i;
 		no->is_device = true;
 		no->region_id = devices[i].region_id;
 		dev_nodes.push_back(no);
@@ -128,27 +129,44 @@ void CableRouter::inner_connect(MapInfo* map, ImmuneSystem* group, vector<Polyli
 
 		DreamNodePtr pa = now->parent;
 
-		if (now->region_id != pa->region_id)
+		if (now->region_id != pa->region_id  ||
+			group->data.G[now->id][pa->id] > 10000)
 		{
-			DreamNodePtr new_now = newDreamNode(now->coord);
-			new_now->is_device = now->is_device;
-			new_now->region_id = now->region_id;
+			vector<Segment> lines;
+			ASPath ap = a_star_connect_p2p(map, pa->coord, now->coord, lines);
+			Polyline path = line_simple(ap.path);
+			lines = map->borders;
+			vector<Point> intersection = polyline_intersect(path, lines);
+			printf("######## intersection size        = %d\n", intersection.size());
+			intersection = points_simple(intersection);
+			printf("######## intersection size simple = %d\n", intersection.size());
+			for (auto p : intersection)
+			{
+				DreamNodePtr new_now = newDreamNode(now->coord);
+				new_now->is_device = now->is_device;
+				new_now->region_id = now->region_id;
 
-			//DreamNodePtr new_pa = newDreamNode(pa->coord);
-			//new_pa->is_device = pa->is_device;
-			//new_pa->ucs_id = now->ucs_id;
+				DreamNodePtr new_pa = newDreamNode(pa->coord);
+				new_pa->is_device = pa->is_device;
+				new_pa->region_id = now->region_id;
 
-			//new_pa->children.push_back(new_now);
-			//new_now->parent = new_pa;
-			new_now->children = now->children;
-			for (auto c : new_now->children)
-				c->parent = new_now;
+				new_pa->children.push_back(new_now);
+				new_now->parent = new_pa;
+				new_now->children = now->children;
+				for (auto c : new_now->children)
+					c->parent = new_now;
 
-			reset(now->children);
-			now->region_id = pa->region_id;
+				reset(now->children);
+				now->region_id = pa->region_id;
 
-			//forest.push_back(new_pa);
-			forest.push_back(new_now);
+				now->coord = p;
+				new_pa->coord = p;
+
+				forest.push_back(new_pa);
+
+				pa = new_pa;
+				now = new_now;
+			}
 		}
 	}
 
@@ -325,7 +343,7 @@ void CableRouter::get_center_align_tree(MapInfo* map, DreamTree tree, vector<Pol
 		bool p_exist = false;
 		for (int id = 0; id < cg.points.size(); id++)
 		{
-			if (!p_exist && POINT_EQUAL(cg.points[id], nearest_pt))
+			if (!p_exist && POINT_CLOSE(cg.points[id], nearest_pt))
 			{
 				p_exist = true;
 				all[i]->projection_id = id;
@@ -341,7 +359,7 @@ void CableRouter::get_center_align_tree(MapInfo* map, DreamTree tree, vector<Pol
 		}
 		// break the center-line in centers
 		Segment cen = centers[nearest_cen];
-		if (!POINT_EQUAL(nearest_pt, cen.source()) && !POINT_EQUAL(nearest_pt, cen.target()))
+		if (!POINT_CLOSE(nearest_pt, cen.source()) && !POINT_CLOSE(nearest_pt, cen.target()))
 		{
 			centers[nearest_cen] = Segment(cen.source(), nearest_pt);
 			centers.push_back(Segment(nearest_pt, cen.target()));
@@ -357,12 +375,12 @@ void CableRouter::get_center_align_tree(MapInfo* map, DreamTree tree, vector<Pol
 		bool p_exist = false, q_exist = false;
 		for (int id = 0; id < cg.points.size(); id++)
 		{
-			if (!p_exist && POINT_EQUAL(cg.points[id], p))
+			if (!p_exist && POINT_CLOSE(cg.points[id], p))
 			{
 				p_exist = true;
 				pid = id;
 			}
-			if (!q_exist && POINT_EQUAL(cg.points[id], q))
+			if (!q_exist && POINT_CLOSE(cg.points[id], q))
 			{
 				q_exist = true;
 				qid = id;
