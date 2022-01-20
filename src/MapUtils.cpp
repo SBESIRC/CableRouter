@@ -322,7 +322,7 @@ void CableRouter::removeObstacles(MapInfo* const data, double** G, int n)
 	delete[] vis;
 	printf("Shifting obstacle points end\n");
 
-	auto fl = getFittingLines(data, 500);
+	auto fl = getFittingLines(data, 100);
 	for (auto l : fl)
 	{
 		for (int i = 0; i + 1 < l.size(); i++)
@@ -631,8 +631,8 @@ void CableRouter::correctInvalidPower(MapInfo& map)
 				pos = shrink_segment(Segment(pos, project), 1.0 + 0.01 / MIN).target();
 			}
 
-			if (!isValidPoint(map, pos))
-				continue;
+			//if (!isValidPoint(map, pos))
+			//	continue;
 
 			valid_pwr.push_back(Power(pos));
 			exist_pt.insert(pos);

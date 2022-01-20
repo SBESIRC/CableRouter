@@ -1000,7 +1000,7 @@ Polyline CableRouter::line_simple(Polyline line)
 	res.push_back(last);
 	for (int i = 1; i < line.size(); i++)
 	{
-		if (line[i] != last)
+		if (!POINT_EQUAL(line[i], last))
 		{
 			last = line[i];
 			res.push_back(last);

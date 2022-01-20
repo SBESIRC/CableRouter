@@ -146,41 +146,43 @@ vector<ISData> CableRouter::parse_groups(MapInfo* data, vector<vector<int>>& gro
 			int u = groups[i][j];
 			if (vis[j]) continue;
 
-			int choose = -1;
-			for (int k = j + 1; k < groups[i].size(); k++)
-			{
-				int v = groups[i][k];
-				if (G[u][v] <= DEV_GAP)
-				{
-					vis[k] = true;
-					if (data->devices[u].coord.hx() != data->devices[v].coord.hx())
-					{
-						for (int k = 0; k < n_all; k++)
-						{
-							G[u][k] = G[v][k] =
-								G[k][u] = G[k][v] =
-								std::min(G[u][k], G[v][k]);
-						}
-						choose = data->devices[u].coord.hx() < data->devices[v].coord.hx() ?
-							u : v;
-					}
-					else
-					{
-						for (int k = 0; k < n_all; k++)
-						{
-							G[u][k] = G[v][k] =
-								G[k][u] = G[k][v] =
-								std::min(G[u][k], G[v][k]);
-						}
-						choose = data->devices[u].coord.hy() < data->devices[v].coord.hy() ?
-							u : v;
-					}
-					devs.push_back(data->devices[choose]);
-					break;
-				}
-			}
-			if (choose == -1)
-				devs.push_back(data->devices[u]);
+			//int choose = -1;
+			//for (int k = j + 1; k < groups[i].size(); k++)
+			//{
+			//	int v = groups[i][k];
+			//	if (G[u][v] <= DEV_GAP)
+			//	{
+			//		vis[k] = true;
+			//		if (data->devices[u].coord.hx() != data->devices[v].coord.hx())
+			//		{
+			//			for (int k = 0; k < n_all; k++)
+			//			{
+			//				G[u][k] = G[v][k] =
+			//					G[k][u] = G[k][v] =
+			//					std::min(G[u][k], G[v][k]);
+			//			}
+			//			choose = data->devices[u].coord.hx() < data->devices[v].coord.hx() ?
+			//				u : v;
+			//		}
+			//		else
+			//		{
+			//			for (int k = 0; k < n_all; k++)
+			//			{
+			//				G[u][k] = G[v][k] =
+			//					G[k][u] = G[k][v] =
+			//					std::min(G[u][k], G[v][k]);
+			//			}
+			//			choose = data->devices[u].coord.hy() < data->devices[v].coord.hy() ?
+			//				u : v;
+			//		}
+			//		devs.push_back(data->devices[choose]);
+			//		break;
+			//	}
+			//}
+			//if (choose == -1)
+			//	devs.push_back(data->devices[u]);
+			devs.push_back(data->devices[u]);
+
 			vis[j] = true;
 		}
 		delete[] vis;
