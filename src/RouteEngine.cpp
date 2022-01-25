@@ -263,14 +263,14 @@ ASPath CableRouter::a_star_connect_p2p(MapInfo* const data, Point s, Point t, ve
 				next->g = no->g + w;
 				next->parent = no->id;
 				next->open = true;
-				next->cross_num = no->cross_num + cross_cons ? 1 : 0;
+				next->cross_num = no->cross_num + (cross_cons ? 1 : 0);
 				openlist.push_back(next);
 				sort(openlist.begin(), openlist.end(), open_list_less);
 			}
 			else if (next->g > no->g + w)
 			{
 				next->g = no->g + w;
-				next->cross_num = no->cross_num + cross_cons ? 1 : 0;
+				next->cross_num = no->cross_num + (cross_cons ? 1 : 0);
 				if (!next->is_start) next->parent = no->id;
 				sort(openlist.begin(), openlist.end(), open_list_less);
 			}
@@ -912,12 +912,14 @@ Polyline CableRouter::manhattan_smooth_basic(MapInfo* const data, ASPath& path, 
 		bool cross1 = crossObstacle(data, u, mid1) || crossObstacle(data, mid1, v);
 		bool cross2 = crossObstacle(data, u, mid2) || crossObstacle(data, mid2, v);
 
-		int cross_r1 = crossRoom(data, u, mid1) + crossRoom(data, mid1, v);
-		if (!cross1 && cross_r1 > max(passport, 0))
+		int cross_r1 = crossRoom(data, u, mid1);
+		int cross_r1_add = crossRoom(data, mid1, v);
+		if (!cross1 && cross_r1 + cross_r1_add > max(passport, 0))
 			cross1 = true;
 
-		int cross_r2 = crossRoom(data, u, mid2) + crossRoom(data, mid2, v);
-		if (!cross2 && cross_r2 > max(passport, 0))
+		int cross_r2 = crossRoom(data, u, mid2);
+		int cross_r2_add = crossRoom(data, mid2, v);
+		if (!cross2 && cross_r2 + cross_r2_add > max(passport, 0))
 			cross2 = true;
 
 		//bool colli1 = tooCloseToSun(data, u, mid1, obstacle_lines) || tooCloseToSun(data, mid1, v, obstacle_lines);
@@ -1050,7 +1052,9 @@ Polyline CableRouter::manhattan_connect(MapInfo* const data, Point u, Point v, V
 	double dy = abs(rot_u.hy() - rot_v.hy());
 	if (APPRO_EQUAL(dx, 0) || APPRO_EQUAL(dy, 0))
 	{
-		if (!crossObstacle(data, u, v) && !crossRoom(data, u, v)) {
+		if (!crossObstacle(data, u, v) && 
+			!crossRoom(data, u, v) &&
+			!cross_lines_shrink(lines, u, v)) {
 			res.push_back(u);
 			res.push_back(v);
 		}
@@ -1067,10 +1071,12 @@ Polyline CableRouter::manhattan_connect(MapInfo* const data, Point u, Point v, V
 		Point mid2 = Point(rot_u.hx(), rot_v.hy()).transform(rotate);
 		bool cross1 = 
 			crossObstacle(data, u, mid1) || crossRoom(data, u, mid1) ||
-			crossObstacle(data, mid1, v) || crossRoom(data, mid1, v);
+			crossObstacle(data, mid1, v) || crossRoom(data, mid1, v) ||
+			cross_lines_shrink(lines, u, mid1) || cross_lines_shrink(lines, mid1, v);
 		bool cross2 =
 			crossObstacle(data, u, mid2) || crossRoom(data, u, mid2) ||
-			crossObstacle(data, mid2, v) || crossRoom(data, mid2, v);
+			crossObstacle(data, mid2, v) || crossRoom(data, mid2, v) ||
+			cross_lines_shrink(lines, u, mid2) || cross_lines_shrink(lines, mid2, v);
 		if (!cross2 && !cross1)
 		{
 			double w1, w2;

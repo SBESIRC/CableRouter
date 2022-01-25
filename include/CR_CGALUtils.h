@@ -120,6 +120,7 @@ namespace CableRouter
     int self_cross_num(vector<Segment>& segs);
     int cross_num(vector<Segment>& segs, const Point p, const Point q);
     bool cross_lines(vector<Segment>& segs, const Point p, const Point q);
+    bool cross_lines_shrink(vector<Segment>& segs, const Point p, const Point q);
 
     vector<Segment> get_segments_from_polyline(Polyline& polyline);
     vector<Segment> get_segments_from_polylines(vector<Polyline>& polylines);

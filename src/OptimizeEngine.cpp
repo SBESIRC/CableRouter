@@ -1423,7 +1423,7 @@ void CableRouter::avoid_right(
 	}
 	sort(pair_nodes.begin(), pair_nodes.end(), compare_right_from_down_to_up);
 	reverse(pair_nodes.begin(), pair_nodes.end());
-	if (fix != -1) fix = (int)down.size() - 1 - fix;
+	if (fix != -1) fix = (int)right.size() - 1 - fix;
 	for (int i = 0; i < pair_nodes.size(); i++)
 	{
 		right[i] = pair_nodes[i].first;

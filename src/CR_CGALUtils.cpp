@@ -262,6 +262,23 @@ bool CableRouter::cross_lines(vector<Segment>& segs, const Point p, const Point 
 	return false;
 }
 
+bool CableRouter::cross_lines_shrink(vector<Segment>& segs, const Point p, const Point q)
+{
+	Segment sj = shrink_segment(Segment(p, q));
+	for (int i = 0; i < segs.size(); i++)
+	{
+		Segment si = segs[i];
+		if (!CGAL::do_intersect(si, sj)) continue;
+		CGAL::Object result = CGAL::intersection(si, sj);
+		Point pt;
+		if (CGAL::assign(pt, result))
+		{
+			return true;
+		}
+	}
+	return false;
+}
+
 vector<Segment> CableRouter::get_segments_from_polyline(Polyline& polyline)
 {
 	vector<Segment> res;
