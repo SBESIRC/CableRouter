@@ -651,7 +651,7 @@ bool compare_down_from_left_to_right(pair<DreamNodePtr, DreamNodePtr> pair_a, pa
 
 	if (aturn == -1) return a->coord.hy() > b->coord.hy();
 
-	return a->coord.hx() < b->coord.hx();
+	return a->coord.hy() < b->coord.hy();
 }
 
 bool compare_up_from_left_to_right(pair<DreamNodePtr, DreamNodePtr> pair_a, pair<DreamNodePtr, DreamNodePtr> pair_b)
@@ -717,7 +717,7 @@ bool compare_up_from_left_to_right(pair<DreamNodePtr, DreamNodePtr> pair_a, pair
 
 	if (aturn == -1) return a->coord.hy() < b->coord.hy();
 
-	return a->coord.hx() > b->coord.hx();
+	return a->coord.hy() > b->coord.hy();
 }
 
 void CableRouter::avoid_coincidence(DreamTree tree)
