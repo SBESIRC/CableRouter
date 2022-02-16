@@ -55,8 +55,16 @@ bool CableRouter::is_tiny_face_between_obstacles(CDT& ct, CDT::Face_handle fh)
 	{
 		Point p = fh->vertex(i)->point();
 		Point q = fh->vertex(ct.ccw(i))->point();
-		if (fh->is_constrained(ct.cw(i))) continue;
-		if (DIST(p, q) < 0.001)
+		if (fh->is_constrained(ct.cw(i)))
+		{
+			Point op = fh->vertex(ct.cw(i))->point();
+			if (is_constrained && DIST(op, Line(p, q)) < 10)
+			{
+				tiny = true;
+				break;
+			}
+		}
+		else if (DIST(p, q) < 0.1)
 		{
 			auto nei = fh->neighbor(ct.cw(i));
 			bool nei_is_con = false;
