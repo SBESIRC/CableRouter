@@ -13,7 +13,7 @@ MainWindow::MainWindow(QWidget *parent)
     pa.setColor(QPalette::Background, Qt::black);
     pa.setColor(QPalette::ButtonText, Qt::white);
     this->setPalette(pa);
-    this->setMinimumSize(1800, 1800);
+    this->setMinimumSize(1080, 1080);
 }
 
 MainWindow::~MainWindow()

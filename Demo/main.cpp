@@ -1,6 +1,7 @@
 #include "../include/CableRouteEngine.h"
 #include <fstream>
 #include <sstream>
+#include <crtdbg.h>
 
 using namespace CableRouter;
 using namespace std;
@@ -8,7 +9,7 @@ using namespace std;
 int main()
 {
 	CableRouteEngine cre;
-	ifstream f("test1.geojson");
+	ifstream f("err_json/ID1001078.geojson");
 	stringstream ss;
 	ss << f.rdbuf();
 	f.close();

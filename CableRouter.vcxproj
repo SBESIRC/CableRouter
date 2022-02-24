@@ -122,7 +122,7 @@
       <WarningLevel>Level1</WarningLevel>
       <PreprocessorDefinitions>%(PreprocessorDefinitions);CGAL_HEADER_ONLY;THMODULE_DLL;_SCL_SECURE_NO_WARNINGS;_CRT_SECURE_NO_WARNINGS</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>.\libraries\jsoncpp\include;.\libraries\rbush;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>.\libraries\jsoncpp\include;.\libraries\rbush;%(AdditionalIncludeDirectories);$(CGAL4_DIR)\include;</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>

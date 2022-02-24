@@ -137,9 +137,7 @@ void CableRouter::inner_connect(MapInfo* map, ImmuneSystem* group, vector<Polyli
 			Polyline path = line_simple(ap.path);
 			lines = map->borders;
 			vector<Point> intersection = polyline_intersect(path, lines);
-			printf("######## intersection size        = %d\n", intersection.size());
 			intersection = points_simple(intersection);
-			printf("######## intersection size simple = %d\n", intersection.size());
 			for (auto p : intersection)
 			{
 				DreamNodePtr new_now = newDreamNode(now->coord);
@@ -2220,5 +2218,6 @@ Polyline CableRouter::get_shortest_center_line(CenterGraph* G, int s, int t)
 	delete[] vis;
 	delete[] parent;
 	reverse(res.begin(), res.end());
+	return res;
 	return line_simple(res);
 }

@@ -69,6 +69,17 @@ namespace CableRouter
     typedef CDT::Face_handle                                                Face_handle;
     typedef CDT::Vertex_handle                                              Vertex_handle;
 
+    typedef CGAL::Exact_predicates_exact_constructions_kernel               EKernel;
+    typedef EKernel::Point_2                                                EPoint;
+    typedef CGAL::Polygon_2<EKernel>                                        EPolygon;
+    typedef CGAL::Polygon_with_holes_2<EKernel>                             EPolygon_with_holes;
+
+    typedef CGAL::Arr_segment_traits_2<EKernel>                             Abt;
+    typedef CGAL::Arrangement_2<Abt>                                        ARR;
+    typedef Abt::X_monotone_curve_2                                         ASegment;
+    typedef Abt::Point_2                                                    APoint;
+
+
     struct Constraint
     {
         Point source;
@@ -97,6 +108,9 @@ namespace CableRouter
     #define POINT_EQUAL(x, y)                                   (APPRO_EQUAL((x).hx(), (y).hx()) && APPRO_EQUAL((x).hy(), (y).hy()))
     #define POINT_CLOSE(x, y)                                   (CLOSE((x).hx(), (y).hx()) && CLOSE((x).hy(), (y).hy()))
     #define VEC_COS(x, y)                                       ((x) * (y) / LEN((x)) / LEN((y)))
+
+    Polygon epolygon_to_polygon(const EPolygon& ep);
+    EPolygon polygon_to_epolygon(const Polygon& p);
 
     bool compare_point_by_x_y(Point a, Point b);
 

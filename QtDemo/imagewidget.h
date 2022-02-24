@@ -51,6 +51,7 @@ private:
 	std::vector<Segment> centers_;
 	std::vector<std::vector<Point>> holes_;
 	std::vector<std::vector<Point>> rooms_;
+	std::vector<std::vector<Point>> regions_;
 	vector<Point> power_sources_;
 
 	MapInfo data;

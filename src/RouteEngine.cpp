@@ -1062,6 +1062,7 @@ Polyline CableRouter::manhattan_connect(MapInfo* const data, Point u, Point v, V
 		{
 			ASPath ap = a_star_connect_p2p(data, u, v, lines);
 			res = manhattan_smooth_basic(data, ap, lines, rotate);
+			//res = ap.path;
 			res = line_simple(res);
 		}
 	}
@@ -1140,6 +1141,7 @@ Polyline CableRouter::manhattan_connect(MapInfo* const data, Point u, Point v, V
 		{
 			ASPath ap = a_star_connect_p2p(data, u, v, lines);
 			res = manhattan_smooth_basic(data, ap, lines, rotate);
+			//res = ap.path;
 			res = line_simple(res);
 		}
 	}
