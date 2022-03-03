@@ -133,6 +133,8 @@ namespace CableRouter
 	vector<vector<Device>>	breakFittingLines	(MapInfo* const map, vector<vector<Device>> groups);
 
 	vector<Segment>	rearrangeCenters(const vector<Segment> centers);
+
+	void expandRooms(vector<Polygon>& rooms, const Polygon& area);
 }
 
 #endif

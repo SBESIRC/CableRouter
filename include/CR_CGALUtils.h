@@ -127,6 +127,7 @@ namespace CableRouter
     Point project_point_to_segment(Point p, Segment s);
     Segment shrink_segment(Segment seg, double rate);
     Segment shrink_segment(Segment seg);
+    Segment expand_segment(Segment seg);
 
     Point focus_point(Face_handle f);
     vector<Point> point_box(Point p, const double gap);

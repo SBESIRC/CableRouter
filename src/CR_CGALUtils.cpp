@@ -36,8 +36,11 @@ bool CableRouter::compare_point_by_x_y(Point a, Point b)
 }
 
 Polygon CableRouter::construct_polygon(const vector<Point>* coords) {
-	CGAL_assertion(coords->front() == coords->back());
-	Polygon pgn(coords->begin(), coords->end() - 1);
+	Polygon pgn;
+	if (coords->front() == coords->back())
+		pgn = Polygon(coords->begin(), coords->end() - 1);
+	else
+		pgn = Polygon(coords->begin(), coords->end());
 	if (pgn.is_clockwise_oriented())
 		pgn.reverse_orientation();
 	return pgn;
@@ -202,6 +205,12 @@ Segment CableRouter::shrink_segment(Segment seg, double rate)
 Segment CableRouter::shrink_segment(Segment seg)
 {
 	double r = 1.0 - 1.0 / LEN(seg);
+	return shrink_segment(seg, r);
+}
+
+Segment CableRouter::expand_segment(Segment seg)
+{
+	double r = 1.0 + 1.0 / LEN(seg);
 	return shrink_segment(seg, r);
 }
 
