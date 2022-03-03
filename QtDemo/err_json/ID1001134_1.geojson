@@ -1,0 +1,3064 @@
+{
+    "type": "FeatureCollection",
+    "features": [
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Polygon",
+                "coordinates": [
+                    [
+                        [
+                            589085.17909781367,
+                            -390325.06987098319
+                        ],
+                        [
+                            579596.811375618,
+                            -390325.05600774195
+                        ],
+                        [
+                            579596.811375618,
+                            -395546.16781305149
+                        ],
+                        [
+                            501388.00024620461,
+                            -395546.16781305149
+                        ],
+                        [
+                            503327.64928056585,
+                            -388829.98854642641
+                        ],
+                        [
+                            499498.87749158,
+                            -387743.11365467234
+                        ],
+                        [
+                            514833.57438820624,
+                            -337512.80996708351
+                        ],
+                        [
+                            525230.064621235,
+                            -340307.45832795789
+                        ],
+                        [
+                            525346.81026650674,
+                            -341361.76596835977
+                        ],
+                        [
+                            541496.81026650663,
+                            -341946.17889982252
+                        ],
+                        [
+                            541396.81026650674,
+                            -358196.16691099806
+                        ],
+                        [
+                            581356.40510316892,
+                            -358076.1905703824
+                        ],
+                        [
+                            581337.22155001573,
+                            -341996.44173802435
+                        ],
+                        [
+                            584355.12897668942,
+                            -341995.916061325
+                        ],
+                        [
+                            584320.95237912983,
+                            -341905.69748167507
+                        ],
+                        [
+                            589214.259936618,
+                            -341905.69748165691
+                        ],
+                        [
+                            589215.66513037682,
+                            -341673.6596821734
+                        ],
+                        [
+                            605745.70288608049,
+                            -341718.88344807038
+                        ],
+                        [
+                            605850.96657815413,
+                            -358101.34950685292
+                        ],
+                        [
+                            597846.81358887034,
+                            -358196.17889988329
+                        ],
+                        [
+                            597846.81309540384,
+                            -375375.06708277203
+                        ],
+                        [
+                            600935.17871564778,
+                            -375375.06709152367
+                        ],
+                        [
+                            600935.17871564778,
+                            -378175.06387728686
+                        ],
+                        [
+                            604085.17898247018,
+                            -378175.06708302535
+                        ],
+                        [
+                            604085.17871564685,
+                            -378146.17889970471
+                        ],
+                        [
+                            606685.17293303239,
+                            -378146.17889970471
+                        ],
+                        [
+                            606749.753533545,
+                            -383502.25647790055
+                        ],
+                        [
+                            610085.178716262,
+                            -383502.25647790055
+                        ],
+                        [
+                            610085.178716262,
+                            -385925.06727655162
+                        ],
+                        [
+                            599487.21337337221,
+                            -385971.24842420011
+                        ],
+                        [
+                            599491.48216162238,
+                            -383175.06708285026
+                        ],
+                        [
+                            589115.17871574848,
+                            -383175.06797886523
+                        ],
+                        [
+                            589085.17909781367,
+                            -390325.06987098319
+                        ]
+                    ]
+                ]
+            },
+            "properties": {
+                "Category": "FireApart"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "LineString",
+                "coordinates": [
+                    [
+                        541447.49264455691,
+                        -350122.78643417527
+                    ],
+                    [
+                        521024.39176415675,
+                        -350122.78643417527
+                    ]
+                ]
+            },
+            "properties": {
+                "Category": "CenterLine"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "LineString",
+                "coordinates": [
+                    [
+                        576355.46579086629,
+                        -386754.36967970507
+                    ],
+                    [
+                        560461.5040074666,
+                        -386754.36967970507
+                    ]
+                ]
+            },
+            "properties": {
+                "Category": "CenterLine"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "LineString",
+                "coordinates": [
+                    [
+                        560461.50400746649,
+                        -386754.36967970512
+                    ],
+                    [
+                        555304.98790517775,
+                        -388870.22199251858
+                    ]
+                ]
+            },
+            "properties": {
+                "Category": "CenterLine"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "LineString",
+                "coordinates": [
+                    [
+                        555304.98790517775,
+                        -388870.22199251858
+                    ],
+                    [
+                        511249.03377196356,
+                        -388870.22199251858
+                    ]
+                ]
+            },
+            "properties": {
+                "Category": "CenterLine"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "LineString",
+                "coordinates": [
+                    [
+                        511249.03377196356,
+                        -388870.22199251858
+                    ],
+                    [
+                        508100.72623548011,
+                        -386151.532869976
+                    ]
+                ]
+            },
+            "properties": {
+                "Category": "CenterLine"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "LineString",
+                "coordinates": [
+                    [
+                        514547.06067279592,
+                        -366397.1498798767
+                    ],
+                    [
+                        516395.12570188264,
+                        -366397.14987987612
+                    ]
+                ]
+            },
+            "properties": {
+                "Category": "CenterLine"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "LineString",
+                "coordinates": [
+                    [
+                        516395.12570188264,
+                        -366397.14987987612
+                    ],
+                    [
+                        560461.50400746649,
+                        -366397.14987986296
+                    ]
+                ]
+            },
+            "properties": {
+                "Category": "CenterLine"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "LineString",
+                "coordinates": [
+                    [
+                        560461.50400746649,
+                        -366397.14987986296
+                    ],
+                    [
+                        576355.46579086629,
+                        -366397.14987985819
+                    ]
+                ]
+            },
+            "properties": {
+                "Category": "CenterLine"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "LineString",
+                "coordinates": [
+                    [
+                        576355.46579086629,
+                        -366397.14987985819
+                    ],
+                    [
+                        592715.68316222576,
+                        -366397.14987985324
+                    ]
+                ]
+            },
+            "properties": {
+                "Category": "CenterLine"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "LineString",
+                "coordinates": [
+                    [
+                        592715.68316222576,
+                        -366397.14987985324
+                    ],
+                    [
+                        597847.813353296,
+                        -366397.14987985173
+                    ]
+                ]
+            },
+            "properties": {
+                "Category": "CenterLine"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "LineString",
+                "coordinates": [
+                    [
+                        592715.68316222576,
+                        -350122.78643418232
+                    ],
+                    [
+                        605800.70121899154,
+                        -350122.78643418074
+                    ]
+                ]
+            },
+            "properties": {
+                "Category": "CenterLine"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "LineString",
+                "coordinates": [
+                    [
+                        576355.46579086629,
+                        -366397.14987985819
+                    ],
+                    [
+                        576355.46579086629,
+                        -386754.36967970507
+                    ]
+                ]
+            },
+            "properties": {
+                "Category": "CenterLine"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "LineString",
+                "coordinates": [
+                    [
+                        508100.72623548011,
+                        -386151.532869976
+                    ],
+                    [
+                        514547.06067279592,
+                        -366397.1498798767
+                    ]
+                ]
+            },
+            "properties": {
+                "Category": "CenterLine"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "LineString",
+                "coordinates": [
+                    [
+                        560461.50400746649,
+                        -366397.14987986296
+                    ],
+                    [
+                        560461.50400746649,
+                        -386754.36967970507
+                    ]
+                ]
+            },
+            "properties": {
+                "Category": "CenterLine"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "LineString",
+                "coordinates": [
+                    [
+                        592715.68316222576,
+                        -366397.14987985324
+                    ],
+                    [
+                        592715.68316222576,
+                        -350122.78643418232
+                    ]
+                ]
+            },
+            "properties": {
+                "Category": "CenterLine"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "LineString",
+                "coordinates": [
+                    [
+                        516251.21879705455,
+                        -366903.06015593564
+                    ],
+                    [
+                        516395.12570188264,
+                        -366397.14987987612
+                    ]
+                ]
+            },
+            "properties": {
+                "Category": "CenterLine"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "LineString",
+                "coordinates": [
+                    [
+                        516395.12570188264,
+                        -366397.14987987612
+                    ],
+                    [
+                        521024.39176415675,
+                        -350122.78643417527
+                    ]
+                ]
+            },
+            "properties": {
+                "Category": "CenterLine"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "LineString",
+                "coordinates": [
+                    [
+                        521024.39176415675,
+                        -350122.78643417527
+                    ],
+                    [
+                        523917.06565943174,
+                        -339953.479751796
+                    ]
+                ]
+            },
+            "properties": {
+                "Category": "CenterLine"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    645521.81334207731,
+                    -362321.16691017151
+                ]
+            },
+            "properties": {
+                "Category": "PowerPosition"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    516646.29278931062,
+                    -342169.79214266187
+                ]
+            },
+            "properties": {
+                "Category": "WiringPosition"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    514372.73536114296,
+                    -349870.109992531
+                ]
+            },
+            "properties": {
+                "Category": "WiringPosition"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    512153.10064739635,
+                    -357556.02059164352
+                ]
+            },
+            "properties": {
+                "Category": "WiringPosition"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    509923.85871893849,
+                    -365239.15604547923
+                ]
+            },
+            "properties": {
+                "Category": "WiringPosition"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    506426.35867070593,
+                    -373931.276200803
+                ]
+            },
+            "properties": {
+                "Category": "WiringPosition"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    513590.22934806719,
+                    -373931.276200803
+                ]
+            },
+            "properties": {
+                "Category": "WiringPosition"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    537396.81334184355,
+                    -343971.16691082745
+                ]
+            },
+            "properties": {
+                "Category": "WiringPosition"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    537396.81334184355,
+                    -349846.16691082745
+                ]
+            },
+            "properties": {
+                "Category": "WiringPosition"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    537396.81334385253,
+                    -355821.16691082745
+                ]
+            },
+            "properties": {
+                "Category": "WiringPosition"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    537396.81334385253,
+                    -360571.16691082745
+                ]
+            },
+            "properties": {
+                "Category": "WiringPosition"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    536954.69748149067,
+                    -366706.36272959347
+                ]
+            },
+            "properties": {
+                "Category": "WiringPosition"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    536959.291145465,
+                    -371609.77027393039
+                ]
+            },
+            "properties": {
+                "Category": "WiringPosition"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    545396.81334385253,
+                    -360571.16691082745
+                ]
+            },
+            "properties": {
+                "Category": "WiringPosition"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    545396.81334385253,
+                    -366706.36272959347
+                ]
+            },
+            "properties": {
+                "Category": "WiringPosition"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    553396.81334385253,
+                    -360571.16691082745
+                ]
+            },
+            "properties": {
+                "Category": "WiringPosition"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    553396.81334385253,
+                    -366706.36272959347
+                ]
+            },
+            "properties": {
+                "Category": "WiringPosition"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    553396.81334184355,
+                    -371609.77027393039
+                ]
+            },
+            "properties": {
+                "Category": "WiringPosition"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    561396.81334385253,
+                    -360571.16691082745
+                ]
+            },
+            "properties": {
+                "Category": "WiringPosition"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    560034.640263307,
+                    -366706.36272959347
+                ]
+            },
+            "properties": {
+                "Category": "WiringPosition"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    569396.81334385253,
+                    -360571.16691082745
+                ]
+            },
+            "properties": {
+                "Category": "WiringPosition"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    568703.19798224582,
+                    -366706.36272959347
+                ]
+            },
+            "properties": {
+                "Category": "WiringPosition"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    577396.8133278524,
+                    -360571.16691082745
+                ]
+            },
+            "properties": {
+                "Category": "WiringPosition"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    577396.8133278524,
+                    -366706.36272959347
+                ]
+            },
+            "properties": {
+                "Category": "WiringPosition"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    585309.62856765476,
+                    -343971.16691082745
+                ]
+            },
+            "properties": {
+                "Category": "WiringPosition"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    585309.62856765476,
+                    -349846.16691082745
+                ]
+            },
+            "properties": {
+                "Category": "WiringPosition"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    585309.62856966374,
+                    -355821.16691082745
+                ]
+            },
+            "properties": {
+                "Category": "WiringPosition"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    585309.62856966374,
+                    -360571.16691082745
+                ]
+            },
+            "properties": {
+                "Category": "WiringPosition"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    585309.62856966374,
+                    -366706.36272959347
+                ]
+            },
+            "properties": {
+                "Category": "WiringPosition"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    593846.81334184355,
+                    -343971.16691082745
+                ]
+            },
+            "properties": {
+                "Category": "WiringPosition"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    593846.81334184355,
+                    -349846.16691082745
+                ]
+            },
+            "properties": {
+                "Category": "WiringPosition"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    593846.81334385253,
+                    -355821.16691082745
+                ]
+            },
+            "properties": {
+                "Category": "WiringPosition"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    593846.81334385253,
+                    -360571.16691082745
+                ]
+            },
+            "properties": {
+                "Category": "WiringPosition"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    593846.81334385253,
+                    -366706.36272959347
+                ]
+            },
+            "properties": {
+                "Category": "WiringPosition"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    593846.81334184355,
+                    -372082.72995567648
+                ]
+            },
+            "properties": {
+                "Category": "WiringPosition"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    601846.81334184355,
+                    -343971.16691082745
+                ]
+            },
+            "properties": {
+                "Category": "WiringPosition"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    601846.81334184355,
+                    -349846.16691082745
+                ]
+            },
+            "properties": {
+                "Category": "WiringPosition"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    601846.81334385253,
+                    -355821.16691082745
+                ]
+            },
+            "properties": {
+                "Category": "WiringPosition"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    522399.25333945616,
+                    -343154.01699820266
+                ]
+            },
+            "properties": {
+                "Category": "WiringPosition"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    520268.58244142996,
+                    -350553.84405072429
+                ]
+            },
+            "properties": {
+                "Category": "WiringPosition"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    517918.64275550016,
+                    -358903.888573389
+                ]
+            },
+            "properties": {
+                "Category": "WiringPosition"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    515694.0144681345,
+                    -366706.36272959353
+                ]
+            },
+            "properties": {
+                "Category": "WiringPosition"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    509412.45663408749,
+                    -376871.682355036
+                ]
+            },
+            "properties": {
+                "Category": "WiringPosition"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    507925.48035898537,
+                    -382477.83090437751
+                ]
+            },
+            "properties": {
+                "Category": "WiringPosition"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    502456.5570554845,
+                    -383550.65791486111
+                ]
+            },
+            "properties": {
+                "Category": "WiringPosition"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    507424.20374241844,
+                    -387643.39281074144
+                ]
+            },
+            "properties": {
+                "Category": "WiringPosition"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    506496.49822143838,
+                    -392744.90856770705
+                ]
+            },
+            "properties": {
+                "Category": "WiringPosition"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    528792.18232345767,
+                    -388829.53506922442
+                ]
+            },
+            "properties": {
+                "Category": "WiringPosition"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    513638.71928359388,
+                    -393946.03319843119
+                ]
+            },
+            "properties": {
+                "Category": "WiringPosition"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    513638.71928359382,
+                    -384158.81519461516
+                ]
+            },
+            "properties": {
+                "Category": "WiringPosition"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    518988.719292128,
+                    -384158.81519461516
+                ]
+            },
+            "properties": {
+                "Category": "WiringPosition"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    522785.48832214577,
+                    -384158.81519461516
+                ]
+            },
+            "properties": {
+                "Category": "WiringPosition"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    520861.36915782094,
+                    -375219.34956962895
+                ]
+            },
+            "properties": {
+                "Category": "WiringPosition"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    521084.98148468987,
+                    -366706.36272959353
+                ]
+            },
+            "properties": {
+                "Category": "WiringPosition"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    521782.08917475597,
+                    -359743.86414914712
+                ]
+            },
+            "properties": {
+                "Category": "WiringPosition"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    521955.19045364216,
+                    -355333.6004168475
+                ]
+            },
+            "properties": {
+                "Category": "WiringPosition"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    520157.97052131593,
+                    -388829.53506922442
+                ]
+            },
+            "properties": {
+                "Category": "WiringPosition"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    520646.93986769021,
+                    -393946.03319846094
+                ]
+            },
+            "properties": {
+                "Category": "WiringPosition"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    527746.93986769021,
+                    -393946.03319846094
+                ]
+            },
+            "properties": {
+                "Category": "WiringPosition"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    530348.34840171412,
+                    -383347.25625775754
+                ]
+            },
+            "properties": {
+                "Category": "WiringPosition"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    537795.47703334875,
+                    -383347.25625775754
+                ]
+            },
+            "properties": {
+                "Category": "WiringPosition"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    541474.16517552175,
+                    -383347.25625775754
+                ]
+            },
+            "properties": {
+                "Category": "WiringPosition"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    535581.80197927728,
+                    -388829.53506922442
+                ]
+            },
+            "properties": {
+                "Category": "WiringPosition"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    542815.71761593223,
+                    -388829.53506922442
+                ]
+            },
+            "properties": {
+                "Category": "WiringPosition"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    549509.433378296,
+                    -388829.53506922442
+                ]
+            },
+            "properties": {
+                "Category": "WiringPosition"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    554810.75136018172,
+                    -388829.53506922442
+                ]
+            },
+            "properties": {
+                "Category": "WiringPosition"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    560032.45337457024,
+                    -386858.3557038228
+                ]
+            },
+            "properties": {
+                "Category": "WiringPosition"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    535173.55008598417,
+                    -393946.03319846094
+                ]
+            },
+            "properties": {
+                "Category": "WiringPosition"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    542126.70651290566,
+                    -393946.03319846094
+                ]
+            },
+            "properties": {
+                "Category": "WiringPosition"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    549066.56101896241,
+                    -393946.03319846094
+                ]
+            },
+            "properties": {
+                "Category": "WiringPosition"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    556099.61173858494,
+                    -393946.03319846094
+                ]
+            },
+            "properties": {
+                "Category": "WiringPosition"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    562633.21966944635,
+                    -393946.03319846094
+                ]
+            },
+            "properties": {
+                "Category": "WiringPosition"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    569505.22719552519,
+                    -393946.03319846094
+                ]
+            },
+            "properties": {
+                "Category": "WiringPosition"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    576532.78105945513,
+                    -393946.03319846094
+                ]
+            },
+            "properties": {
+                "Category": "WiringPosition"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    565575.67937737377,
+                    -380446.16691135144
+                ]
+            },
+            "properties": {
+                "Category": "WiringPosition"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    570696.813326376,
+                    -380446.16691135144
+                ]
+            },
+            "properties": {
+                "Category": "WiringPosition"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    576377.905731583,
+                    -380446.16691135144
+                ]
+            },
+            "properties": {
+                "Category": "WiringPosition"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    594923.54344869591,
+                    -376117.11861309828
+                ]
+            },
+            "properties": {
+                "Category": "WiringPosition"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    529273.96284955612,
+                    -343971.16691082745
+                ]
+            },
+            "properties": {
+                "Category": "WiringPosition"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    529273.96284955612,
+                    -349846.16691082745
+                ]
+            },
+            "properties": {
+                "Category": "WiringPosition"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    529273.9628515651,
+                    -355821.16691082745
+                ]
+            },
+            "properties": {
+                "Category": "WiringPosition"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    529273.9628515651,
+                    -360571.16691082745
+                ]
+            },
+            "properties": {
+                "Category": "WiringPosition"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    528795.401122581,
+                    -366706.36272959347
+                ]
+            },
+            "properties": {
+                "Category": "WiringPosition"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    528795.401122581,
+                    -371207.00721433695
+                ]
+            },
+            "properties": {
+                "Category": "WiringPosition"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    547154.60563796945,
+                    -374457.8772026943
+                ]
+            },
+            "properties": {
+                "Category": "WiringPosition"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    553389.70790806657,
+                    -376641.71349285205
+                ]
+            },
+            "properties": {
+                "Category": "WiringPosition"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    549175.5516951438,
+                    -383254.78142200969
+                ]
+            },
+            "properties": {
+                "Category": "WiringPosition"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    511271.71660133917,
+                    -369708.59413736692
+                ]
+            },
+            "properties": {
+                "Category": "WiringPosition"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    507091.15886026248,
+                    -389750.055078143
+                ]
+            },
+            "properties": {
+                "Category": "WiringPosition"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    538396.81333701976,
+                    -391921.16689479351
+                ]
+            },
+            "properties": {
+                "Category": "WiringPosition"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    513648.4446758125,
+                    -388829.53506922442
+                ]
+            },
+            "properties": {
+                "Category": "WiringPosition"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    565575.67937737377,
+                    -373641.6448086169
+                ]
+            },
+            "properties": {
+                "Category": "WiringPosition"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    570696.813326376,
+                    -373641.6448086169
+                ]
+            },
+            "properties": {
+                "Category": "WiringPosition"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    576377.905731583,
+                    -373641.6448086169
+                ]
+            },
+            "properties": {
+                "Category": "WiringPosition"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    560023.38432446914,
+                    -373641.6448086169
+                ]
+            },
+            "properties": {
+                "Category": "WiringPosition"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    560023.38432446914,
+                    -380446.16691135144
+                ]
+            },
+            "properties": {
+                "Category": "WiringPosition"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    582280.70962441608,
+                    -380446.16691135144
+                ]
+            },
+            "properties": {
+                "Category": "WiringPosition"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    582280.70962441608,
+                    -373641.6448086169
+                ]
+            },
+            "properties": {
+                "Category": "WiringPosition"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    586635.88907632418,
+                    -373641.6448086169
+                ]
+            },
+            "properties": {
+                "Category": "WiringPosition"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    565584.74842747487,
+                    -386858.3557038228
+                ]
+            },
+            "properties": {
+                "Category": "WiringPosition"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    570705.88237647712,
+                    -386858.3557038228
+                ]
+            },
+            "properties": {
+                "Category": "WiringPosition"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    576386.97478168411,
+                    -386858.3557038228
+                ]
+            },
+            "properties": {
+                "Category": "WiringPosition"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    554239.277497595,
+                    -383254.78142200969
+                ]
+            },
+            "properties": {
+                "Category": "WiringPosition"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    588157.09438324347,
+                    -377421.16691082122
+                ]
+            },
+            "properties": {
+                "Category": "WiringPosition"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    580380.9178608954,
+                    -385646.16691100015
+                ]
+            },
+            "properties": {
+                "Category": "WiringPosition"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    596535.046444218,
+                    -366628.2170449227
+                ]
+            },
+            "properties": {
+                "Category": "WiringPosition"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    596535.046444218,
+                    -364798.25970117672
+                ]
+            },
+            "properties": {
+                "Category": "WiringPosition"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    596535.046444218,
+                    -368422.89418058767
+                ]
+            },
+            "properties": {
+                "Category": "WiringPosition"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    604519.0065730419,
+                    -349852.37021801854
+                ]
+            },
+            "properties": {
+                "Category": "WiringPosition"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    604519.0065730419,
+                    -348022.41287427256
+                ]
+            },
+            "properties": {
+                "Category": "WiringPosition"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    604519.0065730419,
+                    -351647.04735368351
+                ]
+            },
+            "properties": {
+                "Category": "WiringPosition"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    573396.8133426226,
+                    -390121.16689479351
+                ]
+            },
+            "properties": {
+                "Category": "WiringPosition"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    524921.81334207742,
+                    -341186.13525454979
+                ]
+            },
+            "properties": {
+                "Category": "WiringPosition"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    580096.81332726171,
+                    -369171.16691052914
+                ]
+            },
+            "properties": {
+                "Category": "WiringPosition"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    556896.81332715962,
+                    -369671.16691038595
+                ]
+            },
+            "properties": {
+                "Category": "WiringPosition"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    535150.17870504386,
+                    -373450.05485785147
+                ]
+            },
+            "properties": {
+                "Category": "WiringPosition"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    597846.81334207731,
+                    -352971.16691067815
+                ]
+            },
+            "properties": {
+                "Category": "WiringPosition"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    534789.53284954652,
+                    -381056.4725315934
+                ]
+            },
+            "properties": {
+                "Category": "WiringPosition"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    515805.01499361306,
+                    -380626.54837372754
+                ]
+            },
+            "properties": {
+                "Category": "WiringPosition"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    552145.64307347266,
+                    -380694.13567752246
+                ]
+            },
+            "properties": {
+                "Category": "WiringPosition"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    549175.5516951438,
+                    -379367.02124158147
+                ]
+            },
+            "properties": {
+                "Category": "WiringPosition"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    577076.81137532019,
+                    -358947.33892159903
+                ]
+            },
+            "properties": {
+                "Category": "WiringPosition"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    577076.81137532019,
+                    -358497.33892159903
+                ]
+            },
+            "properties": {
+                "Category": "WiringPosition"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    506264.51857163303,
+                    -390304.1591416
+                ]
+            },
+            "properties": {
+                "Category": "WiringPosition"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    509877.23507695668,
+                    -393920.16718040092
+                ]
+            },
+            "properties": {
+                "Category": "WiringPosition"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    504785.26905559585,
+                    -393896.16822563647
+                ]
+            },
+            "properties": {
+                "Category": "WiringPosition"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    503743.18916678877,
+                    -392953.96108351927
+                ]
+            },
+            "properties": {
+                "Category": "WiringPosition"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    508946.37843401713,
+                    -392175.71682774939
+                ]
+            },
+            "properties": {
+                "Category": "WiringPosition"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    522294.59944994579,
+                    -341114.64950653125
+                ]
+            },
+            "properties": {
+                "Category": "WiringPosition"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    520722.21074666426,
+                    -340660.57764611841
+                ]
+            },
+            "properties": {
+                "Category": "WiringPosition"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    524204.55109126907,
+                    -341666.20224489947
+                ]
+            },
+            "properties": {
+                "Category": "WiringPosition"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    540214.78708238387,
+                    -349878.12271416251
+                ]
+            },
+            "properties": {
+                "Category": "WiringPosition"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    540214.78708238387,
+                    -348123.0212667209
+                ]
+            },
+            "properties": {
+                "Category": "WiringPosition"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    540214.78708238387,
+                    -351523.08368198358
+                ]
+            },
+            "properties": {
+                "Category": "WiringPosition"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    534091.11384598969,
+                    -373624.30431656149
+                ]
+            },
+            "properties": {
+                "Category": "WiringPosition"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    543337.43306253839,
+                    -371900.05450400809
+                ]
+            },
+            "properties": {
+                "Category": "WiringPosition"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    540689.936227421,
+                    -371036.00821646815
+                ]
+            },
+            "properties": {
+                "Category": "WiringPosition"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    539169.63568693714,
+                    -371032.78741329984
+                ]
+            },
+            "properties": {
+                "Category": "WiringPosition"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    541967.39744164736,
+                    -371032.78741329984
+                ]
+            },
+            "properties": {
+                "Category": "WiringPosition"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    586765.57463230193,
+                    -377136.59053256456
+                ]
+            },
+            "properties": {
+                "Category": "WiringPosition"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    589039.8382074791,
+                    -377421.16782459605
+                ]
+            },
+            "properties": {
+                "Category": "WiringPosition"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    587389.100436002,
+                    -377421.16782459605
+                ]
+            },
+            "properties": {
+                "Category": "WiringPosition"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Polygon",
+                "coordinates": [
+                    [
+                        [
+                            511550.31006329361,
+                            -369554.85512814595
+                        ],
+                        [
+                            511982.642534469,
+                            -369679.70958087943
+                        ],
+                        [
+                            511857.78808173555,
+                            -370112.04205205484
+                        ],
+                        [
+                            511425.45561056014,
+                            -369987.18759932136
+                        ],
+                        [
+                            511550.31006329361,
+                            -369554.85512814595
+                        ]
+                    ]
+                ]
+            },
+            "properties": {
+                "Category": "Hole"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Polygon",
+                "coordinates": [
+                    [
+                        [
+                            506866.15886026248,
+                            -389525.055078143
+                        ],
+                        [
+                            506866.15886026248,
+                            -389075.055078143
+                        ],
+                        [
+                            507316.15886026248,
+                            -389075.055078143
+                        ],
+                        [
+                            507316.15886026248,
+                            -389525.055078143
+                        ],
+                        [
+                            506866.15886026248,
+                            -389525.055078143
+                        ]
+                    ]
+                ]
+            },
+            "properties": {
+                "Category": "Hole"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Polygon",
+                "coordinates": [
+                    [
+                        [
+                            538171.81333674712,
+                            -391696.16689479351
+                        ],
+                        [
+                            538171.81333674712,
+                            -391246.16689479351
+                        ],
+                        [
+                            538621.81333674712,
+                            -391246.16689479351
+                        ],
+                        [
+                            538621.81333674712,
+                            -391696.16689479351
+                        ],
+                        [
+                            538171.81333674712,
+                            -391696.16689479351
+                        ]
+                    ]
+                ]
+            },
+            "properties": {
+                "Category": "Hole"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Polygon",
+                "coordinates": [
+                    [
+                        [
+                            515797.65327817935,
+                            -354847.59939813492
+                        ],
+                        [
+                            515365.3208070033,
+                            -354722.74494540365
+                        ],
+                        [
+                            515573.41156155535,
+                            -354002.19082677696
+                        ],
+                        [
+                            516005.7440327314,
+                            -354127.04527950822
+                        ],
+                        [
+                            515797.65327817935,
+                            -354847.59939813492
+                        ]
+                    ]
+                ]
+            },
+            "properties": {
+                "Category": "Hole"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Polygon",
+                "coordinates": [
+                    [
+                        [
+                            533771.81334221363,
+                            -363196.16691067815
+                        ],
+                        [
+                            533771.81334221363,
+                            -363646.16691067815
+                        ],
+                        [
+                            533021.81334221363,
+                            -363646.16691067815
+                        ],
+                        [
+                            533021.81334221363,
+                            -363196.16691067815
+                        ],
+                        [
+                            533771.81334221363,
+                            -363196.16691067815
+                        ]
+                    ]
+                ]
+            },
+            "properties": {
+                "Category": "Hole"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Polygon",
+                "coordinates": [
+                    [
+                        [
+                            557771.81334221363,
+                            -363196.16691067815
+                        ],
+                        [
+                            557771.81334221363,
+                            -363646.16691067815
+                        ],
+                        [
+                            557021.81334221363,
+                            -363646.16691067815
+                        ],
+                        [
+                            557021.81334221363,
+                            -363196.16691067815
+                        ],
+                        [
+                            557771.81334221363,
+                            -363196.16691067815
+                        ]
+                    ]
+                ]
+            },
+            "properties": {
+                "Category": "Hole"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Polygon",
+                "coordinates": [
+                    [
+                        [
+                            581771.81332671642,
+                            -363196.16691058874
+                        ],
+                        [
+                            581771.81332671642,
+                            -363646.16691058874
+                        ],
+                        [
+                            581021.81332671642,
+                            -363646.16691058874
+                        ],
+                        [
+                            581021.81332671642,
+                            -363196.16691058874
+                        ],
+                        [
+                            581771.81332671642,
+                            -363196.16691058874
+                        ]
+                    ]
+                ]
+            },
+            "properties": {
+                "Category": "Hole"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Polygon",
+                "coordinates": [
+                    [
+                        [
+                            505915.67148342571,
+                            -379356.32434793084
+                        ],
+                        [
+                            505483.33901232481,
+                            -379231.46989493934
+                        ],
+                        [
+                            505691.42976731056,
+                            -378510.91577643785
+                        ],
+                        [
+                            506123.76223841147,
+                            -378635.77022942936
+                        ],
+                        [
+                            505915.67148342571,
+                            -379356.32434793084
+                        ]
+                    ]
+                ]
+            },
+            "properties": {
+                "Category": "Hole"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Polygon",
+                "coordinates": [
+                    [
+                        [
+                            531671.81333637238,
+                            -391696.16689500207
+                        ],
+                        [
+                            531671.81333637238,
+                            -392146.16689500207
+                        ],
+                        [
+                            530921.81333637238,
+                            -392146.16689500207
+                        ],
+                        [
+                            530921.81333637238,
+                            -391696.16689500207
+                        ],
+                        [
+                            531671.81333637238,
+                            -391696.16689500207
+                        ]
+                    ]
+                ]
+            },
+            "properties": {
+                "Category": "Hole"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Polygon",
+                "coordinates": [
+                    [
+                        [
+                            565750.17871594429,
+                            -389896.16691073769
+                        ],
+                        [
+                            565750.17871594429,
+                            -390346.16691073769
+                        ],
+                        [
+                            565000.17871594429,
+                            -390346.16691073769
+                        ],
+                        [
+                            565000.17871594429,
+                            -389896.16691073769
+                        ],
+                        [
+                            565750.17871594429,
+                            -389896.16691073769
+                        ]
+                    ]
+                ]
+            },
+            "properties": {
+                "Category": "Hole"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Polygon",
+                "coordinates": [
+                    [
+                        [
+                            598221.81334221363,
+                            -346496.16691046953
+                        ],
+                        [
+                            598221.81334221363,
+                            -346946.16691046953
+                        ],
+                        [
+                            597471.81334221363,
+                            -346946.16691046953
+                        ],
+                        [
+                            597471.81334221363,
+                            -346496.16691046953
+                        ],
+                        [
+                            598221.81334221363,
+                            -346496.16691046953
+                        ]
+                    ]
+                ]
+            },
+            "properties": {
+                "Category": "Hole"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Polygon",
+                "coordinates": [
+                    [
+                        [
+                            573171.81334248628,
+                            -389896.16689479351
+                        ],
+                        [
+                            573171.81334248628,
+                            -389446.16689479351
+                        ],
+                        [
+                            573621.81334248628,
+                            -389446.16689479351
+                        ],
+                        [
+                            573621.81334248628,
+                            -389896.16689479351
+                        ],
+                        [
+                            573171.81334248628,
+                            -389896.16689479351
+                        ]
+                    ]
+                ]
+            },
+            "properties": {
+                "Category": "Hole"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Polygon",
+                "coordinates": [
+                    [
+                        [
+                            524696.81334207742,
+                            -341411.13525454979
+                        ],
+                        [
+                            524246.81334207742,
+                            -341411.13525454979
+                        ],
+                        [
+                            524246.81334207742,
+                            -340961.13525454979
+                        ],
+                        [
+                            524696.81334207742,
+                            -340961.13525454979
+                        ],
+                        [
+                            524696.81334207742,
+                            -341411.13525454979
+                        ]
+                    ]
+                ]
+            },
+            "properties": {
+                "Category": "Hole"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Polygon",
+                "coordinates": [
+                    [
+                        [
+                            579871.81332712539,
+                            -368946.16691052914
+                        ],
+                        [
+                            579871.81332712539,
+                            -368496.16691052914
+                        ],
+                        [
+                            580321.81332712539,
+                            -368496.16691052914
+                        ],
+                        [
+                            580321.81332712539,
+                            -368946.16691052914
+                        ],
+                        [
+                            579871.81332712539,
+                            -368946.16691052914
+                        ]
+                    ]
+                ]
+            },
+            "properties": {
+                "Category": "Hole"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Polygon",
+                "coordinates": [
+                    [
+                        [
+                            556671.81332702329,
+                            -369446.16691038595
+                        ],
+                        [
+                            556671.81332702329,
+                            -368996.16691038595
+                        ],
+                        [
+                            557121.81332702329,
+                            -368996.16691038595
+                        ],
+                        [
+                            557121.81332702329,
+                            -369446.16691038595
+                        ],
+                        [
+                            556671.81332702329,
+                            -369446.16691038595
+                        ]
+                    ]
+                ]
+            },
+            "properties": {
+                "Category": "Hole"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Polygon",
+                "coordinates": [
+                    [
+                        [
+                            534925.17870490754,
+                            -373225.05485785147
+                        ],
+                        [
+                            534925.17870490754,
+                            -372775.05485785147
+                        ],
+                        [
+                            535375.17870490754,
+                            -372775.05485785147
+                        ],
+                        [
+                            535375.17870490754,
+                            -373225.05485785147
+                        ],
+                        [
+                            534925.17870490754,
+                            -373225.05485785147
+                        ]
+                    ]
+                ]
+            },
+            "properties": {
+                "Category": "Hole"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Polygon",
+                "coordinates": [
+                    [
+                        [
+                            597621.813341941,
+                            -352746.16691067815
+                        ],
+                        [
+                            597621.813341941,
+                            -352296.16691067815
+                        ],
+                        [
+                            598071.813341941,
+                            -352296.16691067815
+                        ],
+                        [
+                            598071.813341941,
+                            -352746.16691067815
+                        ],
+                        [
+                            597621.813341941,
+                            -352746.16691067815
+                        ]
+                    ]
+                ]
+            },
+            "properties": {
+                "Category": "Hole"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Polygon",
+                "coordinates": [
+                    [
+                        [
+                            508968.72710443079,
+                            -392493.12907850649
+                        ],
+                        [
+                            509308.4880256016,
+                            -392788.19265885
+                        ],
+                        [
+                            509603.5516059451,
+                            -392448.43173767917
+                        ],
+                        [
+                            509263.79068477429,
+                            -392153.36815733567
+                        ],
+                        [
+                            508968.72710443079,
+                            -392493.12907850649
+                        ]
+                    ]
+                ]
+            },
+            "properties": {
+                "Category": "Hole"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Polygon",
+                "coordinates": [
+                    [
+                        [
+                            507735.66206367826,
+                            -390826.27291456243
+                        ],
+                        [
+                            508030.72564402182,
+                            -390486.51199339161
+                        ],
+                        [
+                            507690.96472285094,
+                            -390191.44841304806
+                        ],
+                        [
+                            507395.90114250744,
+                            -390531.20933421887
+                        ],
+                        [
+                            507735.66206367826,
+                            -390826.27291456243
+                        ]
+                    ]
+                ]
+            },
+            "properties": {
+                "Category": "Hole"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Polygon",
+                "coordinates": [
+                    [
+                        [
+                            533771.811375618,
+                            -346496.1788995564
+                        ],
+                        [
+                            533771.811375618,
+                            -346946.1788995564
+                        ],
+                        [
+                            533021.811375618,
+                            -346946.1788995564
+                        ],
+                        [
+                            533021.811375618,
+                            -346496.1788995564
+                        ],
+                        [
+                            533771.811375618,
+                            -346496.1788995564
+                        ]
+                    ]
+                ]
+            },
+            "properties": {
+                "Category": "Hole"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Polygon",
+                "coordinates": [
+                    [
+                        [
+                            551614.79823249311,
+                            -380499.4226596473
+                        ],
+                        [
+                            551164.79822949308,
+                            -380499.4226596473
+                        ],
+                        [
+                            551164.79822949308,
+                            -379749.42265664728
+                        ],
+                        [
+                            551614.79823249311,
+                            -379749.42265664728
+                        ],
+                        [
+                            551614.79823249311,
+                            -380499.4226596473
+                        ]
+                    ]
+                ]
+            },
+            "properties": {
+                "Category": "Hole"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Polygon",
+                "coordinates": [
+                    [
+                        [
+                            553120.0,
+                            -379475.0
+                        ],
+                        [
+                            553120.0,
+                            -379025.0
+                        ],
+                        [
+                            552670.0,
+                            -379025.0
+                        ],
+                        [
+                            552670.0,
+                            -379475.0
+                        ],
+                        [
+                            553120.0,
+                            -379475.0
+                        ]
+                    ]
+                ]
+            },
+            "properties": {
+                "Category": "Hole"
+            }
+        }
+    ]
+}
