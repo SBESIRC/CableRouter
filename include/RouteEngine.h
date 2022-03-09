@@ -33,7 +33,7 @@ namespace CableRouter
 	struct ASPath
 	{
 		Polyline path;
-		int cross_num;
+		vector<int> cross_num;
 	};
 
 	// General
