@@ -17,7 +17,7 @@ Polygon CableRouter::epolygon_to_polygon(const EPolygon& ep)
 {
 	vector<Point> pts;
 	for (auto pit = ep.vertices_begin(); pit != ep.vertices_end(); pit++)
-		pts.push_back(Point(pit->hx().exact().to_double(), pit->hy().exact().to_double()));
+		pts.push_back(Point(CGAL::to_double(pit->hx().exact()), CGAL::to_double(pit->hy().exact())));
 	return Polygon(pts.begin(), pts.end());
 }
 
