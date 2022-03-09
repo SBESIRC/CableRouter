@@ -13,6 +13,22 @@ rbush::TreeNode<Point>* CableRouter::get_point_rtree_node(const Point* p)
 	return node;
 }
 
+Polygon CableRouter::epolygon_to_polygon(const EPolygon& ep)
+{
+	vector<Point> pts;
+	for (auto pit = ep.vertices_begin(); pit != ep.vertices_end(); pit++)
+		pts.push_back(Point(pit->hx().exact().to_double(), pit->hy().exact().to_double()));
+	return Polygon(pts.begin(), pts.end());
+}
+
+EPolygon CableRouter::polygon_to_epolygon(const Polygon& p)
+{
+	vector<EPoint> pts;
+	for (auto pit = p.vertices_begin(); pit != p.vertices_end(); pit++)
+		pts.push_back(EPoint(pit->hx(), pit->hy()));
+	return EPolygon(pts.begin(), pts.end());
+}
+
 bool CableRouter::compare_point_by_x_y(Point a, Point b)
 {
 	if (a.hx() != b.hx()) return a.hx() < b.hx();
@@ -20,8 +36,11 @@ bool CableRouter::compare_point_by_x_y(Point a, Point b)
 }
 
 Polygon CableRouter::construct_polygon(const vector<Point>* coords) {
-	CGAL_assertion(coords->front() == coords->back());
-	Polygon pgn(coords->begin(), coords->end() - 1);
+	Polygon pgn;
+	if (coords->front() == coords->back())
+		pgn = Polygon(coords->begin(), coords->end() - 1);
+	else
+		pgn = Polygon(coords->begin(), coords->end());
 	if (pgn.is_clockwise_oriented())
 		pgn.reverse_orientation();
 	return pgn;
@@ -186,6 +205,12 @@ Segment CableRouter::shrink_segment(Segment seg, double rate)
 Segment CableRouter::shrink_segment(Segment seg)
 {
 	double r = 1.0 - 1.0 / LEN(seg);
+	return shrink_segment(seg, r);
+}
+
+Segment CableRouter::expand_segment(Segment seg)
+{
+	double r = 1.0 + 1.0 / LEN(seg);
 	return shrink_segment(seg, r);
 }
 

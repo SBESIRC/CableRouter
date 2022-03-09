@@ -1054,3 +1054,64 @@ vector<Segment> CableRouter::rearrangeCenters(const vector<Segment> centers)
 
 	return res;
 }
+
+void CableRouter::expandRooms(vector<Polygon>& rooms, const Polygon& area)
+{
+	vector<int> room_id;
+	vector<Polygon> holes;
+	for (int i = 0; i < rooms.size(); i++)
+	{
+		Polygon room1 = rooms[i];
+		vector<Segment> segs;
+		for (int j = i + 1; j < rooms.size(); j++)
+		{
+			Polygon room2 = rooms[j];
+			for (int k = 0; k < room2.size(); k++)
+				segs.push_back(room2.edge(k));
+		}
+		for (int j = 0; j < area.size(); j++)
+		{
+			segs.push_back(area.edge(j));
+		}
+		for (int j = 0; j < room1.size(); j++)
+		{
+			Segment s1 = room1.edge(j);
+			Vector v1(s1);
+			for (auto s2 : segs)
+			{
+				Vector v2(s2);
+				if (abs(VEC_COS(v1, v2)) > 0.8 && DIST(s1, s2) < 300)
+				{
+					vector<Point> pts, res;
+					pts.push_back(project_point_to_segment(s1.source(), s2));
+					pts.push_back(project_point_to_segment(s1.target(), s2));
+					if (POINT_EQUAL(pts[0], pts[1])) continue;
+					pts.push_back(project_point_to_segment(s2.source(), s1));
+					if (POINT_EQUAL(pts[0], pts[2])) continue;
+					if (POINT_EQUAL(pts[1], pts[2])) continue;
+					pts.push_back(project_point_to_segment(s2.target(), s1));
+					if (POINT_EQUAL(pts[0], pts[3])) continue;
+					if (POINT_EQUAL(pts[1], pts[3])) continue;
+					if (POINT_EQUAL(pts[2], pts[3])) continue;
+					pts[0] = expand_segment(Segment(s1.source(), pts[0])).target();
+					pts[1] = expand_segment(Segment(s1.target(), pts[1])).target();
+					pts[2] = expand_segment(Segment(s2.source(), pts[2])).target();
+					pts[3] = expand_segment(Segment(s2.target(), pts[3])).target();
+					CGAL::convex_hull_2(pts.begin(), pts.end(), std::back_inserter(res));
+					holes.push_back(construct_polygon(&res));
+					room_id.push_back(i);
+				}
+			}
+		}
+	}
+	for (int i = 0; i < holes.size(); i++)
+	{
+		EPolygon room = polygon_to_epolygon(rooms[room_id[i]]);
+		EPolygon hole = polygon_to_epolygon(holes[i]);
+		EPolygon_with_holes res;
+		if (CGAL::join(room, hole, res))
+			rooms[room_id[i]] = epolygon_to_polygon(res.outer_boundary());
+		else
+			printf("can't join!\n");
+	}
+}
