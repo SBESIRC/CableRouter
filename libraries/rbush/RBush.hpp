@@ -578,6 +578,11 @@ namespace rbush
     {
       auto result = new std::vector<TreeNode<T> *>();
       this->_all(this->rootNode, *result);
+
+      std::sort(result->begin(), result->end());
+      auto it = std::unique(result->begin(), result->end());
+      result->erase(it, result->end());
+
       return result;
     }
     
