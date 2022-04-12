@@ -219,11 +219,11 @@ static void parse_geojson(MapInfo& map, const string& datastr)
         {
             for (auto j = 0; j < vec_pts.size(); ++j)
             {
-                PElement e;
-                e.boundary = construct_polygon(&vec_pts[j]);
-                e.weight = 24000;
-                room_nodes.push_back(get_rtree_node(&e));
-                map.rooms.push_back(e.boundary);
+                //PElement e;
+                //e.boundary = construct_polygon(&vec_pts[j]);
+                //e.weight = 24000;
+                //room_nodes.push_back(get_rtree_node(&e));
+                map.rooms.push_back(construct_polygon(&vec_pts[j]));
             }
         }
         else if (cat.compare("UCSPolyline") == 0)
@@ -268,6 +268,16 @@ static void parse_geojson(MapInfo& map, const string& datastr)
         {
             printf("No such category : %s\n", cat.c_str());
         }
+    }
+
+    // expand rooms
+    expandRooms(map.rooms, map.area.info.boundary);
+    for (auto r : map.rooms)
+    {
+        PElement e;
+        e.boundary = r;
+        e.weight = 24000;
+        room_nodes.push_back(get_rtree_node(&e));
     }
 
     map.cen_line_tree = new SegBush(center_nodes);

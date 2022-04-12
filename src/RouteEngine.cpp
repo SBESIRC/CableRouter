@@ -289,7 +289,12 @@ ASPath CableRouter::a_star_connect_p2p(MapInfo* const data, Point s, Point t, ve
 
 	ASPath ap;
 	ap.path = path;
-	ap.cross_num = end_node->cross_num;
+	ap.cross_num = vector<int>(path.size(), 0);
+	for (int i = 1; i < path.size(); i++)
+	{
+		Segment seg(path[i - 1], path[i]);
+		ap.cross_num[i] = ap.cross_num[i - 1] + crossRoom(data, seg);
+	}
 
 	//printf("Path size: %d\n", path.size());
 	delete[] nodes;
@@ -865,7 +870,6 @@ Polyline CableRouter::manhattan_smooth_basic(MapInfo* const data, ASPath& path, 
 	if (line.size() <= 2) return line;
 
 	Polyline res;
-	int passport = path.cross_num;
 	int loop_count = 0;
 	int now = 0;
 	int next_id = (int)line.size() - 1;
@@ -874,6 +878,8 @@ Polyline CableRouter::manhattan_smooth_basic(MapInfo* const data, ASPath& path, 
 	{
 		Point u = line[now];
 		Point v = line[next_id];
+		int passport = path.cross_num[next_id] - path.cross_num[now + 1]
+			+ crossRoom(data, Segment(u, line[now + 1]));
 
 		auto rotate_inv = rotate.inverse();
 		Point rot_u = u.transform(rotate_inv);
