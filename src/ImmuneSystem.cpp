@@ -130,6 +130,7 @@ vector<ISData> CableRouter::parse_groups(MapInfo* data, vector<vector<int>>& gro
 	addDeviceEdges(data, G, false, true);
 	addPowerEdges(data, dt, G, false, true);
 	removeObstacles(data, G, n_all);
+	adjustByLayoutType(data, G);
 
 	// convert result to data for run engine
 	printf("Init group info begin\n");

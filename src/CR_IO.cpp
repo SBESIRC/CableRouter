@@ -1,5 +1,6 @@
 #include "CR_IO.h"
 #include "json\json.h"
+#include <boost/algorithm/string.hpp>
 
 using namespace CableRouter;
 
@@ -91,6 +92,23 @@ using namespace CableRouter;
 //
 //	return map;
 //}
+static LayoutType parse_layout_type(Json::Value json)
+{
+    if (json.type() != Json::stringValue)
+        return Hoisting;
+
+    string name = json.asString();
+
+    if (name.compare("Hoisting") == 0)
+        return Hoisting;
+    if (name.compare("WallMounted") == 0)
+        return WallMounted;
+    if (name.compare("Ground") == 0)
+        return Ground;
+
+    printf("No such layout type : %s\n", name.c_str());
+    return Hoisting;
+}
 
 static void parse_geojson(MapInfo& map, const string& datastr)
 {
@@ -166,7 +184,10 @@ static void parse_geojson(MapInfo& map, const string& datastr)
 
         if (cat.compare("WiringPosition") == 0)
         {
-            map.devices.push_back(Device(vec_pts[0][0], (int)map.devices.size()));
+            int weight = (prop["Weight"].type() == Json::nullValue) ? 1 : prop["Weight"].asInt();
+            if (weight <= 0) weight = 1;
+            LayoutType type = parse_layout_type(prop["LayoutType"]);
+            map.devices.push_back(Device(vec_pts[0][0], (int)map.devices.size(), weight, type));
         }
         else if (cat.compare("PowerPosition") == 0)
         {
@@ -242,7 +263,13 @@ static void parse_geojson(MapInfo& map, const string& datastr)
                 e.weight = 4000;
                 room_nodes.push_back(get_rtree_node(&e));
             }
-            //r.align = Direction(1, 0);
+            if (prop["Vector"].type() != Json::nullValue)
+            {
+                string vec_s = prop["Vector"].asString();
+                vector<string> numbers;
+                boost::split(numbers, vec_s, boost::is_any_of("( ,)"));
+                r.align = Direction(atof(numbers[1].c_str()), atof(numbers[2].c_str()));
+            }
             map.regions.push_back(r);
         }
         else if (cat.compare("CenterPolyline") == 0)

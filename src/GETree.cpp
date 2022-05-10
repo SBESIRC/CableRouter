@@ -3,7 +3,7 @@
 
 using namespace CableRouter;
 
-CableRouter::GETree::GETree(vector<Point>& coords, double** G)
+CableRouter::GETree::GETree(vector<Point>& coords, vector<int>& mass, double** G)
 {
 	int n = (int)coords.size();
 	nodes = vector<GENode>(n);
@@ -14,6 +14,7 @@ CableRouter::GETree::GETree(vector<Point>& coords, double** G)
 		int pa = parent[i];
 		nodes[i].parent = pa;
 		nodes[i].coord = coords[i];
+		nodes[i].mass = mass[i];
 		if (pa != -1) {
 			nodes[pa].children.push_back(i);
 			nodes[i].weight = G[pa][i];
@@ -68,7 +69,7 @@ vector<int> CableRouter::GETree::prim(double** G, int n, int start)
 
 int CableRouter::count(vector<GENode>& tree, int root)
 {
-	int res = 1;
+	int res = tree[root].mass;
 	for (int i = 0; i < tree[root].children.size(); i++)
 	{
 		res += count(tree, tree[root].children[i]);

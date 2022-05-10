@@ -54,7 +54,7 @@ MapInfo CableRouter::rotateMap(MapInfo* const data, Direction align)
 
 	for (auto d : data->devices)
 	{
-		Device dev(d.coord.transform(rotate), d.id);
+		Device dev(d.coord.transform(rotate), d.id, d.mass, d.layout);
 		map.devices.push_back(dev);
 	}
 
@@ -269,6 +269,25 @@ void CableRouter::addPowerEdges(MapInfo* const data, const CDT& dt, double** G, 
 	printf("Make up power-to-point edge end\n");
 }
 
+void CableRouter::adjustByLayoutType(MapInfo* const data, double** G)
+{
+	int dn = (int)data->devices.size();
+	for (int u = 0; u < dn; u++)
+	{
+		for (int v = u + 1; v < dn; v++)
+		{
+			if (G[u][v] != CR_INF)
+			{
+				double prior = priority_between(data->devices[u].layout, data->devices[v].layout);
+				if (EQUAL(prior, 0))
+					G[u][v] = G[v][u] = CR_INF;
+				else
+					G[u][v] = G[v][u] = G[u][v] / prior;
+			}
+		}
+	}
+}
+
 void CableRouter::removeObstacles(MapInfo* const data, double** G, int n)
 {
 	printf("Shifting obstacle points begin\n");
@@ -469,7 +488,7 @@ void CableRouter::preprocess(MapInfo& map)
 
 	for (int i = 0; i < map.regions.size(); i++)
 	{
-		map.regions[i].align = Direction(1, 0);
+		//map.regions[i].align = Direction(1, 0);
 		reset(map.regions[i].centers);
 	}
 
@@ -551,16 +570,16 @@ void CableRouter::deleteInvalidDevice(MapInfo& map)
 	set<Point> exist;
 	for (int i = 0; i < map.devices.size(); i++)
 	{
-		Point pos = map.devices[i].coord;
+		Device dev = map.devices[i];
 
-		if (exist.find(pos) != exist.end())
+		if (exist.find(dev.coord) != exist.end())
 			continue;
 
-		if (!isValidPoint(map, pos))
+		if (!isValidPoint(map, dev.coord))
 			continue;
 
-		valid_dev.push_back(Device(pos, (int)valid_dev.size()));
-		exist.insert(pos);
+		valid_dev.push_back(Device(dev.coord, (int)valid_dev.size(), dev.mass, dev.layout));
+		exist.insert(dev.coord);
 	}
 	map.devices.swap(valid_dev);
 }
@@ -1114,4 +1133,15 @@ void CableRouter::expandRooms(vector<Polygon>& rooms, const Polygon& area)
 		else
 			printf("can't join!\n");
 	}
+}
+
+
+double CableRouter::priority_between(LayoutType a, LayoutType b)
+{
+	if (a == b)
+		return 1.0;
+	if (a == Ground || b == Ground)
+		return 0.0;
+
+	return 0.5;
 }

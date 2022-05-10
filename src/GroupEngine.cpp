@@ -25,15 +25,18 @@ vector<vector<int>> CableRouter::GroupEngine::grouping(MapInfo* const data, cons
 	double** G = buildGraphAll(data, dt, n_all, true, true);
 	addDeviceEdges(data, G, true, true);
 	removeObstacles(data, G, n_all);
+	adjustByLayoutType(data, G);
 
 	// construct mst
 	printf("MST construct begin\n");
 	vector<Point> dev_pts(data->devices.size());
+	vector<int> dev_mass(data->devices.size());
 	for (int i = 0; i < data->devices.size(); i++)
 	{
 		dev_pts[data->devices[i].id] = data->devices[i].coord;
+		dev_mass[data->devices[i].id] = data->devices[i].mass;
 	}
-	GETree mst(dev_pts, G);
+	GETree mst(dev_pts, dev_mass, G);
 	printf("MST construct over\n");
 
 	// divide tree

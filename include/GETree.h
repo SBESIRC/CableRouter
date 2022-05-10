@@ -12,6 +12,7 @@ namespace CableRouter
 		int			parent;		// parent in tree
 		vector<int>	children;	// children list
 		Point		coord;		// position
+		int			mass;		// devices num
 		double		weight;		// weight of edge (parent -> this)
 	};
 
@@ -19,7 +20,7 @@ namespace CableRouter
 	{
 		vector<GENode>	nodes;
 
-		GETree(vector<Point>& coords, double** G);
+		GETree(vector<Point>& coords, vector<int>& mass, double** G);
 
 		vector<int> prim(double** G, int n, int start);
 	};
