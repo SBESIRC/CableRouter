@@ -8,27 +8,34 @@
 
 #define INF 1000000
 #define MAX_DEV_IN_GROUP 25
-#define MIN_DEV_IN_GROUP 11
 
 // FOR CONNECT
 #define DIJ0 0.5
 
 // FOR PARTITION
 #define ALPHA	30		// pos relation
-#define BETA	10		// size even
+#define BETA	15		// size even
 #define OMEGA	50		// inner cohesion
 #define DELTA	30		// size big
 #define GAMMA	10		// cut line len
 
 #define DIJKSTRA_ONLY 0
 
+int SCALE_X = 900;
+int SCALE_Y = 900;
+
 // test/  7 8 9 10
 // test2/ 9 10 11 12
 // test3/ 0 1 2 3 4 5
 const std::string FOLD_NAME = "geojson/";
-const std::string FILE_NAME = "test_hz";
+const std::string FILE_NAME = "test2";
+//const std::string FOLD_NAME = "geojson/";
+//const std::string FILE_NAME = "test2";
 ImageWidget::ImageWidget()
+
 {
+	range.maxX = range.maxY = 500;
+	range.minX = range.minY = 0;
 	//CableRouteEngine cre;
 	//ifstream f(FOLD_NAME + FILE_NAME + ".geojson");
 	//stringstream ss;
@@ -38,14 +45,23 @@ ImageWidget::ImageWidget()
 	//string res = cre.routing(datastr);
 	//printf("%s", res.c_str());
 	//return;
-	//readFiles(FILE_NAME);
+	//readFiles("2");
 	data = read_from_geojson_file(FOLD_NAME + FILE_NAME + ".geojson");
+	preprocess(data);
 	printf("read over\n");
 
-	//data.holes.erase(data.holes.begin() + 235);
+	//EPolygon pgn1 = polygon_to_epolygon(data.regions[0].boundary);
+	//EPolygon pgn2 = polygon_to_epolygon(data.regions[1].boundary);
+	//if (CGAL::do_intersect(pgn1, pgn2))
+	//	printf("TRUE\n");
+	//std::list<Polygon_with_holes> pwhs;
+	//CGAL::intersection(data.regions[0].boundary, data.area.info.boundary, std::back_inserter(pwhs));
+	//printf("pwhs.size() = %d\n", pwhs.size());
+	//Polygon_with_holes pwh = pwhs.front();
 
-	range.maxX = range.maxY = 0;
-	range.minX = range.minY = 10000000;
+
+	range.maxX = range.maxY = -1000000000000000;
+	range.minX = range.minY = 1000000000000000;
 
 	for (int i = 0; i < data.devices.size(); ++i)
 	{
@@ -60,8 +76,14 @@ ImageWidget::ImageWidget()
 	for (int i = 0; i < data.centers.size(); ++i)
 	{
 		centers_.push_back(data.centers[i]);
+		//auto bbox = centers_[i].bbox();
+		//range.maxX = std::max(range.maxX, bbox.xmax());
+		//range.maxY = std::max(range.maxY, bbox.ymax());
+		//range.minX = std::min(range.minX, bbox.xmin());
+		//range.minY = std::min(range.minY, bbox.ymin());
 	}
 	printf("center line size: %d\n", centers_.size());
+	//for (auto i = data.area.info.boundary.vertices_begin(); i != data.area.info.boundary.vertices_end(); ++i)
 	for (auto i = data.area.info.boundary.vertices_begin(); i != data.area.info.boundary.vertices_end(); ++i)
 	{
 		area_.push_back(*i);
@@ -77,10 +99,6 @@ ImageWidget::ImageWidget()
 		for (auto j = data.holes[i].vertices_begin(); j != data.holes[i].vertices_end(); ++j)
 		{
 			hole.push_back(*j);
-			//range.maxX = std::max(range.maxX, j->hx());
-			//range.maxY = std::max(range.maxY, j->hy());
-			//range.minX = std::min(range.minX, j->hx());
-			//range.minY = std::min(range.minY, j->hy());
 		}
 		holes_.push_back(hole);
 	}
@@ -95,216 +113,246 @@ ImageWidget::ImageWidget()
 		rooms_.push_back(room);
 	}
 	printf("room size: %d\n", rooms_.size());
+	for (int i = 0; i < data.regions.size(); ++i)
+	{
+		vector<Point> region;
+		for (auto j = data.regions[i].boundary.vertices_begin(); j != data.regions[i].boundary.vertices_end(); ++j)
+		{
+			region.push_back(*j);
+		}
+		regions_.push_back(region);
+		for (auto p : data.regions[i].holes)
+		{
+			reset(region);
+			for (auto j = p.vertices_begin(); j != p.vertices_end(); ++j)
+			{
+				region.push_back(*j);
+			}
+			regions_.push_back(region);
+		}
+	}
+	printf("region size: %d\n", regions_.size());
 
+	printf("range.minX = %lf\n", range.minX);
+	printf("range.maxX = %lf\n", range.maxX);
+	printf("range.maxY = %lf\n", range.maxY);
+	printf("range.minY = %lf\n", range.minY);
+
+	auto rangeX = range.maxX - range.minX;
+	auto rangeY = range.maxY - range.minY;
+	if (rangeX > rangeY)
+		SCALE_Y = rangeY / rangeX * SCALE_X;
+	else
+		SCALE_X = rangeX / rangeY * SCALE_Y;
 }
 
 void ImageWidget::readFiles(const std::string name)
 {
-	Clean();
-	range.maxX = range.maxY = 0;
-	range.minX = range.minY = 10000000;
-	FILE* infile;
-	double x, y;
-	char c;
-	int leftbra;
-	PElement e;
+	//Clean();
+	//range.maxX = range.maxY = 0;
+	//range.minX = range.minY = 10000000;
+	//FILE* infile;
+	//double x, y;
+	//char c;
+	//int leftbra;
+	//PElement e;
 
-	// read dev points
-	infile = fopen((FOLD_NAME + "点位" + name).c_str(), "rt");
-	if (infile)
-	{
-		while (fscanf(infile, "(%lf,%lf)", &x, &y) != EOF) {
-			points_.push_back(Point(x, y));
-			data.devices.push_back(Device(Point(x, y), data.devices.size()));
-		}
-		fclose(infile);
-	}
-	cout << "点位数： " << points_.size() << endl;
-
-
+	//// read dev points
+	//infile = fopen((FOLD_NAME + "点位" + name).c_str(), "rt");
+	//if (infile)
+	//{
+	//	while (fscanf(infile, "(%lf,%lf)", &x, &y) != EOF) {
+	//		points_.push_back(Point(x, y));
+	//		data.devices.push_back(Device(Point(x, y), data.devices.size()));
+	//	}
+	//	fclose(infile);
+	//}
+	//cout << "点位数： " << points_.size() << endl;
 
 
 
-	std::vector<rbush::TreeNode<PElement>*> hole_nodes;
-	std::vector<rbush::TreeNode<PElement>*> room_nodes;
-	std::vector<rbush::TreeNode<Segment>*> area_nodes;
-	std::vector<rbush::TreeNode<Segment>*> center_nodes;
 
-	// read center lines
-	infile = fopen((FOLD_NAME + "中心线" + name).c_str(), "rt");
-	if (infile)
-	{
-		double a, b;
-		while (fscanf(infile, "((%lf,%lf),(%lf,%lf))", &x, &y, &a, &b) != EOF) {
-			centers_.push_back(Segment(Point(x, y), Point(a, b)));
-			center_nodes.push_back(get_seg_rtree_node(&centers_.back()));
-		}
-		fclose(infile);
-	}
-	cout << "中心线数： " << centers_.size() << endl;
 
-	// read area
-	infile = fopen((FOLD_NAME + "防火分区" + name).c_str(), "rt");
-	if (!infile)
-		leftbra = 0;
-	else if (fscanf(infile, "(((") != EOF)
-		leftbra = 3;
-	else
-		leftbra = 0;
-	while (leftbra) {
-		switch (leftbra)
-		{
-		case 3:
-			fscanf(infile, "%lf,%lf)", &x, &y);
-			area_.push_back(Point(x, y));
-			range.maxX = std::max(range.maxX, x);
-			range.maxY = std::max(range.maxY, y);
-			range.minX = std::min(range.minX, x);
-			range.minY = std::min(range.minY, y);
-			leftbra--;
-			break;
-		case 2:
-			fscanf(infile, "%c", &c);
-			if (c == ',')
-			{
-				fscanf(infile, "(");
-				leftbra++;
-				break;
-			}
-			else
-			{
-				e.boundary = construct_polygon(&area_);
-				area_.pop_back();
-				leftbra--;
-				break;
-			}
-		case 1:
-			fscanf(infile, ",%lf)", &x);
-			e.weight = x;
-			data.area.info = e;
-			leftbra--;
-			break;
-		case 0:
-		default:
-			break;
-		}
-	}
-	for (size_t i = 0; i < area_.size(); i++)
-	{
-		int next = (i + 1) % area_.size();
-		area_nodes.push_back(get_seg_rtree_node(&Segment(area_[i], area_[next])));
-	}
-	if (infile) fclose(infile);
-	cout << "防火分区点数： " << area_.size() << endl;
+	//std::vector<rbush::TreeNode<PElement>*> hole_nodes;
+	//std::vector<rbush::TreeNode<PElement>*> room_nodes;
+	//std::vector<rbush::TreeNode<Segment>*> area_nodes;
+	//std::vector<rbush::TreeNode<Segment>*> center_nodes;
 
-	// read holes
-	infile = fopen((FOLD_NAME + "洞口" + name).c_str(), "rt");
-	if (!infile)
-		leftbra = 0;
-	else if (fscanf(infile, "(((") != EOF)
-		leftbra = 3;
-	else
-		leftbra = 0;
-	vector<Point> hole;
-	while (leftbra >= 0) {
-		switch (leftbra)
-		{
-		case 3:
-			fscanf(infile, "%lf,%lf)", &x, &y);
-			hole.push_back(Point(x, y));
-			leftbra--;
-			break;
-		case 2:
-			fscanf(infile, "%c", &c);
-			if (c == ',')
-			{
-				fscanf(infile, "(");
-				leftbra++;
-				break;
-			}
-			else
-			{
-				e.boundary = construct_polygon(&hole);
-				hole.pop_back();
-				holes_.push_back(hole);
-				reset(hole);
-				leftbra--;
-				break;
-			}
-		case 1:
-			fscanf(infile, ",%lf)", &x);
-			e.weight = x;
-			hole_nodes.push_back(get_rtree_node(&e));
-			leftbra--;
-			break;
-		case 0:
-			if (fscanf(infile, "(((") != EOF)
-				leftbra = 3;
-			else
-				leftbra = -1;
-		default:
-			break;
-		}
-	}
-	if (infile) fclose(infile);
-	cout << "洞口个数： " << holes_.size() << endl;
+	//// read center lines
+	//infile = fopen((FOLD_NAME + "中心线" + name).c_str(), "rt");
+	//if (infile)
+	//{
+	//	double a, b;
+	//	while (fscanf(infile, "((%lf,%lf),(%lf,%lf))", &x, &y, &a, &b) != EOF) {
+	//		centers_.push_back(Segment(Point(x, y), Point(a, b)));
+	//		center_nodes.push_back(get_seg_rtree_node(&centers_.back()));
+	//	}
+	//	fclose(infile);
+	//}
+	//cout << "中心线数： " << centers_.size() << endl;
 
-	// read rooms
-	infile = fopen((FOLD_NAME + "房间框线" + name).c_str(), "rt");
-	if (!infile)
-		leftbra = 0;
-	else if (fscanf(infile, "(((") != EOF)
-		leftbra = 3;
-	else
-		leftbra = 0;
-	vector<Point> room;
-	while (leftbra >= 0) {
-		switch (leftbra)
-		{
-		case 3:
-			fscanf(infile, "%lf,%lf)", &x, &y);
-			room.push_back(Point(x, y));
-			leftbra--;
-			break;
-		case 2:
-			fscanf(infile, "%c", &c);
-			if (c == ',')
-			{
-				fscanf(infile, "(");
-				leftbra++;
-				break;
-			}
-			else
-			{
-				e.boundary = construct_polygon(&room);
-				room.pop_back();
-				rooms_.push_back(room);
-				reset(room);
-				leftbra--;
-				break;
-			}
-		case 1:
-			fscanf(infile, ",%lf)", &x);
-			e.weight = x;
-			room_nodes.push_back(get_rtree_node(&e));
-			leftbra--;
-			break;
-		case 0:
-			if (fscanf(infile, "(((") != EOF)
-				leftbra = 3;
-			else
-				leftbra = -1;
-		default:
-			break;
-		}
-	}
-	if (infile) fclose(infile);
-	cout << "房间个数： " << rooms_.size() << endl;
+	//// read area
+	//infile = fopen((FOLD_NAME + "防火分区" + name).c_str(), "rt");
+	//if (!infile)
+	//	leftbra = 0;
+	//else if (fscanf(infile, "(((") != EOF)
+	//	leftbra = 3;
+	//else
+	//	leftbra = 0;
+	//while (leftbra) {
+	//	switch (leftbra)
+	//	{
+	//	case 3:
+	//		fscanf(infile, "%lf,%lf)", &x, &y);
+	//		area_.push_back(Point(x, y));
+	//		range.maxX = std::max(range.maxX, x);
+	//		range.maxY = std::max(range.maxY, y);
+	//		range.minX = std::min(range.minX, x);
+	//		range.minY = std::min(range.minY, y);
+	//		leftbra--;
+	//		break;
+	//	case 2:
+	//		fscanf(infile, "%c", &c);
+	//		if (c == ',')
+	//		{
+	//			fscanf(infile, "(");
+	//			leftbra++;
+	//			break;
+	//		}
+	//		else
+	//		{
+	//			e.boundary = construct_polygon(&area_);
+	//			area_.pop_back();
+	//			leftbra--;
+	//			break;
+	//		}
+	//	case 1:
+	//		fscanf(infile, ",%lf)", &x);
+	//		e.weight = x;
+	//		data.area.info = e;
+	//		leftbra--;
+	//		break;
+	//	case 0:
+	//	default:
+	//		break;
+	//	}
+	//}
+	//for (size_t i = 0; i < area_.size(); i++)
+	//{
+	//	int next = (i + 1) % area_.size();
+	//	area_nodes.push_back(get_seg_rtree_node(&Segment(area_[i], area_[next])));
+	//}
+	//if (infile) fclose(infile);
+	//cout << "防火分区点数： " << area_.size() << endl;
 
-	data.cen_line_tree = new SegBush(center_nodes);
-	data.area.area_edge_tree = new SegBush(area_nodes);
-	data.hole_tree = new PEBush(hole_nodes);
-	data.room_tree = new PEBush(room_nodes);
+	//// read holes
+	//infile = fopen((FOLD_NAME + "洞口" + name).c_str(), "rt");
+	//if (!infile)
+	//	leftbra = 0;
+	//else if (fscanf(infile, "(((") != EOF)
+	//	leftbra = 3;
+	//else
+	//	leftbra = 0;
+	//vector<Point> hole;
+	//while (leftbra >= 0) {
+	//	switch (leftbra)
+	//	{
+	//	case 3:
+	//		fscanf(infile, "%lf,%lf)", &x, &y);
+	//		hole.push_back(Point(x, y));
+	//		leftbra--;
+	//		break;
+	//	case 2:
+	//		fscanf(infile, "%c", &c);
+	//		if (c == ',')
+	//		{
+	//			fscanf(infile, "(");
+	//			leftbra++;
+	//			break;
+	//		}
+	//		else
+	//		{
+	//			e.boundary = construct_polygon(&hole);
+	//			hole.pop_back();
+	//			holes_.push_back(hole);
+	//			reset(hole);
+	//			leftbra--;
+	//			break;
+	//		}
+	//	case 1:
+	//		fscanf(infile, ",%lf)", &x);
+	//		e.weight = x;
+	//		hole_nodes.push_back(get_rtree_node(&e));
+	//		leftbra--;
+	//		break;
+	//	case 0:
+	//		if (fscanf(infile, "(((") != EOF)
+	//			leftbra = 3;
+	//		else
+	//			leftbra = -1;
+	//	default:
+	//		break;
+	//	}
+	//}
+	//if (infile) fclose(infile);
+	//cout << "洞口个数： " << holes_.size() << endl;
+
+	//// read rooms
+	//infile = fopen((FOLD_NAME + "房间框线" + name).c_str(), "rt");
+	//if (!infile)
+	//	leftbra = 0;
+	//else if (fscanf(infile, "(((") != EOF)
+	//	leftbra = 3;
+	//else
+	//	leftbra = 0;
+	//vector<Point> room;
+	//while (leftbra >= 0) {
+	//	switch (leftbra)
+	//	{
+	//	case 3:
+	//		fscanf(infile, "%lf,%lf)", &x, &y);
+	//		room.push_back(Point(x, y));
+	//		leftbra--;
+	//		break;
+	//	case 2:
+	//		fscanf(infile, "%c", &c);
+	//		if (c == ',')
+	//		{
+	//			fscanf(infile, "(");
+	//			leftbra++;
+	//			break;
+	//		}
+	//		else
+	//		{
+	//			e.boundary = construct_polygon(&room);
+	//			room.pop_back();
+	//			rooms_.push_back(room);
+	//			reset(room);
+	//			leftbra--;
+	//			break;
+	//		}
+	//	case 1:
+	//		fscanf(infile, ",%lf)", &x);
+	//		e.weight = x;
+	//		room_nodes.push_back(get_rtree_node(&e));
+	//		leftbra--;
+	//		break;
+	//	case 0:
+	//		if (fscanf(infile, "(((") != EOF)
+	//			leftbra = 3;
+	//		else
+	//			leftbra = -1;
+	//	default:
+	//		break;
+	//	}
+	//}
+	//if (infile) fclose(infile);
+	//cout << "房间个数： " << rooms_.size() << endl;
+
+	//data.cen_line_tree = new SegBush(center_nodes);
+	//data.area.area_edge_tree = new SegBush(area_nodes);
+	//data.hole_tree = new PEBush(hole_nodes);
+	//data.room_tree = new PEBush(room_nodes);
 
 }
 
@@ -317,38 +365,54 @@ void ImageWidget::paintEvent(QPaintEvent* paintevent)
 	QPainter painter(this);
 
 	// draw power
-	painter.setPen(QPen(Qt::red, 10));
+	painter.setPen(QPen(Qt::magenta, 5));
 	for (size_t i = 0; i < power_sources_.size(); i++)
 	{
 		painter.drawPoint(XtoCanvas(DOUBLE(power_sources_[i].hx())), YtoCanvas(DOUBLE(power_sources_[i].hy())));
 	}
 
 	// draw points
-	painter.setPen(QPen(Qt::green, 8));
+	painter.setPen(QPen(Qt::green, 4));
 	for (size_t i = 0; i < points_.size(); i++)
 	{
 		painter.drawPoint(XtoCanvas(DOUBLE(points_[i].hx())), YtoCanvas(DOUBLE(points_[i].hy())));
 	}
 
 	// draw centers
-	painter.setPen(QPen(Qt::red, 1, Qt::DashLine));
-	//painter.setPen(QPen(Qt::red, 2));
-	for (size_t i = 0; i < centers_.size(); i++)
-	{
-		painter.drawLine(
-			XtoCanvas(DOUBLE(centers_[i].source().hx())), YtoCanvas(DOUBLE(centers_[i].source().hy())),
-			XtoCanvas(DOUBLE(centers_[i].target().hx())), YtoCanvas(DOUBLE(centers_[i].target().hy())));
-	}
+	//painter.setPen(QPen(Qt::magenta, 1, Qt::DashLine));
+	painter.setPen(QPen(Qt::magenta, 1));
+	if (GlobalCount % 2 < 0)
+		for (size_t i = 0; i < centers_.size(); i++)
+		{
+			painter.drawLine(
+				XtoCanvas(DOUBLE(centers_[i].source().hx())), YtoCanvas(DOUBLE(centers_[i].source().hy())),
+				XtoCanvas(DOUBLE(centers_[i].target().hx())), YtoCanvas(DOUBLE(centers_[i].target().hy())));
+		}
+	//painter.setPen(QPen(Qt::red, 1));
+	//painter.drawLine(
+	//	XtoCanvas(DOUBLE(centers_[GlobalCount % centers_.size()].source().hx())), YtoCanvas(DOUBLE(centers_[GlobalCount % centers_.size()].source().hy())),
+	//	XtoCanvas(DOUBLE(centers_[GlobalCount % centers_.size()].target().hx())), YtoCanvas(DOUBLE(centers_[GlobalCount % centers_.size()].target().hy())));
+	//painter.setPen(QPen(Qt::blue, 2));
+	//painter.drawPoint(XtoCanvas(DOUBLE(centers_[GlobalCount % centers_.size()].target().hx())), YtoCanvas(DOUBLE(centers_[GlobalCount % centers_.size()].target().hy())));
+
 
 	// draw area
-	painter.setPen(QPen(Qt::red, 4));
-	for (size_t i = 0; i < area_.size(); i++)
-	{
-		int next = (i + 1) % area_.size();
-		painter.drawLine(
-			XtoCanvas(DOUBLE(area_[i].hx())), YtoCanvas(DOUBLE(area_[i].hy())),
-			XtoCanvas(DOUBLE(area_[next].hx())), YtoCanvas(DOUBLE(area_[next].hy())));
-	}
+	//painter.setPen(QPen(Qt::red, 3));
+	//Polygon area_boundary = data.area.info.boundary;
+	//for (int i = 0; i < area_boundary.size(); i++)
+	//{
+	//	painter.drawLine(
+	//		XtoCanvas(DOUBLE(area_boundary.vertex(i).hx())), YtoCanvas(DOUBLE(area_boundary.vertex(i).hy())),
+	//		XtoCanvas(DOUBLE(area_boundary.vertex((i + 1) % area_boundary.size()).hx())), YtoCanvas(area_boundary.vertex((i + 1) % area_boundary.size()).hy()));
+	//}
+	//if (GlobalCount % 2 < 0)
+	//	for (size_t i = 0; i < area_.size(); i++)
+	//	{
+	//		int next = (i + 1) % area_.size();
+	//		painter.drawLine(
+	//			XtoCanvas(DOUBLE(area_[i].hx())), YtoCanvas(DOUBLE(area_[i].hy())),
+	//			XtoCanvas(DOUBLE(area_[next].hx())), YtoCanvas(DOUBLE(area_[next].hy())));
+	//	}
 
 	// draw holes
 	painter.setPen(QPen(Qt::yellow, 1));
@@ -361,9 +425,20 @@ void ImageWidget::paintEvent(QPaintEvent* paintevent)
 				XtoCanvas(DOUBLE(holes_[i][next].hx())), YtoCanvas(DOUBLE(holes_[i][next].hy())));
 		}
 	}
+	//painter.setPen(QPen(Qt::red, 1.1));
+	//if (holes_.size() > 0)
+	//	for (size_t i = GlobalCount % holes_.size(); i <= GlobalCount % holes_.size(); i++)
+	//	{
+	//		for (size_t j = 0; j < holes_[i].size(); j++) {
+	//			int next = (j + 1) % holes_[i].size();
+	//			painter.drawLine(
+	//				XtoCanvas(DOUBLE(holes_[i][j].hx())), YtoCanvas(DOUBLE(holes_[i][j].hy())),
+	//				XtoCanvas(DOUBLE(holes_[i][next].hx())), YtoCanvas(DOUBLE(holes_[i][next].hy())));
+	//		}
+	//	}
 
 	// draw rooms
-	painter.setPen(QPen(Qt::white, 1, Qt::DashLine));
+	painter.setPen(QPen(Qt::white, 0.5, Qt::DashLine));
 	for (size_t i = 0; i < rooms_.size(); i++)
 	{
 		for (size_t j = 0; j < rooms_[i].size(); j++) {
@@ -373,9 +448,35 @@ void ImageWidget::paintEvent(QPaintEvent* paintevent)
 				XtoCanvas(DOUBLE(rooms_[i][next].hx())), YtoCanvas(DOUBLE(rooms_[i][next].hy())));
 		}
 	}
+	// draw rooms one by one
+	//painter.setPen(QPen(Qt::red, 2));
+	//if (rooms_.size() > 0)
+	//for (size_t i = GlobalCount % rooms_.size(); i <= GlobalCount % rooms_.size(); i++)
+	//{
+	//	for (size_t j = 0; j < rooms_[i].size(); j++) {
+	//		int next = (j + 1) % rooms_[i].size();
+	//		painter.drawLine(
+	//			XtoCanvas(DOUBLE(rooms_[i][j].hx())), YtoCanvas(DOUBLE(rooms_[i][j].hy())),
+	//			XtoCanvas(DOUBLE(rooms_[i][next].hx())), YtoCanvas(DOUBLE(rooms_[i][next].hy())));
+	//	}
+	//}
+
+	// draw ucs
+	painter.setPen(QPen(Qt::red, 1, Qt::DashLine));
+	//if (GlobalCount % 2 == 0)
+		//for (size_t i = 0; i < regions_.size(); i++)
+		for (size_t i = GlobalCount % regions_.size(); i <= GlobalCount % regions_.size(); i++)
+		{
+			for (size_t j = 0; j < regions_[i].size(); j++) {
+				int next = (j + 1) % regions_[i].size();
+				painter.drawLine(
+					XtoCanvas(DOUBLE(regions_[i][j].hx())), YtoCanvas(DOUBLE(regions_[i][j].hy())),
+					XtoCanvas(DOUBLE(regions_[i][next].hx())), YtoCanvas(DOUBLE(regions_[i][next].hy())));
+			}
+		}
 
 	// draw triangulation result
-	painter.setPen(QPen(Qt::magenta, 2));
+	painter.setPen(QPen(Qt::magenta, 1));
 	for (size_t i = 0; i < result_triangulation_.size(); i++)
 	{
 		//painter.setPen(QPen(Qt::darkCyan, (i + 1) * 4.0 / result_tree_.size()));
@@ -387,35 +488,36 @@ void ImageWidget::paintEvent(QPaintEvent* paintevent)
 	// draw result
 	painter.setPen(QPen(Qt::cyan, 1));
 	if (result_tree_.size() > 0)
-	//for (size_t p = GlobalCount % result_tree_.size(); p <= GlobalCount % result_tree_.size(); p++)
-	for (size_t p = 0; p < result_tree_.size(); p++)
-	{
-		//painter.setPen(QPen(Qt::darkCyan, (i + 1) * 4.0 / result_tree_.size()));
-		vector<Segment> sss = get_segments_from_polyline(result_tree_[p]);
-
-		for (size_t i = 0; i < sss.size(); i++)
+		//for (size_t p = GlobalCount % result_tree_.size(); p <= GlobalCount % result_tree_.size(); p++)
+		for (size_t p = 0; p < result_tree_.size(); p++)
 		{
-			painter.drawLine(
-				XtoCanvas(DOUBLE(sss[i].source().hx())), YtoCanvas(DOUBLE(sss[i].source().hy())),
-				XtoCanvas(DOUBLE(sss[i].target().hx())), YtoCanvas(DOUBLE(sss[i].target().hy())));
+			//painter.setPen(QPen(Qt::darkCyan, (i + 1) * 4.0 / result_tree_.size()));
+			vector<Segment> sss = get_segments_from_polyline(result_tree_[p]);
+
+			for (size_t i = 0; i < sss.size(); i++)
+			{
+				painter.drawLine(
+					XtoCanvas(DOUBLE(sss[i].source().hx())), YtoCanvas(DOUBLE(sss[i].source().hy())),
+					XtoCanvas(DOUBLE(sss[i].target().hx())), YtoCanvas(DOUBLE(sss[i].target().hy())));
+			}
 		}
-	}
 	// draw result one by one
-	painter.setPen(QPen(Qt::red, 1));
+	painter.setPen(QPen(Qt::red, 2));
 	if (result_tree_.size() > 0)
-	for (size_t p = GlobalCount % result_tree_.size(); p <= GlobalCount % result_tree_.size(); p++)
-	//for (size_t p = 0; p < result_tree_.size(); p++)
-	{
-		//painter.setPen(QPen(Qt::darkCyan, (i + 1) * 4.0 / result_tree_.size()));
-		vector<Segment> sss = get_segments_from_polyline(result_tree_[p]);
-
-		for (size_t i = 0; i < sss.size(); i++)
+		for (size_t p = GlobalCount % result_tree_.size(); p <= GlobalCount % result_tree_.size(); p++)
+			//for (size_t p = 0; p < result_tree_.size(); p++)
 		{
-			painter.drawLine(
-				XtoCanvas(DOUBLE(sss[i].source().hx())), YtoCanvas(DOUBLE(sss[i].source().hy())),
-				XtoCanvas(DOUBLE(sss[i].target().hx())), YtoCanvas(DOUBLE(sss[i].target().hy())));
+			//painter.setPen(QPen(Qt::darkCyan, (i + 1) * 4.0 / result_tree_.size()));
+			vector<Segment> sss = get_segments_from_polyline(result_tree_[p]);
+
+			for (size_t i = 0; i < sss.size(); i++)
+				//int i = GlobalCount % sss.size();
+			{
+				painter.drawLine(
+					XtoCanvas(DOUBLE(sss[i].source().hx())), YtoCanvas(DOUBLE(sss[i].source().hy())),
+					XtoCanvas(DOUBLE(sss[i].target().hx())), YtoCanvas(DOUBLE(sss[i].target().hy())));
+			}
 		}
-	}
 
 	// draw grouping result
 	if (result_paths_.size() < 0)
@@ -442,11 +544,22 @@ void ImageWidget::mousePressEvent(QMouseEvent* mouseevent)
 	if (mouseevent->button() == Qt::LeftButton)
 	{
 		power_sources_.push_back(Point(CanvastoX(mouseevent->pos().rx()), CanvastoY(mouseevent->pos().ry())));
-		//data.powers.push_back(Power(power_sources_.back()));
-		if (power_sources_.size() >= 3)
+		data.powers.push_back(Power(power_sources_.back()));
+		if (power_sources_.size() >= 2 && power_sources_.size() % 2 == 0)
 		{
-			data.powers.push_back(Power(Segment(power_sources_[1], power_sources_[2])));
+			Polyline x;
+			x.push_back(power_sources_[power_sources_.size() - 1]);
+			x.push_back(power_sources_[power_sources_.size() - 2]);
+			result_tree_.push_back(x);
 		}
+		update();
+	}
+	if (mouseevent->button() == Qt::RightButton)
+	{
+		Point d(CanvastoX(mouseevent->pos().rx()), CanvastoY(mouseevent->pos().ry()));
+		points_.push_back(d);
+		data.devices.push_back(Device(d));
+		preprocess(data);
 		update();
 	}
 }
@@ -482,30 +595,36 @@ void ImageWidget::ConvexHull()
 	//}
 	//printf("dist = %lf\n", engines[k].data.G[engines[k].data.devices.size()][GlobalCount % engines[k].data.devices.size()]);
 	GlobalCount++;
-	Polyline poly = result_tree_[GlobalCount % result_tree_.size()];
-	printf("line size = %d\n", result_tree_[GlobalCount % result_tree_.size()].size());
-	printf("(%.15f, %.15f) -> ", poly[0].hx(), poly[0].hy());
-	printf("(%.15f, %.15f)\n", poly[poly.size() - 1].hx(), poly[poly.size() - 1].hy());
+	//printf("(%lf, %lf)->", centers_[GlobalCount % centers_.size()].source().hx(), centers_[GlobalCount % centers_.size()].source().hy());
+	//printf("(%lf, %lf)\n", centers_[GlobalCount % centers_.size()].target().hx(), centers_[GlobalCount % centers_.size()].target().hy());
+	//if (result_tree_.size() > 0) {
+	//	Polyline poly = result_tree_[GlobalCount % result_tree_.size()];
+	//	printf("line size = %d\n", result_tree_[GlobalCount % result_tree_.size()].size());
+	//	for (int i = 0; i < poly.size(); i++)
+	//	{
+	//		printf("(%.15f, %.15f)\n", poly[i].hx(), poly[i].hy());
+	//	}
+	//}
 }
 
 double ImageWidget::XtoCanvas(double x)
 {
-	return 1.0 * (x - range.minX) / (range.maxX - range.minX) * 1500 + 40;
+	return 1.0 * (x - range.minX) / (range.maxX - range.minX) * SCALE_X + 40;
 }
 
 double ImageWidget::YtoCanvas(double y)
 {
-	return 1500 - 1.0 * (y - range.minY) / (range.maxY - range.minY) * 6000 + 40;
+	return 900 - 1.0 * (y - range.minY) / (range.maxY - range.minY) * SCALE_Y + 40;
 }
 
 double ImageWidget::CanvastoX(double x)
 {
-	return 1.0 * (x - 40) / 1500 * (range.maxX - range.minX) + range.minX;
+	return 1.0 * (x - 40) / SCALE_X * (range.maxX - range.minX) + range.minX;
 }
 
 double ImageWidget::CanvastoY(double y)
 {
-	return 1.0 * (1540 - y) / 6000 * (range.maxY - range.minY) + range.minY;
+	return 1.0 * (900 + 40 - y) / SCALE_Y * (range.maxY - range.minY) + range.minY;
 }
 
 void ImageWidget::Partition()
@@ -519,7 +638,7 @@ void ImageWidget::Partition()
 	GroupEngine pe;
 	GroupParam paramm;
 	paramm.max_dev_size = MAX_DEV_IN_GROUP;
-	paramm.min_dev_size = MIN_DEV_IN_GROUP;
+	paramm.min_dev_size = max(1, MAX_DEV_IN_GROUP / 2);
 	paramm.weight_pos = ALPHA;
 	paramm.weight_even = BETA;
 	paramm.weight_cohesion = OMEGA;
@@ -547,7 +666,10 @@ void ImageWidget::Partition()
 	for (int i = 0; i < groups.size(); i++)
 	{
 		ImmuneSystem re;
-		re.init(&groups[i]);
+		if (!re.init(&groups[i]))
+		{
+			continue;
+		}
 		engines.push_back(re);
 	}
 
@@ -598,10 +720,15 @@ void ImageWidget::Connect()
 
 	vector<Polyline> cables;
 
+	//ASPath ap = a_star_connect_p2p(&data, data.devices[0].coord, data.devices[1].coord, get_segments_from_polylines(cables));
+	//Polyline path = line_simple(ap.path);
+	//result_tree_.push_back(path);
+	//return;
+
 	vector<Polyline> power_paths(data.powers.size());
 	for (int e = 0; e < engines.size(); e++)
 	{
-		for (int k = 0; k < 20; k++)
+		for (int k = 0; k < 100; k++)
 			engines[e].run();
 
 		if (engines[e].globlMem.size() < 1)
@@ -610,70 +737,12 @@ void ImageWidget::Connect()
 			continue;
 		}
 
-		auto adj = engines[e].globlMem.rbegin()->adj;
-		printf("Best value = %lf\n", engines[e].globlMem.rbegin()->value);
-
-		vector<Device>& devices = engines[e].data.devices;
-		int dn = (int)devices.size();
-
-		vector<DreamNodePtr> dev_nodes;
-		for (int i = 0; i < dn; i++)
-		{
-			DreamNodePtr no = newDreamNode(devices[i].coord);
-			no->is_device = true;
-			dev_nodes.push_back(no);
-		}
-		int root;
-		for (int i = dn; i < adj.size(); i++)
-		{
-			bool found = false;
-			for (int j = 0; j < adj[i].size(); j++)
-			{
-				if (adj[i][j] < dn)
-				{
-					found = true;
-					root = adj[i][j];
-					power_paths[i - dn].push_back(devices[root].coord);
-					break;
-				}
-			}
-			if (found) break;
-		}
-
-		vector<int> vis(dn, 0);
-		queue<int> dev_queue;
-
-		DreamTree path_tree = dev_nodes[root];
-		dev_queue.push(root);
-		while (!dev_queue.empty())
-		{
-			int now = dev_queue.front();
-			dev_queue.pop();
-			vis[now] = 1;
-			for (int i = 0; i < adj[now].size(); i++)
-			{
-				int ch = adj[now][i];
-				if (ch < dn && vis[ch] == 0)
-				{
-					dev_nodes[now]->children.push_back(dev_nodes[ch]);
-					dev_nodes[ch]->parent = dev_nodes[now];
-					vis[ch] = 1;
-					dev_queue.push(ch);
-				}
-			}
-		}
-		printf("get_manhattan_tree begin\n");
-		get_manhattan_tree(&data, path_tree, cables);
-		printf("avoid_coincidence begin\n");
-		avoid_coincidence(path_tree);
-		printf("avoid_coincidence end\n");
-		vector<Polyline> paths = get_dream_tree_paths(path_tree);
-		cables.insert(cables.end(), paths.begin(), paths.end());
+		inner_connect(&data, &engines[e], cables, power_paths);
 	}
 	result_tree_ = cables;
 	printf("Routing end\n");
 	sec = timer.time();
-	printf("用时：%lf s\n", sec); 
+	printf("用时：%lf s\n", sec);
 	return;
 
 	vector<Polyline> result_paths;
@@ -695,8 +764,8 @@ void ImageWidget::Connect()
 				printf("invalid power\n");
 
 			printf("Path size: %d\n", pp.size());
-			result_paths.push_back(pp);
-			for (int k = 0; k < (int) pp.size() - 1; k++)
+			if (pp.size() > 1) result_paths.push_back(pp);
+			for (int k = 0; k < (int)pp.size() - 1; k++)
 			{
 				result_triangulation_.push_back(Segment(pp[k], pp[k + 1]));
 				//exist_lines.push_back(Segment(pp[k], pp[k + 1]));
@@ -714,9 +783,9 @@ void ImageWidget::Connect()
 	//return;
 
 	printf("Begin merge\n");
-	//DreamTree dream_tree = merge_to_a_tree(result_paths_);
+	DreamTree dream_tree = merge_to_a_tree(result_paths);
 	printf("Begin show tree\n");
-	//result_triangulation_ = get_dream_tree_lines(dream_tree, true);
+	result_triangulation_ = get_dream_tree_lines(dream_tree, true);
 	//result_triangulation_ = get_dream_tree_lines(dream_tree);
 	//reset(centers_);
 	//centers_ = get_dream_tree_lines(dream_tree);
@@ -741,25 +810,222 @@ void ImageWidget::Connect()
 	//	}
 	//}
 
-
-
-	printf("Begin delete tree\n");
-	//deleteDreamTree(dream_tree);
-	printf("delete over\n");
-
 }
+
+//vector<Segment> get_outline(vector<Segment>& const centers)
+//{
+//	vector<Segment> res;
+//
+//	ARR arr;
+//	vector<ASegment> segments;
+//	for (auto c : centers) {
+//		segments.push_back(ASegment(APoint(c.source().hx(), c.source().hy()), APoint(c.target().hx(), c.target().hy())));
+//	}
+//	insert(arr, segments.begin(), segments.end());
+//
+//	for (auto f = arr.faces_begin(); f != arr.faces_end(); f++)
+//	{
+//		if (f->is_unbounded())
+//		{
+//			for (auto ccb = f->inner_ccbs_begin(); ccb != f->inner_ccbs_end(); ccb++)
+//			{
+//				vector<Point> pts;
+//				auto e = *ccb;
+//				do
+//				{
+//					APoint p = e->curve().left();
+//					APoint q = e->curve().right();
+//					if (e->direction() != CGAL::Arr_halfedge_direction::ARR_LEFT_TO_RIGHT)
+//						swap(p, q);
+//					pts.push_back(Point(p.hx().exact().to_double(), p.hy().exact().to_double()));
+//					e = e->next();
+//				} while (e != *ccb);
+//				pts = line_simple(pts);
+//				for (int i = 0; i < pts.size(); i++)
+//				{
+//					res.push_back(Segment(pts[i], pts[(i + 1) % pts.size()]));
+//				}
+//			}
+//			break;
+//		}
+//	}
+//	return res;
+//}
+//
+//vector<Segment> expand(vector<Segment>& const centers, double gap)
+//{
+//	vector<Segment> res;
+//
+//	ARR arr;
+//	vector<ASegment> segments;
+//	for (auto c : centers) {
+//		segments.push_back(ASegment(APoint(c.source().hx(), c.source().hy()), APoint(c.target().hx(), c.target().hy())));
+//	}
+//	insert(arr, segments.begin(), segments.end());
+//
+//	for (auto f = arr.faces_begin(); f != arr.faces_end(); f++)
+//	{
+//		if (f->is_fictitious())
+//			continue;
+//
+//		if (f->is_unbounded())
+//		{
+//			for (auto ccb = f->inner_ccbs_begin(); ccb != f->inner_ccbs_end(); ccb++) {
+//				vector<Point> pts;
+//				auto e = *ccb;
+//				do
+//				{
+//					APoint p = e->curve().left();
+//					APoint q = e->curve().right();
+//					if (e->direction() != CGAL::Arr_halfedge_direction::ARR_LEFT_TO_RIGHT)
+//						swap(p, q);
+//					pts.push_back(Point(p.hx().exact().to_double(), p.hy().exact().to_double()));
+//					//pts.push_back(Point(q.hx().exact().to_double(), q.hy().exact().to_double()));
+//					e = e->next();
+//				} while (e != *ccb);
+//				pts = line_simple(pts);
+//				vector<Point> new_pts;
+//				for (int i = 0; i < pts.size(); i++)
+//				{
+//					Segment s(pts[i], pts[(i + 1) % pts.size()]);
+//					Direction x = (s.target() - s.source()).direction();
+//					x = x.perpendicular(CGAL::Orientation::COUNTERCLOCKWISE);
+//					Vector v = x.to_vector();
+//					v /= LEN(v);
+//					v *= gap;
+//					Transformation translate(CGAL::TRANSLATION, v);
+//					new_pts.push_back(pts[i].transform(translate));
+//					new_pts.push_back(pts[(i + 1) % pts.size()].transform(translate));
+//				}
+//				for (int i = 0; i < new_pts.size(); i++)
+//				{
+//					Segment s(new_pts[i], new_pts[(i + 1) % new_pts.size()]);
+//					res.push_back(s);
+//				}
+//			}
+//
+//			res = get_outline(res);
+//		}
+//	}
+//	return res;
+//}
+
 
 void ImageWidget::Triangulation()
 {
-	Point s = data.devices[0].coord;
-	Point t = data.devices[1].coord;
+	//reset(result_tree_);
+	//auto groups = getFittingLines(&data, 100);
+	//for (auto l : groups)
+	//{
+	//	Polyline line;
+	//	for (auto d : l)
+	//		line.push_back(d.coord);
+	//	result_tree_.push_back(line);
+	//}
+	//return;
+	//reset(centers_);
+	//for (int i = 0; i < data.regions.size(); i++)
+	//{
+	//	for (int j = i + 1; j < data.regions.size(); j++)
+	//	{
+	//		auto res = getBoundaryOf(data.regions[i], data.regions[j]);
+	//		for (auto pl : res)
+	//			for (int k = 0; k < pl.size() - 1; k++)
+	//				centers_.push_back(Segment(pl[k], pl[k + 1]));
+	//	}
+	//}
+	//return;
+	//data.centers = expand(data.centers, 600);
+	//centers_.insert(centers_.end(), data.centers.begin(), data.centers.end());
+	//centers_ = data.centers;
+
+			//for (auto ccb = f->inner_ccbs_begin(); ccb != f->inner_ccbs_end(); ccb++) {
+			//	vector<Point> pts;
+			//	auto e = *ccb;
+			//	do
+			//	{
+			//		APoint p = e->curve().left();
+			//		APoint q = e->curve().right();
+			//		if (e->direction() != CGAL::Arr_halfedge_direction::ARR_LEFT_TO_RIGHT)
+			//			swap(p, q);
+			//		pts.push_back(Point(p.hx().exact().to_double(), p.hy().exact().to_double()));
+			//		//pts.push_back(Point(q.hx().exact().to_double(), q.hy().exact().to_double()));
+			//		e = e->next();
+			//	} while (e != *ccb);
+			//	pts = line_simple(pts);
+			//	vector<Point> new_pts;
+			//	for (int i = 0; i < pts.size(); i++)
+			//	{
+			//		Segment s(pts[i], pts[(i + 1) % pts.size()]);
+			//		Direction x = (s.target() - s.source()).direction();
+			//		x = x.perpendicular(CGAL::Orientation::CLOCKWISE);
+			//		Vector v = x.to_vector();
+			//		v /= LEN(v);
+			//		v *= 300;
+			//		Transformation translate(CGAL::TRANSLATION, v);
+			//		new_pts.push_back(pts[i].transform(translate));
+			//		new_pts.push_back(pts[(i + 1) % pts.size()].transform(translate));
+			//	}
+			//	for (int i = 0; i < new_pts.size(); i++)
+			//	{
+			//		Segment s(new_pts[i], new_pts[(i + 1) % new_pts.size()]);
+			//		data.centers.push_back(s);
+			//	}
+			//}
+
+		//else if (f->has_outer_ccb())
+		//{
+			//for (auto ccb = f->outer_ccbs_begin(); ccb != f->outer_ccbs_end(); ccb++) {
+			//	vector<Point> pts;
+			//	auto e = *ccb;
+			//	do
+			//	{
+			//		APoint p = e->curve().left();
+			//		APoint q = e->curve().right();
+			//		if (e->direction() != CGAL::Arr_halfedge_direction::ARR_LEFT_TO_RIGHT)
+			//			swap(p, q);
+			//		pts.push_back(Point(p.hx().exact().to_double(), p.hy().exact().to_double()));
+			//		e = e->next();
+			//	} while (e != *ccb);
+			//	pts = line_simple(pts);
+			//	for (int i = 0; i < pts.size(); i++)
+			//	{
+			//		centers_.push_back(Segment(pts[i], pts[(i + 1) % pts.size()]));
+			//		data.centers.push_back(Segment(pts[i], pts[(i + 1) % pts.size()]));
+			//	}
+			//}
+		//}
+	//typedef CGAL::Gps_segment_traits_2<Kernel> Traits;
+	//typedef Traits::Polygon_2 CPolygon;
+
+	//std::vector<CPolygon> pygs;
+	//CPolygon carea(area_.begin(), area_.end());
+	//CGAL::approximated_inset_2(carea, 100, 1, std::back_inserter(pygs));
+
+	//return;
+	reset(result_triangulation_);
+	//CGAL::Delaunay_triangulation_2<Kernel> ddt;
+	//for (auto p : power_sources_)
+	//{
+	//	ddt.insert(p);
+	//}
+	//for (auto e = ddt.finite_edges_begin(); e != ddt.finite_edges_end(); e++)
+	//{
+	//	auto vi = e->first->vertex(ddt.cw(e->second));
+	//	auto vj = e->first->vertex(ddt.ccw(e->second));
+	//	Point p = vi->point();
+	//	Point q = vj->point();
+	//	result_triangulation_.push_back(Segment(p, q));
+	//}
+	//return;
+
 	CDT dt;
 	set<Constraint> constraints;
 
 	// start and end
 	vector<pair<Point, VertexInfo>> vec;
-	vec.push_back(make_pair(s, VertexInfo(0, true)));
-	vec.push_back(make_pair(t, VertexInfo(1, true)));
+	vec.push_back(make_pair(data.devices[0].coord, VertexInfo(0, true)));
+	vec.push_back(make_pair(data.devices[6].coord, VertexInfo(1, true)));
 
 	// area
 	Polygon area_boundary = data.area.info.boundary;
@@ -777,8 +1043,29 @@ void ImageWidget::Triangulation()
 		}
 	}
 
+	// rooms
+	for (auto r = data.rooms.begin(); r != data.rooms.end(); r++)
+	{
+		for (int i = 0; i < r->size(); i++)
+		{
+			Point source = r->vertex(i);
+			Point target = r->vertex((i + 1) % r->size());
+			int num = 1 + ((int)DIST(source, target)) / 2000;
+			Point start = source;
+			for (int i = 1; i <= num; i++)
+			{
+				Point end = Point(
+					1.0 * i / num * DOUBLE(target.hx() - source.hx()) + DOUBLE(source.hx()),
+					1.0 * i / num * DOUBLE(target.hy() - source.hy()) + DOUBLE(source.hy()));
+				constraints.insert(Constraint(start, end));
+				start = end;
+			}
+			//vec.push_back(make_pair(source, VertexInfo(-1, true)));
+		}
+	}
+
 	// centers
-	//for (auto c = data.centers.begin(); c != data.centers.end(); c++)
+	//for (auto c = data->centers.begin(); c != data->centers.end(); c++)
 	//{
 	//	Point start = c->source();
 	//	Point mid = CGAL::midpoint(c->source(), c->target());
@@ -795,6 +1082,11 @@ void ImageWidget::Triangulation()
 	//	}
 	//}
 
+	//for (auto v = data->devices.begin(); v != data->devices.end(); v++)
+	//{
+	//	if (v->coord == s || v->coord == t) continue;
+	//	vec.push_back(make_pair(v->coord, VertexInfo(2, true)));
+	//}
 	dt.insert(vec.begin(), vec.end());
 
 	for (auto c = constraints.begin(); c != constraints.end(); c++)
@@ -804,114 +1096,192 @@ void ImageWidget::Triangulation()
 
 	mark_domains(dt);
 
-	//printf("Begin a star\n");
-
-	map<Face_handle, int> fid;
-	ASNode* nodes = new ASNode[dt.number_of_faces()];
-	vector<ASNode*> openlist;
-	int n = 0;
-
 	for (auto feit = dt.finite_edges_begin(); feit != dt.finite_edges_end(); feit++)
 	{
+		auto vi = feit->first->vertex(dt.cw(feit->second));
+		auto vj = feit->first->vertex(dt.ccw(feit->second));
+		Point p = vi->point();
+		Point q = vj->point();
 		if (feit->first->info().not_reach() ||
 			feit->first->neighbor(feit->second)->info().not_reach())
 		{
-			//continue;
+			//result_tree_.push_back(Polyline{ p, q });
+			continue;
 		}
-		Polyline p;
-		p.push_back(feit->first->vertex(dt.cw(feit->second))->point());
-		p.push_back(feit->first->vertex(dt.ccw(feit->second))->point());
-		result_tree_.push_back(p);
+		result_triangulation_.push_back(Segment(p, q));
 	}
-
-	return;
-
-
-
-
-
-	//clean_lines();
-
-	//if (power_sources_.size() < 2) return;
-
-	//vector<Point> path = getFittingLine(Vector(0,1), power_sources_, 0);
-
-	//for (int i = 0; i < path.size() - 1; i++)
-	//{
-	//	result_tree_.push_back(Segment(path[i], path[i + 1]));
-	//}
-	//return;
-
-
-	if (power_sources_.size() < 3) return;
-
-
-	CGAL::Timer timer;
-	timer.start();
-	//vector<Segment> exist_lines = result_tree_;
-	//for (int l = 1; l < power_sources_.size(); l++)
-	//{
-	//	int off = l - power_sources_.size() / 2;
-	//	Point pwr = Point(power_sources_[0].hx() + off * 400, power_sources_[0].hy());
-	//	Point dev = power_sources_[l];
-	//	vector<Point> line = obstacle_avoid_connect(&data, pwr, dev, exist_lines);
-
-	//	for (int i = 0; i < line.size() - 1; i++)
-	//	{
-	//		Point u = line[i];
-	//		Point v = line[i + 1];
-	//		exist_lines.push_back(Segment(u, v));
-	//		result_triangulation_.push_back(Segment(u, v));
-	//	}
-	//}
-
-
-	Segment pwr = Segment(power_sources_[0], power_sources_[1]);
-	vector<Segment> exist_lines;
-	//vector<Segment> exist_lines = result_tree_;
-	//result_tree_.push_back(pwr);
-	for (int l = 2; l < power_sources_.size(); l++)
-	{
-		
-		Point dev = power_sources_[l];
-		Polyline line = obstacle_avoid_connect_p2s(&data, dev, pwr, exist_lines);
-		for (int i = 0; i < line.size() - 1; i++)
-		{
-			Point u = line[i];
-			Point v = line[i + 1];
-			result_triangulation_.push_back(Segment(u, v));
-			//exist_lines.push_back(Segment(u, v));
-		}
-	}
-
-
-	double secc = timer.time();
-	printf("用时：%lf s", secc);
 }
 
 void ImageWidget::Open()
 {
-	CableRouteEngine cre;
-	ifstream f(FOLD_NAME + FILE_NAME + ".geojson");
-	stringstream ss;
-	ss << f.rdbuf();
-	f.close();
-	string datastr = ss.str();
-	for (int i = 0; i < 100; i++)
-		string res = cre.routing(datastr);
-	//printf("%s", res.c_str());
-	return;
-	reset(result_triangulation_);
-
-	auto h = data.holes[25];
-
-	for (int i = GlobalCount % h.size(); i <= GlobalCount % h.size(); i++)
+	// 房间缝隙填充demo
+	for (int i = 0; i < data.rooms.size(); i++)
 	{
-		result_triangulation_.push_back(Segment(h.vertex(i), h.vertex((i + 1) % h.size())));
-		printf("(%.15f, %.15f) -> ", h.vertex(i).hx(), h.vertex(i).hy());
-		printf("(%.15f, %.15f)\n", h.vertex((i + 1) % h.size()).hx(), h.vertex((i + 1) % h.size()).hy());
+		Polygon room1 = data.rooms[i];
+		vector<Segment> segs;
+		for (int j = i + 1; j < data.rooms.size(); j++)
+		{
+			Polygon room2 = data.rooms[j];
+			for (int k = 0; k < room2.size(); k++)
+				segs.push_back(room2.edge(k));
+		}
+		for (int j = 0; j < data.area.info.boundary.size(); j++)
+		{
+			segs.push_back(data.area.info.boundary.edge(j));
+		}
+		for (int j = 0; j < room1.size(); j++)
+		{
+			Segment s1 = room1.edge(j);
+			Vector v1(s1);
+			for (auto s2 : segs)
+			{
+				Vector v2(s2);
+				if (abs(VEC_COS(v1, v2)) > 0.8 && DIST(s1, s2) < 300)
+				{
+					printf("cos_theta = %.lf, dist = %.lf\n", VEC_COS(v1, v2), DIST(s1, s2));
+					printf("#FFFFFFFFFFFFFF\n");
+					vector<Point> pts, res;
+					pts.push_back(project_point_to_segment(s1.source(), s2));
+					pts.push_back(project_point_to_segment(s1.target(), s2));
+					if (POINT_EQUAL(pts[0], pts[1])) continue;
+					pts.push_back(project_point_to_segment(s2.source(), s1));
+					pts.push_back(project_point_to_segment(s2.target(), s1));
+					if (POINT_EQUAL(pts[2], pts[3])) continue;
+					CGAL::convex_hull_2(pts.begin(), pts.end(), std::back_inserter(res));
+					holes_.push_back(res);
+				}
+			}
+		}
 	}
-	GlobalCount++;
+	return;
+	vector<Segment> lines;
+	ASPath ap = a_star_connect_p2p(&data, points_[0], points_[1], lines);
+	Polyline path = line_simple(ap.path);
+	result_tree_.push_back(path);
+	lines = data.borders;
+	vector<Point> intersection = polyline_intersect(path, lines);
+	printf("######## intersection size        = %d\n", intersection.size());
+	intersection = points_simple(intersection);
+	printf("######## intersection size simple = %d\n", intersection.size());
+	return;
+	//CableRouteEngine cre;
+	//ifstream f(FOLD_NAME + FILE_NAME + ".geojson");
+	//stringstream ss;
+	//ss << f.rdbuf();
+	//f.close();
+	//string datastr = ss.str();
+	//for (int i = 0; i < 100; i++)
+	//	string res = cre.routing(datastr);
+	//printf("%s", res.c_str());
+	//return;
+	int rid = -1;
+	for (int i = 0; i < data.regions.size(); i++)
+	{
+		if (data.regions[i].align_center)
+		{
+			rid = i;
+			break;
+		}
+	}
+	if (rid == -1)
+	{
+		printf("No center region\n");
+		return;
+	}
+	vector<Segment> centers = data.regions[rid].centers;
+
+	vector<Point> all = points_;
+	vector<Point> pts;
+
+	for (int i = 0; i < all.size(); i++)
+	{
+		// find nearest point on center-lines
+		int nearest_cen;
+		Point nearest_pt;
+		double MIN = CR_INF;
+		for (int cid = 0; cid < centers.size(); cid++)
+		{
+			Point proj = project_point_to_segment(all[i], centers[cid]);
+			double dis = DIST(proj, all[i]);
+			if (dis < MIN)
+			{
+				MIN = dis;
+				nearest_cen = cid;
+				nearest_pt = proj;
+			}
+		}
+		// break the center-line in centers
+		Segment cen = centers[nearest_cen];
+		if (POINT_CLOSE(nearest_pt, cen.source()))
+			nearest_pt = cen.source();
+		else if (POINT_CLOSE(nearest_pt, cen.target()))
+			nearest_pt = cen.target();
+		else
+		{
+			centers[nearest_cen] = Segment(cen.source(), nearest_pt);
+			centers.push_back(Segment(nearest_pt, cen.target()));
+		}
+		// get the point id in pts
+		// if new point, add it to pts
+		bool p_exist = false;
+		for (int id = 0; id < pts.size(); id++)
+		{
+			if (!p_exist && POINT_CLOSE(pts[id], nearest_pt))
+			{
+				p_exist = true;
+				result_triangulation_.push_back(Segment(all[i], nearest_pt));
+			}
+			if (p_exist) break;
+		}
+		if (!p_exist)
+		{
+			result_triangulation_.push_back(Segment(all[i], nearest_pt));
+			pts.push_back(nearest_pt);
+		}
+	}
+
+	reset(centers_);
+	vector<int> idx(centers.size() * 2, -1);
+	vector<set<int>> adj(pts.size());
+
+	for (int i = 0; i < centers.size(); i++)
+	{
+		Point p = centers[i].source();
+		Point q = centers[i].target();
+		bool p_exist = false, q_exist = false;
+		for (int id = 0; id < pts.size(); id++)
+		{
+			if (!p_exist && POINT_CLOSE(pts[id], p))
+			{
+				p_exist = true;
+				idx[i * 2] = id;
+			}
+			if (!q_exist && POINT_CLOSE(pts[id], q))
+			{
+				q_exist = true;
+				idx[i * 2 + 1] = id;
+			}
+			if (p_exist && q_exist) break;
+		}
+		if (!p_exist)
+		{
+			idx[i * 2] = pts.size();
+			pts.push_back(p);
+			adj.push_back(set<int>());
+		}
+		if (!q_exist)
+		{
+			idx[i * 2 + 1] = pts.size();
+			pts.push_back(q);
+			adj.push_back(set<int>());
+		}
+		int pid = idx[i * 2];
+		int qid = idx[i * 2 + 1];
+		printf("pid = %d, qid = %d\n", pid, qid);
+		adj[pid].insert(qid);
+		adj[qid].insert(pid);
+		centers_.push_back(Segment(pts[pid], pts[qid]));
+	}
 }
 
 void ImageWidget::clean_lines()
