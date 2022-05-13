@@ -458,6 +458,14 @@ int CableRouter::crossRoom(MapInfo* const data, const Segment s)
 	return res;
 }
 
+int CableRouter::getRegionId(MapInfo& map, Point pos)
+{
+	for (int rid = 0; rid < map.regions.size(); rid++)
+		if (!map.regions[rid].has_on_unbounded_side(pos))
+			return rid;
+	return -1;
+}
+
 void CableRouter::preprocess(MapInfo& map)
 {
 	deleteInvalidDevice(map);
@@ -465,30 +473,16 @@ void CableRouter::preprocess(MapInfo& map)
 	correctInvalidPower(map);
 	for (int i = 0; i < map.devices.size(); i++)
 	{
-		for (int rid = 0; rid < map.regions.size(); rid++)
-		{
-			if (!map.regions[rid].has_on_unbounded_side(map.devices[i].coord))
-			{
-				map.devices[i].region_id = rid;
-				break;
-			}
-		}
+		map.devices[i].region_id = getRegionId(map, map.devices[i].coord);
 	}
 	for (int i = 0; i < map.powers.size(); i++)
 	{
-		for (int rid = 0; rid < map.regions.size(); rid++)
-		{
-			if (!map.regions[rid].has_on_unbounded_side(map.powers[i].points[0]))
-			{
-				map.powers[i].region_id = rid;
-				break;
-			}
-		}
+		map.powers[i].region_id = getRegionId(map, map.powers[i].points[0]);
 	}
 
 	for (int i = 0; i < map.regions.size(); i++)
 	{
-		//map.regions[i].align = Direction(1, 0);
+		map.regions[i].align = to_first_quadrant(map.regions[i].align);
 		reset(map.regions[i].centers);
 	}
 

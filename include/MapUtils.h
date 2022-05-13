@@ -64,18 +64,18 @@ namespace CableRouter
 	struct Device
 	{
 		int id;
-		int region_id;
+		int region_id = -1;
 		Point coord;
 		int mass;
 		LayoutType layout;
 		Device(Point p)
-			: coord(p), id(-1), region_id(-1), mass(1), layout(Hoisting) {}
+			: coord(p), id(-1), mass(1), layout(Hoisting) {}
 		Device(Point p, int i)
-			: coord(p), id(i) , region_id(-1), mass(1), layout(Hoisting) {}
+			: coord(p), id(i), mass(1), layout(Hoisting) {}
 		Device(Point p, int i, int m)
-			: coord(p), id(i) , region_id(-1), mass(m), layout(Hoisting) {}
+			: coord(p), id(i), mass(m), layout(Hoisting) {}
 		Device(Point p, int i, int m, LayoutType l)
-			: coord(p), id(i) , region_id(-1), mass(m), layout(l) {}
+			: coord(p), id(i), mass(m), layout(l) {}
 	};
 
 	struct FireArea
@@ -114,6 +114,7 @@ namespace CableRouter
 		PEBush* room_tree;
 	};
 
+	int	 getRegionId(MapInfo& map, Point pos);
 	void preprocess(MapInfo& map);
 	void deleteMapInfo(MapInfo& map);
 	void deleteInvalidDevice(MapInfo& map);
