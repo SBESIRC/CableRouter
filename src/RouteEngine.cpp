@@ -879,7 +879,7 @@ Polyline CableRouter::manhattan_smooth_basic(MapInfo* const data, ASPath& path, 
 		Point u = line[now];
 		Point v = line[next_id];
 		int passport = path.cross_num[next_id] - path.cross_num[now + 1]
-			+ crossRoom(data, Segment(u, line[now + 1]));
+			+ crossRoom(data, u, line[now + 1]);
 
 		auto rotate_inv = rotate.inverse();
 		Point rot_u = u.transform(rotate_inv);
@@ -1060,7 +1060,7 @@ Polyline CableRouter::manhattan_connect(MapInfo* const data, Point u, Point v, V
 	{
 		if (!crossObstacle(data, u, v) && 
 			!crossRoom(data, u, v) &&
-			!cross_lines_shrink(lines, u, v)) {
+			!cross_lines(lines, u, v, true)) {
 			res.push_back(u);
 			res.push_back(v);
 		}
@@ -1078,11 +1078,11 @@ Polyline CableRouter::manhattan_connect(MapInfo* const data, Point u, Point v, V
 		bool cross1 = 
 			crossObstacle(data, u, mid1) || crossRoom(data, u, mid1) ||
 			crossObstacle(data, mid1, v) || crossRoom(data, mid1, v) ||
-			cross_lines_shrink(lines, u, mid1) || cross_lines_shrink(lines, mid1, v);
+			cross_lines(lines, u, mid1, true) || cross_lines(lines, mid1, v, true);
 		bool cross2 =
 			crossObstacle(data, u, mid2) || crossRoom(data, u, mid2) ||
 			crossObstacle(data, mid2, v) || crossRoom(data, mid2, v) ||
-			cross_lines_shrink(lines, u, mid2) || cross_lines_shrink(lines, mid2, v);
+			cross_lines(lines, u, mid2, true) || cross_lines(lines, mid2, v, true);
 		if (!cross2 && !cross1)
 		{
 			double w1, w2;
