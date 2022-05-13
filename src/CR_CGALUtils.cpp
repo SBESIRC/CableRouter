@@ -381,6 +381,68 @@ vector<Point> CableRouter::polyline_intersect(Polyline polyline, const vector<Se
 	return res;
 }
 
+vector<int> CableRouter::polyline_with_intersection(Polyline& polyline, const vector<Segment> segs)
+{
+	Polyline res;
+	vector<int> idx;
+	bool source_is_in = false;
+
+	if (polyline.size() < 2)
+		return idx;
+
+	for (int i = 0; i < polyline.size() - 1; i++)
+	{
+		Segment si(polyline[i], polyline[i + 1]);
+
+		vector<Point> pts;
+		for (auto sj : segs)
+		{
+			if (!CGAL::do_intersect(si, sj)) continue;
+			CGAL::Object result = CGAL::intersection(si, sj);
+			Point pt;
+			if (CGAL::assign(pt, result))
+			{
+				pts.push_back(pt);
+			}
+		}
+		sort(pts.begin(), pts.end(), compare_point_by_x_y);
+		if (si.source().hx() > si.target().hx())
+			reverse(pts.begin(), pts.end());
+		else if (si.source().hx() == si.target().hx() && si.source().hy() > si.target().hy())
+			reverse(pts.begin(), pts.end());
+
+		pts = points_simple(pts);
+
+		if (pts.size() > 0)
+		{
+			if (POINT_EQUAL(si.source(), pts[0]))
+				pts[0] = si.source();
+			else if (!source_is_in)
+				res.push_back(si.source());
+
+			source_is_in = POINT_EQUAL(si.target(), pts.back());
+			if (source_is_in)
+				*(pts.rbegin()) = si.target();
+
+			for (auto p : pts)
+			{
+				idx.push_back(res.size());
+				res.push_back(p);
+			}
+		}
+		else
+		{
+			if (!source_is_in)
+				res.push_back(si.source());
+			source_is_in = false;
+		}
+	}
+	if (!source_is_in)
+		res.push_back(polyline.back());
+	polyline = res;
+	return idx;
+}
+
 vector<Point> CableRouter::points_simple(const vector<Point> pts)
 {
 	vector<Point> res;

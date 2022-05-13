@@ -138,6 +138,7 @@ namespace CableRouter
     Vector to_first_quadrant(Vector dir);
 
     vector<Point> polyline_intersect(Polyline polyline, const vector<Segment> segs);
+    vector<int> polyline_with_intersection(Polyline& polyline, const vector<Segment> segs);
     vector<Point> points_simple(const vector<Point> pts);
 
     rbush::TreeNode<Point>* get_point_rtree_node(const Point* pt);

@@ -19,9 +19,12 @@ DreamNodePtr CableRouter::newDreamNode(Point coord)
 	return n;
 }
 
-vector<DreamNodePtr> CableRouter::getAllNodes(DreamTree tree)
+vector<DreamNodePtr> CableRouter::getAllNodes(DreamTree tree, bool cut_by_regions)
 {
 	vector<DreamNodePtr> ret;
+	if (tree == nullptr) return ret;
+
+	int rid = tree->region_id;
 	set<DreamNodePtr> visited;
 	queue<DreamNodePtr> q;
 	q.push((DreamNodePtr)tree);
@@ -37,10 +40,28 @@ vector<DreamNodePtr> CableRouter::getAllNodes(DreamTree tree)
 
 		for (int i = 0; i < now->children.size(); i++)
 		{
-			q.push(now->children[i]);
+			DreamNodePtr ch = now->children[i];
+			if (cut_by_regions && ch->region_id != rid)
+				if (now->is_junction && (now != tree || !ch->is_junction))
+					continue;
+			q.push(ch);
 		}
 	}
 	return ret;
+}
+
+void CableRouter::breakingDreamNode(DreamNodePtr pa, DreamNodePtr now)
+{
+	if (now->parent == pa)
+		now->parent = nullptr;
+	for (auto ch = pa->children.begin(); ch != pa->children.end(); ch++)
+	{
+		if ((*ch) == now)
+		{
+			pa->children.erase(ch);
+			break;
+		}
+	}
 }
 
 //void CableRouter::deleteDreamTree(DreamTree root)
@@ -136,40 +157,58 @@ void CableRouter::inner_connect(MapInfo* map, ImmuneSystem* group, vector<Polyli
 			ASPath ap = a_star_connect_p2p(map, pa->coord, now->coord, lines);
 			Polyline path = line_simple(ap.path);
 			lines = map->borders;
-			vector<Point> intersection = polyline_intersect(path, lines);
-			printf("######## intersection size        = %d\n", intersection.size());
-			intersection = points_simple(intersection);
-			printf("######## intersection size simple = %d\n", intersection.size());
-			for (auto p : intersection)
+			vector<int> junction_idx = polyline_with_intersection(path, lines);
+			if (path.size() < 2) continue;
+
+			int path_end = int(path.size()) - 1;
+			vector<DreamNodePtr> cross_nodes;
+			for (int j = 0; j < junction_idx.size(); j++)
 			{
-				DreamNodePtr new_now = newDreamNode(now->coord);
-				new_now->is_device = now->is_device;
-				new_now->region_id = now->region_id;
+				int id = junction_idx[j];
+				int next = j == int(junction_idx.size()) - 1 ? path_end : junction_idx[j + 1];
 
-				DreamNodePtr new_pa = newDreamNode(pa->coord);
-				new_pa->is_device = pa->is_device;
-				new_pa->region_id = now->region_id;
-
-				new_pa->children.push_back(new_now);
-				new_now->parent = new_pa;
-				new_now->children = now->children;
-				for (auto c : new_now->children)
-					c->parent = new_now;
-
-				reset(now->children);
-				now->region_id = pa->region_id;
-
-				now->coord = p;
-				new_pa->coord = p;
-
-				forest.push_back(new_pa);
-
-				pa = new_pa;
-				now = new_now;
+				if (id == 0)
+				{
+					Point mid = id + 1 == next ? CGAL::midpoint(path[id], path[id + 1]) : path[id + 1];
+					int rid = getRegionId(*map, mid);
+					if (!pa->parent) continue;
+					if (VEC_COS(map->regions[rid].align.vector(), map->regions[pa->parent->region_id].align.vector()) < 0.99)
+					{
+						DreamNodePtr jun = pa;
+						jun->is_junction = true;
+						jun->region_id = rid;
+						forest.push_back(jun);
+					}
+				}
+				else if (id < path_end)
+				{
+					Point mid = id + 1 == next ? CGAL::midpoint(path[id], path[id + 1]) : path[id + 1];
+					int rid = getRegionId(*map, mid);
+					int last_rid = cross_nodes.size() > 0 ? cross_nodes.back()->region_id : pa->region_id;
+					if (VEC_COS(map->regions[rid].align.vector(), map->regions[last_rid].align.vector()) < 0.99)
+					{
+						DreamNodePtr jun = newDreamNode(path[id]);
+						jun->is_junction = true;
+						jun->is_device = false;
+						jun->region_id = rid;
+						cross_nodes.push_back(jun);
+						forest.push_back(jun);
+					}
+				}
+			}
+			if (cross_nodes.size() > 0)
+			{
+				cross_nodes.insert(cross_nodes.begin(), pa);
+				cross_nodes.push_back(now);
+				breakingDreamNode(pa, now);
+				for (int j = 0; j < (int)cross_nodes.size() - 1; j++)
+				{
+					cross_nodes[j]->children.push_back(cross_nodes[j + 1]);
+					cross_nodes[j + 1]->parent = cross_nodes[j];
+				}
 			}
 		}
 	}
-
 
 	for (auto &tree : forest)
 	{
@@ -180,7 +219,7 @@ void CableRouter::inner_connect(MapInfo* map, ImmuneSystem* group, vector<Polyli
 		{
 			get_manhattan_tree(map, tree, cables);
 			avoid_coincidence(tree);
-			paths = get_dream_tree_paths(tree);
+			//paths = get_dream_tree_paths(tree);
 		}
 		// connect by center line
 		else if (map->regions[region_id].align_center)
@@ -196,7 +235,7 @@ void CableRouter::inner_connect(MapInfo* map, ImmuneSystem* group, vector<Polyli
 				printf("end get_center_align_tree\n");
 				avoid_coincidence(tree);
 			}
-			paths = get_dream_tree_paths(tree);
+			//paths = get_dream_tree_paths(tree);
 			printf("end get_dream_tree_paths\n");
 		}
 		// connect by ucs
@@ -204,39 +243,39 @@ void CableRouter::inner_connect(MapInfo* map, ImmuneSystem* group, vector<Polyli
 		{
 			Direction align = to_first_quadrant(map->regions[region_id].align);
 			Transformation rotate = get_tf_from_dir(align);
-			all = getAllNodes(tree);
+			all = getAllNodes(path_tree);
 			for (int i = 0; i < all.size(); i++)
 				all[i]->coord = all[i]->coord.transform(rotate.inverse());
 			MapInfo new_map = rotateMap(map, align);
 			get_manhattan_tree(&new_map, tree, cables);
 			avoid_coincidence(tree);
-			paths = get_dream_tree_paths(tree);
-			for (int i = 0; i < paths.size(); i++)
-				for (int j = 0; j < paths[i].size(); j++)
-					paths[i][j] = paths[i][j].transform(rotate);
+			all = getAllNodes(path_tree);
+			for (int i = 0; i < all.size(); i++)
+				all[i]->coord = all[i]->coord.transform(rotate);
 			deleteMapInfo(new_map);
 		}
-		cables.insert(cables.end(), paths.begin(), paths.end());
 	}
+	vector<Polyline> paths = get_dream_tree_paths(path_tree);
+	cables.insert(cables.end(), paths.begin(), paths.end());
 }
 
 void CableRouter::get_manhattan_tree(MapInfo* map, DreamTree tree, vector<Polyline>& exist)
 {
 	vector<Segment> exist_lines = get_segments_from_polylines(exist);
 
-	vector<DreamNodePtr> all = getAllNodes(tree);
+	vector<DreamNodePtr> all = getAllNodes(tree, true);
 	for (int i = 0; i < all.size(); i++)
 	{
 		DreamNodePtr now = all[i];
 
 		if (!now->parent) continue;
-		if (!now->is_device) continue;
+		if (!now->is_device && !now->is_junction) continue;
 
 		DreamNodePtr pa = now->parent;
 		
 		Polyline path = manhattan_connect(map, pa->coord, now->coord, pa->dir_from_parent, exist_lines);
 
-		if (path.size() > 1 && !pa->is_device && pa->parent)
+		if (path.size() > 1 && !pa->is_device && !pa->is_junction && pa->parent)
 		{
 			Vector dir1(path[0], path[1]);
 			Vector dir2(pa->parent->coord, pa->coord);
@@ -271,7 +310,10 @@ void CableRouter::get_manhattan_tree(MapInfo* map, DreamTree tree, vector<Polyli
 			if (j + 1 == (int)path.size() - 1)
 				ch = now;
 			else
+			{
 				ch = newDreamNode(path[j + 1]);
+				ch->region_id = pa->region_id;
+			}
 			pa->children.push_back(ch);
 			ch->parent = pa;
 			ch->dir_from_parent = Vector(path[j], path[j + 1]);
@@ -301,6 +343,7 @@ void CableRouter::get_manhattan_tree(MapInfo* map, DreamTree tree, vector<Polyli
 				else
 				{
 					DreamNodePtr mid = newDreamNode(now->parent->coord);
+					mid->region_id = now->region_id;
 					mid->parent = now;
 					if (abs(cos_theta) <= sqrt(2.0) / 2) mid->dir_from_parent = now->parent->dir_from_parent;
 					else mid->dir_from_parent = now->dir_from_parent;
@@ -410,7 +453,7 @@ void CableRouter::get_center_align_tree(MapInfo* map, DreamTree tree, vector<Pol
 		DreamNodePtr now = all[i];
 
 		if (!now->parent) continue;
-		if (!now->is_device) continue;
+		if (!now->is_device && !now->is_junction) continue;
 
 		DreamNodePtr pa = now->parent;
 
@@ -446,7 +489,10 @@ void CableRouter::get_center_align_tree(MapInfo* map, DreamTree tree, vector<Pol
 			if (j + 1 == (int)path.size() - 1)
 				ch = now;
 			else
+			{
 				ch = newDreamNode(path[j + 1]);
+				ch->region_id = tree->region_id;
+			}
 			pa->children.push_back(ch);
 			ch->parent = pa;
 			ch->dir_from_parent = Vector(path[j], path[j + 1]);
@@ -724,7 +770,7 @@ void CableRouter::avoid_coincidence(DreamTree tree)
 {
 	if (tree == NULL) return;
 
-	vector<DreamNodePtr> all = getAllNodes(tree);
+	vector<DreamNodePtr> all = getAllNodes(tree, true);
 	for (int idx = 0; idx < all.size(); idx++)
 	{
 		DreamNodePtr now = all[idx];
@@ -1346,6 +1392,7 @@ void CableRouter::avoid_left(
 		if (i == fix) continue;
 
 		DreamNodePtr mid = newDreamNode(Point(now->coord.hx(), now->coord.hy() + (i - fix) * 1.0 * LINE_GAP));
+		mid->region_id = now->region_id;
 
 		if (left[i] == now_pa)
 		{
@@ -1381,6 +1428,7 @@ void CableRouter::avoid_left(
 		if (left[i]->is_device)
 		{
 			DreamNodePtr mid2 = newDreamNode(dd);
+			mid2->region_id = now->region_id;
 			if (left[i] == now_pa)
 			{
 				mid->parent = mid2;
@@ -1448,6 +1496,7 @@ void CableRouter::avoid_right(
 		if (i == fix) continue;
 
 		DreamNodePtr mid = newDreamNode(Point(now->coord.hx(), now->coord.hy() - (i - fix) * 1.0 * LINE_GAP));
+		mid->region_id = now->region_id;
 
 		if (right[i] == now_pa)
 		{
@@ -1483,6 +1532,7 @@ void CableRouter::avoid_right(
 		if (right[i]->is_device)
 		{
 			DreamNodePtr mid2 = newDreamNode(dd);
+			mid2->region_id = now->region_id;
 			if (right[i] == now_pa)
 			{
 				mid->parent = mid2;
@@ -1550,6 +1600,7 @@ void CableRouter::avoid_down(
 		if (i == fix) continue;
 
 		DreamNodePtr mid = newDreamNode(Point(now->coord.hx() - (i - fix) * 1.0 * LINE_GAP, now->coord.hy()));
+		mid->region_id = now->region_id;
 
 		if (down[i] == now_pa)
 		{
@@ -1585,6 +1636,7 @@ void CableRouter::avoid_down(
 		if (down[i]->is_device)
 		{
 			DreamNodePtr mid2 = newDreamNode(dd);
+			mid2->region_id = now->region_id;
 			if (down[i] == now_pa)
 			{
 				mid->parent = mid2;
@@ -1650,6 +1702,7 @@ void CableRouter::avoid_up(
 		if (i == fix) continue;
 
 		DreamNodePtr mid = newDreamNode(Point(now->coord.hx() + (i - fix) * 1.0 * LINE_GAP, now->coord.hy()));
+		mid->region_id = now->region_id;
 
 		if (up[i] == now_pa)
 		{
@@ -1685,6 +1738,7 @@ void CableRouter::avoid_up(
 		if (up[i]->is_device)
 		{
 			DreamNodePtr mid2 = newDreamNode(dd);
+			mid2->region_id = now->region_id;
 			if (up[i] == now_pa)
 			{
 				mid->parent = mid2;
@@ -2082,15 +2136,17 @@ vector<Segment> CableRouter::get_dream_tree_lines(DreamTree tree, bool opened)
 	return res;
 }
 
-vector<Polyline> CableRouter::get_dream_tree_paths(DreamTree tree)
+vector<Polyline> CableRouter::get_dream_tree_paths(DreamTree tree, bool cut_by_regions)
 {
 	vector<Polyline> res;
-	vector<DreamNodePtr> all = getAllNodes(tree);
+	vector<DreamNodePtr> all = getAllNodes(tree, cut_by_regions);
 	for (int i = 0; i < all.size(); i++)
 	{
 		DreamNodePtr now = all[i];
 		
 		if (!now->parent) continue;
+
+		if (now == tree) continue;
 
 		if (now->is_device)
 		{

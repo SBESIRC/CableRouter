@@ -21,6 +21,7 @@ namespace CableRouter
 		// for inter group connect
 		int line_num_to_parent;
 		bool is_device;
+		bool is_junction = false;
 		int region_id = -1;
 		int projection_id = -1;
 
@@ -45,7 +46,8 @@ namespace CableRouter
 	};
 
 	DreamNodePtr newDreamNode(Point coord);
-	vector<DreamNodePtr> getAllNodes(DreamTree tree);
+	vector<DreamNodePtr> getAllNodes(DreamTree tree, bool cut_by_regions = false);
+	void breakingDreamNode(DreamNodePtr parent, DreamNodePtr now);
 
 	// inner connect
 	void inner_connect(MapInfo* map, ImmuneSystem* group, vector<Polyline>& cables, vector<Polyline>& power_paths);
@@ -73,7 +75,7 @@ namespace CableRouter
 	void add_line_num(DreamNodePtr node);
 	void init_line_num(DreamTree tree);
 
-	vector<Polyline> get_dream_tree_paths(DreamTree tree);
+	vector<Polyline> get_dream_tree_paths(DreamTree tree, bool cut_by_regions = false);
 	Polyline get_path(DreamNodePtr node);
 
 	vector<Segment> get_dream_tree_lines(DreamTree tree, bool opened = false);
