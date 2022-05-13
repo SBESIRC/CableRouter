@@ -68,6 +68,9 @@ namespace CableRouter
 		vector<DreamNodePtr>& up, DreamNodePtr now, DreamNodePtr now_pa,
 		vector<DreamNodePtr>& left, vector<DreamNodePtr>& right, int fix = -1);
 
+	void optimize_junctions(MapInfo* map, DreamTree tree, vector<Polyline>& exist);
+	pair<bool, Point> optimize_junction(MapInfo* map, DreamNodePtr& pa, DreamNodePtr& ch, DreamNodePtr& pa_ch, DreamNodePtr jun, vector<Polyline>& exist);
+
 	// inter connect
 	DreamTree merge_to_a_tree(vector<Polyline>& paths);
 

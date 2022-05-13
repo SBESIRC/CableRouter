@@ -1768,6 +1768,133 @@ void CableRouter::avoid_up(
 	}
 }
 
+void CableRouter::optimize_junctions(MapInfo* map, DreamTree tree, vector<Polyline>& exist)
+{
+	vector<DreamNodePtr> all = getAllNodes(tree);
+	for (auto now: all)
+	{
+		if (now->is_device) continue;
+		if (!now->is_junction) continue;
+
+		if (now->parent == nullptr || now->children.size() != 1) continue;
+
+		DreamNodePtr pa = now->parent, ch = now->children[0], pa_ch = now;
+
+		while (!pa->is_device && !pa->is_junction && pa->parent && pa->children.size() == 1)
+		{
+			pa_ch = pa;
+			pa = pa->parent;
+		}
+
+		while (!ch->is_device && !ch->is_junction && ch->children.size() == 1)
+			ch = ch->children[0];
+
+		auto ores = optimize_junction(map, pa, ch, pa_ch, now, exist);
+		if (ores.first)
+		{
+			pa_ch->coord = ores.second;
+			pa_ch->is_junction = true;
+			pa_ch->region_id = now->region_id;
+			reset(pa_ch->children);
+			pa_ch->children.push_back(ch);
+			ch->parent = pa_ch;
+		}
+	}
+}
+
+pair<bool, Point> CableRouter::optimize_junction(MapInfo* map, DreamNodePtr& pa, DreamNodePtr& ch, DreamNodePtr& pa_ch, DreamNodePtr jun, vector<Polyline>& exist)
+{
+	vector<Segment> exist_segs = get_segments_from_polylines(exist);
+
+	Direction pa_dir1 = map->regions[pa->region_id].align;
+	Direction pa_dir2 = pa_dir1.perpendicular(CGAL::Orientation::CLOCKWISE);
+	Direction ch_dir1 = map->regions[jun->region_id].align;
+	Direction ch_dir2 = ch_dir1.perpendicular(CGAL::Orientation::CLOCKWISE);
+
+	DreamNodePtr final_child = ch;
+	DreamNodePtr final_parent = pa;
+	DreamNodePtr first_child = pa_ch;
+	
+	vector<int> cross_num;
+	cross_num.push_back(0);
+	pa = final_parent;
+	pa_ch = first_child;
+	while (pa != final_child)
+	{
+		cross_num.push_back(
+			cross_num.back() + 
+			crossRoom(map, shrink_segment(Segment(pa->coord, pa_ch->coord), true)));
+		pa = pa_ch;
+		pa_ch = pa->children[0];
+	}
+
+	int pa_pos = 0;
+	pa = final_parent;
+	pa_ch = first_child;
+	while (pa != jun)
+	{
+		int ch_pos = (int)cross_num.size() - 1;
+		ch = final_child;
+		while (ch != jun)
+		{
+			vector<Line> pa_line = {
+				Line(pa->coord, pa->coord + pa_dir1.vector()),
+				Line(pa->coord, pa->coord + pa_dir2.vector()) };
+
+			vector<Line> ch_line = {
+				Line(ch->coord, ch->coord + ch_dir1.vector()),
+				Line(ch->coord, ch->coord + ch_dir2.vector()) };
+
+			vector<Point> intersections;
+
+			for (auto& pl : pa_line)
+				for (auto& cl : ch_line)
+				{
+					CGAL::Object result = CGAL::intersection(pl, cl);
+					Point pp;
+					if (CGAL::assign(pp, result))
+						intersections.push_back(pp);
+				}
+
+			sort(intersections.begin(), intersections.end(), compare_point_by_x_y);
+			points_simple(intersections);
+
+			if (intersections.size() > 0)
+			{
+				double MIN = CR_INF;
+				Point mid;
+				for (auto p : intersections)
+				{
+					double dis = DIST(pa->coord, p) + DIST(p, ch->coord);
+					if (dis < MIN)
+					{
+						mid = p;
+						MIN = dis;
+					}
+				}
+
+				if (!crossObstacle(map, pa->coord, mid) &&
+					!crossObstacle(map, mid, ch->coord) &&
+					!cross_lines(exist_segs, pa->coord, mid) &&
+					!cross_lines(exist_segs, mid, ch->coord))
+				{
+					int cross1 = crossRoom(map, shrink_segment(Segment(pa->coord, mid), true));
+					int cross2 = crossRoom(map, shrink_segment(Segment(mid, ch->coord), true));
+					if (cross1 + cross2 <= cross_num[ch_pos] - cross_num[pa_pos])
+						return make_pair(true, mid);
+				}
+			}
+
+			ch = ch->parent;
+			ch_pos--;
+		}
+		pa = pa_ch;
+		pa_ch = pa->children[0];
+		pa_pos++;
+	}
+	return make_pair(false, Point());
+}
+
 vector<pair<DreamNodePtr, Point>> CableRouter::intersect_dream_tree(DreamTree tree, Segment seg)
 {
 	vector<pair<DreamNodePtr, Point>> res;
