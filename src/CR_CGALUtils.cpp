@@ -191,27 +191,31 @@ Point CableRouter::project_point_to_segment(Point p, Segment s)
 			r * DOUBLE(s.target().hy() - s.source().hy()) + DOUBLE(s.source().hy()));
 }
 
-Segment CableRouter::shrink_segment(Segment seg, double rate)
+Segment CableRouter::shrink_segment(Segment seg, double rate, bool one_side)
 {
 	Point p(
 		rate * DOUBLE(seg.source().hx() - seg.target().hx()) + DOUBLE(seg.target().hx()),
 		rate * DOUBLE(seg.source().hy() - seg.target().hy()) + DOUBLE(seg.target().hy()));
+
+	if (one_side)
+		return Segment(p, seg.target());
+
 	Point q(
 		rate * DOUBLE(seg.target().hx() - seg.source().hx()) + DOUBLE(seg.source().hx()),
 		rate * DOUBLE(seg.target().hy() - seg.source().hy()) + DOUBLE(seg.source().hy()));
 	return Segment(p, q);
 }
 
-Segment CableRouter::shrink_segment(Segment seg)
+Segment CableRouter::shrink_segment(Segment seg, bool one_side)
 {
-	double r = 1.0 - 1.0 / LEN(seg);
-	return shrink_segment(seg, r);
+	double r = 1.0 - 0.1 / LEN(seg);
+	return shrink_segment(seg, r, one_side);
 }
 
-Segment CableRouter::expand_segment(Segment seg)
+Segment CableRouter::expand_segment(Segment seg, bool one_side)
 {
-	double r = 1.0 + 1.0 / LEN(seg);
-	return shrink_segment(seg, r);
+	double r = 1.0 + 0.1 / LEN(seg);
+	return shrink_segment(seg, r, one_side);
 }
 
 Point CableRouter::focus_point(Face_handle f)
@@ -278,26 +282,9 @@ int CableRouter::cross_num(vector<Segment>& segs, const Point p, const Point q)
 	return res;
 }
 
-bool CableRouter::cross_lines(vector<Segment>& segs, const Point p, const Point q)
+bool CableRouter::cross_lines(vector<Segment>& segs, const Point p, const Point q, bool shirnk)
 {
-	for (int i = 0; i < segs.size(); i++)
-	{
-		Segment si = segs[i];
-		Segment sj = Segment(p, q);
-		if (!CGAL::do_intersect(si, sj)) continue;
-		CGAL::Object result = CGAL::intersection(si, sj);
-		Point pt;
-		if (CGAL::assign(pt, result))
-		{
-			return true;
-		}
-	}
-	return false;
-}
-
-bool CableRouter::cross_lines_shrink(vector<Segment>& segs, const Point p, const Point q)
-{
-	Segment sj = shrink_segment(Segment(p, q));
+	Segment sj = shirnk ? shrink_segment(Segment(p, q)) : Segment(p, q);
 	for (int i = 0; i < segs.size(); i++)
 	{
 		Segment si = segs[i];

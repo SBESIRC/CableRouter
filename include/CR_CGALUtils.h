@@ -119,17 +119,16 @@ namespace CableRouter
     void deleteGraph(double** G, int n);
 
     Point project_point_to_segment(Point p, Segment s);
-    Segment shrink_segment(Segment seg, double rate);
-    Segment shrink_segment(Segment seg);
-    Segment expand_segment(Segment seg);
+    Segment shrink_segment(Segment seg, double rate, bool one_side = false);
+    Segment shrink_segment(Segment seg, bool one_side = false);
+    Segment expand_segment(Segment seg, bool one_side = false);
 
     Point focus_point(Face_handle f);
     vector<Point> point_box(Point p, const double gap);
 
     int self_cross_num(vector<Segment>& segs);
     int cross_num(vector<Segment>& segs, const Point p, const Point q);
-    bool cross_lines(vector<Segment>& segs, const Point p, const Point q);
-    bool cross_lines_shrink(vector<Segment>& segs, const Point p, const Point q);
+    bool cross_lines(vector<Segment>& segs, const Point p, const Point q, bool shirnk = false);
 
     vector<Segment> get_segments_from_polyline(Polyline& polyline);
     vector<Segment> get_segments_from_polylines(vector<Polyline>& polylines);
