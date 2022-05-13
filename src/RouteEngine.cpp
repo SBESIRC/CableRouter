@@ -57,7 +57,9 @@ ASPath CableRouter::a_star_connect_p2p(MapInfo* const data, Point s, Point t, ve
 				constraints.insert(Constraint(start, end));
 				start = end;
 			}
-			vec.push_back(make_pair(source, VertexInfo(-1, true)));
+			Point mid = CGAL::midpoint(source, target);
+			if (isValidPoint(*data, mid))
+				vec.push_back(make_pair(mid, VertexInfo(-1, true)));
 		}
 	}
 
