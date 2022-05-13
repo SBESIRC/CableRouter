@@ -437,6 +437,7 @@ int CableRouter::crossRoom(MapInfo* const data, const Segment s)
 {
 	int res = 0;
 	auto rooms = segment_search(data->room_tree, s.source(), s.target());
+	vector<Point> inter;
 	for (auto oit = rooms.begin(); oit != rooms.end(); oit++)
 	{
 		Polygon boundary = (*oit)->data->boundary;
@@ -447,7 +448,7 @@ int CableRouter::crossRoom(MapInfo* const data, const Segment s)
 			Point pt; Segment seg;
 			if (CGAL::assign(pt, result))
 			{
-				res++;
+				inter.push_back(pt);
 			}
 			else if (CGAL::assign(seg, result))
 			{
@@ -455,6 +456,8 @@ int CableRouter::crossRoom(MapInfo* const data, const Segment s)
 			}
 		}
 	}
+	sort(inter.begin(), inter.end(), compare_point_by_x_y);
+	res += points_simple(inter).size();
 	return res;
 }
 
