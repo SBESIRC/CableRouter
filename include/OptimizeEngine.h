@@ -9,12 +9,13 @@ namespace CableRouter
 {
 	struct DreamNode;
 	typedef shared_ptr<DreamNode> DreamNodePtr;
+	typedef weak_ptr<DreamNode> DreamNodePtrWeak;
 	typedef DreamNodePtr DreamTree;
 
 	struct DreamNode
 	{
 		int id = -1;
-		DreamNodePtr parent;
+		DreamNodePtrWeak parent;
 		Point coord;
 		vector<DreamNodePtr> children;
 
