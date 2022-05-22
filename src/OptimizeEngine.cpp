@@ -1824,9 +1824,9 @@ pair<bool, Point> CableRouter::optimize_junction(MapInfo* map, DreamNodePtr& pa,
 	{
 		cross_num.push_back(
 			cross_num.back() + 
-			crossRoom(map, shrink_segment(Segment(pa->coord, pa_ch->coord), true)));
+			crossRoom(map, Segment(pa->coord, pa_ch->coord)));
 		pa = pa_ch;
-		pa_ch = pa->children[0];
+		pa_ch = pa->children.size() > 0 ? pa->children[0] : nullptr;
 	}
 
 	int pa_pos = 0;
