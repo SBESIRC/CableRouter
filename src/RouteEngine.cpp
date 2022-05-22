@@ -869,6 +869,7 @@ Polyline CableRouter::center_connect_p2p(MapInfo* const data, Polyline center, P
 Polyline CableRouter::manhattan_smooth_basic(MapInfo* const data, ASPath& path, vector<Segment>& exist_lines, Transformation rotate)
 {
 	Polyline line = path.path;
+	vector<int> path_cross_num = path.cross_num;
 	if (line.size() <= 2) return line;
 
 	Polyline res;
@@ -880,7 +881,7 @@ Polyline CableRouter::manhattan_smooth_basic(MapInfo* const data, ASPath& path, 
 	{
 		Point u = line[now];
 		Point v = line[next_id];
-		int passport = path.cross_num[next_id] - path.cross_num[now + 1]
+		int passport = path_cross_num[next_id] - path_cross_num[now + 1]
 			+ crossRoom(data, u, line[now + 1]);
 
 		auto rotate_inv = rotate.inverse();
@@ -896,14 +897,12 @@ Polyline CableRouter::manhattan_smooth_basic(MapInfo* const data, ASPath& path, 
 			//bool colli = tooCloseToSun(data, u, v, obstacle_lines);
 			if (!cross)
 			{
-				passport -= cross_r;
 				now = next_id;
 				res.push_back(line[now]);
 				next_id = (int)line.size() - 1;
 			}
 			else if (next_id - 1 == now)
 			{
-				passport -= cross_r;
 				now = next_id;
 				res.push_back(line[now]);
 				next_id = (int)line.size() - 1;
@@ -944,34 +943,27 @@ Polyline CableRouter::manhattan_smooth_basic(MapInfo* const data, ASPath& path, 
 			w1 += cross_num(exist_lines, mid1, v);
 			w2 += cross_num(exist_lines, u, mid2);
 			w2 += cross_num(exist_lines, mid2, v);
-			Point next;
-			if (w1 < w2) {
-				next = mid1;
-				passport -= cross_r1;
-			}
-			else {
-				next = mid2;
-				passport -= cross_r2;
-			}
-			line.insert(line.begin() + next_id, next);
-			now = next_id;
+			Point next = w1 < w2 ? mid1 : mid2;
+			line[next_id - 1] = next;
+			now = next_id - 1;
 			res.push_back(line[now]);
+			path_cross_num[now] = path_cross_num[next_id] - (w1 < w2 ? cross_r1_add : cross_r2_add);
 			next_id = (int)line.size() - 1;
 		}
 		else if (!cross1)
 		{
-			passport -= cross_r1;
-			line.insert(line.begin() + next_id, mid1);
-			now = next_id;
+			line[next_id - 1] = mid1;
+			now = next_id - 1;
 			res.push_back(line[now]);
+			path_cross_num[now] = path_cross_num[next_id] - cross_r1_add;
 			next_id = (int)line.size() - 1;
 		}
 		else if (!cross2)
 		{
-			passport -= cross_r2;
-			line.insert(line.begin() + next_id, mid2);
-			now = next_id;
+			line[next_id - 1] = mid2;
+			now = next_id - 1;
 			res.push_back(line[now]);
+			path_cross_num[now] = path_cross_num[next_id] - cross_r2_add;
 			next_id = (int)line.size() - 1;
 		}
 		else if (next_id - 1 == now)
@@ -980,11 +972,11 @@ Polyline CableRouter::manhattan_smooth_basic(MapInfo* const data, ASPath& path, 
 			{
 				Point mid = CGAL::midpoint(line[now], line[next_id]);
 				line.insert(line.begin() + next_id, mid);
+				path_cross_num.insert(path_cross_num.begin() + next_id, path_cross_num[now] + crossRoom(data, u, mid));
 				loop_count++;
 			}
 			else
 			{
-				passport -= crossRoom(data, u, v);
 				now = next_id;
 				res.push_back(line[now]);
 				next_id = (int)line.size() - 1;
