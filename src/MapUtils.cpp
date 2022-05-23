@@ -529,36 +529,49 @@ void CableRouter::preprocess(MapInfo& map)
 void CableRouter::deleteMapInfo(MapInfo& map)
 {
 	auto cen_all = map.cen_line_tree->all();
-	for (int i = 0; i < (*cen_all).size(); i++)
+	set<rbush::TreeNode<SElement>*> cen_set(cen_all->begin(), cen_all->end());
+	for (auto it = cen_set.begin(); it != cen_set.end(); it++)
 	{
-		delete (*cen_all)[i];
+		delete *it;
 	}
 	reset(*cen_all);
 	delete cen_all;
 
 	auto hole_all = map.hole_tree->all();
-	for (int i = 0; i < (*hole_all).size(); i++)
+	set<rbush::TreeNode<PElement>*> hole_set(hole_all->begin(), hole_all->end());
+	for (auto it = hole_set.begin(); it != hole_set.end(); it++)
 	{
-		delete (*hole_all)[i];
+		delete* it;
 	}
 	reset(*hole_all);
 	delete hole_all;
 
 	auto area_all = map.area.area_edge_tree->all();
-	for (int i = 0; i < (*area_all).size(); i++)
+	set<rbush::TreeNode<SElement>*> area_set(area_all->begin(), area_all->end());
+	for (auto it = area_set.begin(); it != area_set.end(); it++)
 	{
-		delete (*area_all)[i];
+		delete* it;
 	}
 	reset(*area_all);
 	delete area_all;
 
 	auto room_all = map.room_tree->all();
-	for (int i = 0; i < (*room_all).size(); i++)
+	set<rbush::TreeNode<PElement>*> room_set(room_all->begin(), room_all->end());
+	for (auto it = room_set.begin(); it != room_set.end(); it++)
 	{
-		delete (*room_all)[i];
+		delete* it;
 	}
 	reset(*room_all);
 	delete room_all;
+
+	delete map.cen_line_tree;
+	map.cen_line_tree = NULL;
+	delete map.area.area_edge_tree;
+	map.area.area_edge_tree = NULL;
+	delete map.hole_tree;
+	map.hole_tree = NULL;
+	delete map.room_tree;
+	map.room_tree = NULL;
 }
 
 void CableRouter::deleteInvalidDevice(MapInfo& map)
