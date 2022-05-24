@@ -547,7 +547,9 @@ Polyline CableRouter::funnel_smooth(CDT& dt, ASNode* nodes, Point s, Point t, in
 			//printf("Get l and r as the start\n");
 		}
 
-		Segment ss = shrink_segment(Segment(l, r), 0.6);
+		Segment ss(l, r);
+		double rate = LEN(ss) > 500 ? 1.0 - 250.0 / LEN(ss) : 0.502;
+		ss = shrink_segment(ss, rate);
 		l = ss.source();
 		r = ss.target();
 
