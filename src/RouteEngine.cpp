@@ -16,102 +16,57 @@ bool open_list_less(ASNode* a, ASNode* b)
 
 ASPath CableRouter::a_star_connect_p2p(MapInfo* const data, Point s, Point t, vector<Segment>& lines)
 {
-	CDT dt;
+	CDTP dt;
+	set<Cid> obstacle_cid;
 	set<Constraint> constraints;
 
 	// start and end
-	vector<pair<Point, VertexInfo>> vec;
-	vec.push_back(make_pair(s, VertexInfo(0, true)));
-	vec.push_back(make_pair(t, VertexInfo(1, true)));
+	auto vh = dt.insert(s);
+	vh->info() = VertexInfo(0, true);
+	vh = dt.insert(t);
+	vh->info() = VertexInfo(1, true);
 
 	// area
 	Polygon area_boundary = data->area.info.boundary;
 	for (int i = 0; i < area_boundary.size(); i++)
-	{
 		constraints.insert(Constraint(area_boundary.vertex(i), area_boundary.vertex((i + 1) % area_boundary.size())));
-	}
 
 	// holes
-	for (auto h = data->holes.begin(); h != data->holes.end(); h++)
-	{
-		for (int i = 0; i < h->size(); i++)
-		{
-			constraints.insert(Constraint(h->vertex(i), h->vertex((i + 1) % h->size())));
-		}
-	}
+	for (auto& h : data->holes)
+		for (int i = 0; i < h.size(); i++)
+			constraints.insert(Constraint(h.vertex(i), h.vertex((i + 1) % h.size())));
+
+	for (auto& c : constraints)
+		obstacle_cid.insert(dt.insert_constraint(c.source, c.target));
+	reset(constraints);
 
 	// rooms
-	for (auto r = data->rooms.begin(); r != data->rooms.end(); r++)
-	{
-		for (int i = 0; i < r->size(); i++)
-		{
-			Point source = r->vertex(i);
-			Point target = r->vertex((i + 1) % r->size());
-			int num = 1 + ((int)DIST(source, target)) / 2000;
-			Point start = source;
-			for (int i = 1; i <= num; i++)
-			{
-				Point end = Point(
-					1.0 * i / num * DOUBLE(target.hx() - source.hx()) + DOUBLE(source.hx()),
-					1.0 * i / num * DOUBLE(target.hy() - source.hy()) + DOUBLE(source.hy()));
-				constraints.insert(Constraint(start, end));
-				start = end;
-			}
-			Point mid = CGAL::midpoint(source, target);
-			if (isValidPoint(*data, mid))
-				vec.push_back(make_pair(mid, VertexInfo(-1, true)));
-		}
-	}
-
-	// centers
-	//for (auto c = data->centers.begin(); c != data->centers.end(); c++)
-	//{
-	//	Point start = c->source();
-	//	Point mid = CGAL::midpoint(c->source(), c->target());
-	//	if (mid != s && mid != t)
-	//		vec.push_back(make_pair(mid, VertexInfo(2, true)));
-	//	int num = 1 + ((int)LEN(*c)) / 2000;
-	//	for (int i = 1; i <= num; i++)
-	//	{
-	//		Point end = Point(
-	//			1.0 * i / num * DOUBLE(c->target().hx() - c->source().hx()) + DOUBLE(c->source().hx()),
-	//			1.0 * i / num * DOUBLE(c->target().hy() - c->source().hy()) + DOUBLE(c->source().hy()));
-	//		constraints.insert(Constraint(start, end));
-	//		start = end;
-	//	}
-	//}
+	for (auto& r : data->rooms)
+		for (int i = 0; i < r.size(); i++)
+			constraints.insert(Constraint(r.vertex(i), r.vertex((i + 1) % r.size())));
 
 	// line
-	for (auto l = lines.begin(); l != lines.end(); l++)
-	{
-		Point start = l->source();
-		Point mid = CGAL::midpoint(l->source(), l->target());
-		//if (mid != s && mid != t)
-		//	vec.push_back(make_pair(mid, VertexInfo(2, true)));
-		int num = 1 + ((int)LEN(*l)) / 2000;
-		for (int i = 1; i <= num; i++)
-		{
-			Point end = Point(
-				1.0 * i / num * DOUBLE(l->target().hx() - l->source().hx()) + DOUBLE(l->source().hx()),
-				1.0 * i / num * DOUBLE(l->target().hy() - l->source().hy()) + DOUBLE(l->source().hy()));
-			constraints.insert(Constraint(start, end));
-			start = end;
-		}
-	}
+	for (auto& l : lines)
+		constraints.insert(Constraint(l.source(), l.target()));
 
-	//for (auto v = data->devices.begin(); v != data->devices.end(); v++)
+	// regions
+	//for (auto& r : data->regions)
 	//{
-	//	if (v->coord == s || v->coord == t) continue;
-	//	vec.push_back(make_pair(v->coord, VertexInfo(2, true)));
+	//	for (int i = 0; i < r.boundary.size(); i++)
+	//		constraints.insert(Constraint(r.boundary.vertex(i), r.boundary.vertex((i + 1) % r.boundary.size())));
+	//	for (auto h : r.holes)
+	//		for (int i = 0; i < h.size(); i++)
+	//			constraints.insert(Constraint(h.vertex(i), h.vertex((i + 1) % h.size())));
 	//}
-	dt.insert(vec.begin(), vec.end());
 
-	for (auto c = constraints.begin(); c != constraints.end(); c++)
-	{
-		dt.insert_constraint(c->source, c->target);
-	}
+	// centers
+	//for (auto& c : data->centers)
+	//	constraints.insert(Constraint(c.source(), c.target()));
 
-	mark_domains(dt);
+	for (auto& c : constraints)
+		dt.insert_constraint(c.source, c.target);
+
+	mark_domains(dt, obstacle_cid);
 
 	//printf("Begin a star\n");
 
@@ -255,7 +210,11 @@ ASPath CableRouter::a_star_connect_p2p(MapInfo* const data, Point s, Point t, ve
 			bool cross_cons = false;
 			int k = 0;
 			while (no->face->neighbor(k) != next->face) k++;
-			if (dt.is_constrained(make_pair(no->face, k))) { 
+			if (dt.is_constrained(make_pair(no->face, k)))
+			{ 
+				Cid id = dt.context(no->face->vertex(dt.cw(k)), no->face->vertex(dt.ccw(k))).id();
+				if (obstacle_cid.find(id) != obstacle_cid.end())
+					continue;
 				w += 100000; 
 				cross_cons = true;
 			}
@@ -307,11 +266,12 @@ ASPath CableRouter::a_star_connect_p2p(MapInfo* const data, Point s, Point t, ve
 Polyline CableRouter::a_star_connect_p2s(MapInfo* const data, Point s, Segment t, vector<Segment>& lines)
 {
 
-	CDT dt;
+	CDTP dt;
+	set<Cid> obstacle_cid;
 
 	// start
-	vector<pair<Point, VertexInfo>> vec;
-	vec.push_back(make_pair(s, VertexInfo(0, true)));
+	auto vh = dt.insert(s);
+	vh->info() = VertexInfo(0, true);
 
 	// end
 	vector<Point> end_points = { t.source(), t.target() };
@@ -319,41 +279,25 @@ Polyline CableRouter::a_star_connect_p2s(MapInfo* const data, Point s, Segment t
 	set<Point> end_set;
 	for (int i = 0; i < end_points.size(); i++)
 	{
-		vec.push_back(make_pair(end_points[i], VertexInfo(1, true)));
+		vh = dt.insert(end_points[i]);
+		vh->info() = VertexInfo(1, true);
 		end_set.insert(end_points[i]);
 	}
 	dt.insert_constraint(t.source(), t.target());
 
 	// area
-	dt.insert_constraint(data->area.info.boundary.vertices_begin(), data->area.info.boundary.vertices_end(), true);
+	Polygon area_boundary = data->area.info.boundary;
+	obstacle_cid.insert(dt.insert_constraint(area_boundary.vertices_begin(), area_boundary.vertices_end(), true));
 
 	// holes
-	for (auto h = data->holes.begin(); h != data->holes.end(); h++)
-	{
-		dt.insert_constraint(h->vertices_begin(), h->vertices_end(), true);
-	}
+	for (auto& h : data->holes)
+		obstacle_cid.insert(dt.insert_constraint(h.vertices_begin(), h.vertices_end(), true));
 
 	// line
-	for (auto l = lines.begin(); l != lines.end(); l++)
-	{
-		Point start = l->source();
-		Point mid = CGAL::midpoint(l->source(), l->target());
-		if (mid != s && end_set.find(mid) == end_set.end())
-			vec.push_back(make_pair(mid, VertexInfo(2, true)));
-		int num = 1 + ((int)LEN(*l)) / 1000;
-		for (int i = 1; i <= num; i++)
-		{
-			Point end = Point(
-				1.0 * i / num * DOUBLE(l->target().hx() - l->source().hx()) + DOUBLE(l->source().hx()),
-				1.0 * i / num * DOUBLE(l->target().hy() - l->source().hy()) + DOUBLE(l->source().hy()));
-			dt.insert_constraint(start, end);
-			start = end;
-		}
-	}
+	for (auto& l : lines)
+		dt.insert_constraint(l.source(), l.target());
 
-	dt.insert(vec.begin(), vec.end());
-
-	mark_domains(dt);
+	mark_domains(dt, obstacle_cid);
 
 	map<Face_handle, int> fid;
 	ASNode* nodes = new ASNode[dt.number_of_faces()];
@@ -472,7 +416,13 @@ Polyline CableRouter::a_star_connect_p2s(MapInfo* const data, Point s, Segment t
 			double w = DIST(no->mid, next->mid);
 			int k = 0;
 			while (no->face->neighbor(k) != next->face) k++;
-			if (dt.is_constrained(make_pair(no->face, k))) w *= 5;
+			if (dt.is_constrained(make_pair(no->face, k)))
+			{ 
+				Cid id = dt.context(no->face->vertex(dt.ccw(k)), no->face->vertex(dt.ccw(k))).id();
+				if (obstacle_cid.find(id) != obstacle_cid.end())
+					continue;
+				w += 100000; 
+			}
 
 			if (!next->open)
 			{
@@ -515,7 +465,7 @@ Polyline CableRouter::a_star_connect_p2s(MapInfo* const data, Point s, Segment t
 	return path;
 }
 
-Polyline CableRouter::funnel_smooth(CDT& dt, ASNode* nodes, Point s, Point t, int end_node_id)
+Polyline CableRouter::funnel_smooth(CDTP& dt, ASNode* nodes, Point s, Point t, int end_node_id)
 {
 	Polyline path;
 	path.push_back(t);
@@ -872,7 +822,7 @@ Polyline CableRouter::manhattan_smooth_basic(MapInfo* const data, ASPath& path, 
 {
 	Polyline line = path.path;
 	vector<int> path_cross_num = path.cross_num;
-	if (line.size() <= 2) return line;
+	if (line.size() < 2) return line;
 
 	Polyline res;
 	int loop_count = 0;

@@ -149,6 +149,112 @@ void CableRouter::mark_domains(CDT& cdt)
 	}
 }
 
+bool CableRouter::is_tiny_face_between_obstacles(CDTP& ct, CDTP::Face_handle fh, const set<Cid> obstacles)
+{
+	bool is_constrained = false;
+	bool is_device = false;
+	for (int i = 0; i < 3; i++)
+	{
+		if (fh->is_constrained(i))
+			is_constrained = true;
+		if (fh->vertex(i)->info().is_device)
+			is_device = true;
+	}
+	bool tiny = false;
+	for (int i = 0; i < 3; i++)
+	{
+		Point p = fh->vertex(i)->point();
+		Point q = fh->vertex(ct.ccw(i))->point();
+		if (fh->is_constrained(ct.cw(i)))
+		{
+			Cid id = ct.context(fh->vertex(ct.ccw(i)), fh->vertex(i)).id();
+			if (obstacles.find(id) != obstacles.end())
+			{
+				Point op = fh->vertex(ct.cw(i))->point();
+				if (is_constrained && DIST(op, Line(p, q)) < 10)
+				{
+					tiny = true;
+					break;
+				}
+			}
+		}
+		else if (DIST(p, q) < 0.1)
+		{
+			auto nei = fh->neighbor(ct.cw(i));
+			bool nei_is_con = false;
+			for (int i = 0; i < 3; i++)
+				if (fh->is_constrained(i))
+				{
+					Cid id = ct.context(fh->vertex(ct.cw(i)), fh->vertex(ct.ccw(i))).id();
+					if (obstacles.find(id) != obstacles.end())
+						nei_is_con = true;
+				}
+			if (is_constrained && nei_is_con)
+			{
+				tiny = true;
+				break;
+			}
+		}
+	}
+	return tiny && !is_device;
+}
+
+void CableRouter::mark_domains(CDTP& ct, CDTP::Face_handle start, int index, const set<Cid> obstacles)
+{
+	if (start->info().nesting_level != -1) {
+		return;
+	}
+	std::list<CDTP::Face_handle> queue;
+	queue.push_back(start);
+	while (!queue.empty()) {
+		CDTP::Face_handle fh = queue.front();
+		queue.pop_front();
+		if (fh->info().nesting_level == -1) {
+
+			if (is_tiny_face_between_obstacles(ct, fh, obstacles)) continue;
+			fh->info().nesting_level = index;
+			for (int i = 0; i < 3; i++) {
+				CDTP::Edge e(fh, i);
+				CDTP::Face_handle n = fh->neighbor(i);
+				if (n->info().nesting_level == -1) {
+					if (ct.is_constrained(make_pair(fh, i)))
+					{
+						Cid id = ct.context(fh->vertex(ct.ccw(i)), fh->vertex(ct.cw(i))).id();
+						if (obstacles.find(id) == obstacles.end())
+							queue.push_back(n);
+					}
+					else
+						queue.push_back(n);
+				}
+			}
+		}
+	}
+}
+void CableRouter::mark_domains(CDTP& cdt, const set<Cid> obstacles)
+{
+	for (CDTP::All_faces_iterator it = cdt.all_faces_begin(); it != cdt.all_faces_end(); ++it) {
+		it->info().nesting_level = -1;
+	}
+
+	int domain_id = 0;
+
+	for (CDTP::All_faces_iterator it = cdt.all_faces_begin(); it != cdt.all_faces_end(); ++it) {
+		if (it->info().nesting_level != -1) {
+			continue;
+		}
+		bool flag = false;
+		for (int i = 0; i < 3; i++)
+		{
+			if (it->vertex(i)->info().is_device)
+			{
+				flag = true;
+				break;
+			}
+		}
+		if (flag) mark_domains(cdt, it, domain_id++, obstacles);
+	}
+}
+
 double** CableRouter::newDoubleGraph(int n, double value)
 {
 	double** G = new double* [n];

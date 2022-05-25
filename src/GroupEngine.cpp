@@ -19,7 +19,7 @@ vector<vector<int>> CableRouter::GroupEngine::grouping(MapInfo* const data, cons
 		return partition_result;
 	}
 
-	CDT dt = buildTriangulation(data);
+	CDTP dt = buildTriangulation(data);
 	int n_all = (int)(dt.number_of_vertices() + data->powers.size());
 
 	double** G = buildGraphAll(data, dt, n_all, true, true);

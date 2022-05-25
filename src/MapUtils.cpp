@@ -111,45 +111,33 @@ MapInfo CableRouter::rotateMap(MapInfo* const data, Direction align)
 	return map;
 }
 
-CDT CableRouter::buildTriangulation(MapInfo* const data)
+CDTP CableRouter::buildTriangulation(MapInfo* const data)
 {
 	printf("Triangulation begin\n");
 
-	CDT dt;
-
-	vector<std::pair<Point, VertexInfo>> vec;
+	CDTP dt;
+	set<Cid> obstacle_cid;
 	set<Constraint> constraints;
 
 	// insert device, id from 0 to dev_n - 1
 	for (auto v = data->devices.begin(); v != data->devices.end(); v++)
 	{
-		vec.push_back(std::make_pair(v->coord, VertexInfo(v->id, true)));
-	}
-	if (vec.size() > 0)
-	{
-		dt.insert(vec.begin(), vec.end());
+		auto vh = dt.insert(v->coord);
+		vh->info() = VertexInfo(v->id, true);
 	}
 
 	// insert area point
 	Polygon area_boundary = data->area.info.boundary;
 	for (int i = 0; i < area_boundary.size(); i++)
-	{
 		constraints.insert(Constraint(area_boundary.vertex(i), area_boundary.vertex((i + 1) % area_boundary.size())));
-	}
 
 	// insert holes point
-	for (auto h = data->holes.begin(); h != data->holes.end(); h++)
-	{
-		for (int i = 0; i < h->size(); i++)
-		{
-			constraints.insert(Constraint(h->vertex(i), h->vertex((i + 1) % h->size())));
-		}
-	}
+	for (auto& h : data->holes)
+		for (int i = 0; i < h.size(); i++)
+			constraints.insert(Constraint(h.vertex(i), h.vertex((i + 1) % h.size())));
 
-	for (auto c = constraints.begin(); c != constraints.end(); c++)
-	{
-		dt.insert_constraint(c->source, c->target);
-	}
+	for (auto& c : constraints)
+		obstacle_cid.insert(dt.insert_constraint(c.source, c.target));
 
 	int id = (int)data->devices.size();
 	// parse_groups other points' id
@@ -159,14 +147,14 @@ CDT CableRouter::buildTriangulation(MapInfo* const data)
 			v->info().id = id++;
 		}
 	}
-	mark_domains(dt);
+	mark_domains(dt, obstacle_cid);
 
 	printf("Triangulation over\n");
 
 	return dt;
 }
 
-double** CableRouter::buildGraphAll(MapInfo* const data, const CDT& cdt, int n, bool center_weighted, bool room_weighted)
+double** CableRouter::buildGraphAll(MapInfo* const data, const CDTP& cdt, int n, bool center_weighted, bool room_weighted)
 {
 	printf("Point Size: %d\n", n);
 
@@ -232,7 +220,7 @@ void CableRouter::addDeviceEdges(MapInfo* const data, double** G, bool center_we
 	printf("Make up dev-to-dev edge end\n");
 }
 
-void CableRouter::addPowerEdges(MapInfo* const data, const CDT& dt, double** G, bool center_weighted, bool room_weighted)
+void CableRouter::addPowerEdges(MapInfo* const data, const CDTP& dt, double** G, bool center_weighted, bool room_weighted)
 {
 	printf("Make up power-to-point edge begin\n");
 	for (int i = 0; i < data->powers.size(); i++)

@@ -3,6 +3,7 @@
 #include <CGAL/Lazy_exact_nt.h>
 #include <CGAL/Delaunay_triangulation_2.h>
 #include <CGAL/Constrained_Delaunay_triangulation_2.h>
+#include <CGAL/Constrained_triangulation_plus_2.h>
 #include <CGAL/Triangulation_vertex_base_with_info_2.h>
 #include <CGAL/Triangulation_face_base_with_info_2.h>
 #include <CGAL/convex_hull_2.h>
@@ -66,28 +67,15 @@ namespace CableRouter
     typedef CGAL::Triangulation_data_structure_2<Vb, Fb>                    Tds;
     typedef CGAL::Exact_predicates_tag                                      Itag;
     typedef CGAL::Constrained_Delaunay_triangulation_2<Kernel, Tds, Itag>   CDT;
-    typedef CDT::Face_handle                                                Face_handle;
-    typedef CDT::Vertex_handle                                              Vertex_handle;
+    typedef CGAL::Constrained_triangulation_plus_2<CDT>                     CDTP;
+    typedef CDTP::Face_handle                                               Face_handle;
+    typedef CDTP::Vertex_handle                                             Vertex_handle;
+    typedef CDTP::Constraint_id                                             Cid;
 
     typedef CGAL::Exact_predicates_exact_constructions_kernel               EKernel;
     typedef EKernel::Point_2                                                EPoint;
     typedef CGAL::Polygon_2<EKernel>                                        EPolygon;
     typedef CGAL::Polygon_with_holes_2<EKernel>                             EPolygon_with_holes;
-
-    struct Constraint
-    {
-        Point source;
-        Point target;
-        Constraint(Point p, Point q)
-            :source(p), target(q) {}
-        bool operator < (const Constraint& c) const
-        {
-            if (source.hx() != c.source.hx()) return source.hx() < c.source.hx();
-            if (source.hy() != c.source.hy()) return source.hy() < c.source.hy();
-            if (target.hx() != c.target.hx()) return target.hx() < c.target.hx();
-            return target.hy() < c.target.hy();
-        }
-    };
 
     //#define DOUBLE(x)			                                CGAL::to_double(x.exact())
     #define DOUBLE(x)			                                (x)
@@ -99,6 +87,7 @@ namespace CableRouter
     #define EQUAL(x, y)                                         (abs(DOUBLE((x) - (y))) < CR_EPS)
     #define APPRO_EQUAL(x, y)                                   (abs(DOUBLE((x) - (y))) < 1e-4)
     #define CLOSE(x, y)                                         (abs(DOUBLE((x) - (y))) < 5)
+    #define POINT_EQUAL_EPS(x, y)                               (EQUAL((x).hx(), (y).hx()) && EQUAL((x).hy(), (y).hy()))
     #define POINT_EQUAL(x, y)                                   (APPRO_EQUAL((x).hx(), (y).hx()) && APPRO_EQUAL((x).hy(), (y).hy()))
     #define POINT_CLOSE(x, y)                                   (CLOSE((x).hx(), (y).hx()) && CLOSE((x).hy(), (y).hy()))
     #define VEC_COS(x, y)                                       ((x) * (y) / LEN((x)) / LEN((y)))
@@ -114,6 +103,10 @@ namespace CableRouter
     bool is_tiny_face_between_obstacles(CDT& cdt, CDT::Face_handle face);
     void mark_domains(CDT& cdt, CDT::Face_handle start, int index);
     void mark_domains(CDT& cdt);
+
+    bool is_tiny_face_between_obstacles(CDTP& cdt, CDTP::Face_handle face, const set<Cid> obstacles);
+    void mark_domains(CDTP& cdt, CDTP::Face_handle start, int index, const set<Cid> obstacles);
+    void mark_domains(CDTP& cdt, const set<Cid> obstacles);
 
     double** newDoubleGraph(int n, double value);
     void deleteGraph(double** G, int n);
@@ -142,6 +135,32 @@ namespace CableRouter
     vector<Point> points_simple(const vector<Point> pts);
 
     rbush::TreeNode<Point>* get_point_rtree_node(const Point* pt);
+
+    struct Constraint
+    {
+        Point source;
+        Point target;
+        Constraint(Point p, Point q)
+        {
+            if (compare_point_by_x_y(p, q))
+            {
+                source = p;
+                target = q;
+            }
+            else
+            {
+                source = q;
+                target = p;
+            }
+        }
+        bool operator < (const Constraint& c) const
+        {
+            if (source.hx() != c.source.hx()) return source.hx() < c.source.hx();
+            if (source.hy() != c.source.hy()) return source.hy() < c.source.hy();
+            if (target.hx() != c.target.hx()) return target.hx() < c.target.hx();
+            return target.hy() < c.target.hy();
+        }
+    };
 
     // T: has function swap()
     template <class T>

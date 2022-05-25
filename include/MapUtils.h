@@ -122,10 +122,10 @@ namespace CableRouter
 	void correctInvalidPower(MapInfo& map);
 	bool isValidPoint(MapInfo& map, Point pos);
 
-	CDT			buildTriangulation	(MapInfo* const map);
-	double**	buildGraphAll		(MapInfo* const map, const CDT& cdt, int n, bool center_weighted = false, bool room_weighted = false);
+	CDTP			buildTriangulation	(MapInfo* const map);
+	double**	buildGraphAll		(MapInfo* const map, const CDTP& cdt, int n, bool center_weighted = false, bool room_weighted = false);
 	void		addDeviceEdges		(MapInfo* const map, double** G, bool center_weighted = false, bool room_weighted = false);
-	void		addPowerEdges		(MapInfo* const map, const CDT& cdt, double** G, bool center_weighted = false, bool room_weighted = false);
+	void		addPowerEdges		(MapInfo* const map, const CDTP& cdt, double** G, bool center_weighted = false, bool room_weighted = false);
 	void        adjustByLayoutType	(MapInfo* const map, double** G);
 	void		removeObstacles		(MapInfo* const map, double** G, int n);
 

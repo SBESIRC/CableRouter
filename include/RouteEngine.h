@@ -38,7 +38,7 @@ namespace CableRouter
 
 	// General
 	Polyline	manhattan_connect(MapInfo* const map, Point s, Point t, Vector pre_dir, vector<Segment>& lines, Transformation rotate = Transformation());
-	Polyline	funnel_smooth(CDT& dt, ASNode* nodes, Point s, Point t, int end_node_id);
+	Polyline	funnel_smooth(CDTP& dt, ASNode* nodes, Point s, Point t, int end_node_id);
 
 	// Point to Point
 	Polyline	obstacle_avoid_connect_p2p(MapInfo* const map, Point s, Point t, vector<Segment>& lines);

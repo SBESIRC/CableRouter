@@ -123,7 +123,7 @@ vector<vector<int>> CableRouter::PruferDecode(const vector<int>& codes)
 
 vector<ISData> CableRouter::parse_groups(MapInfo* data, vector<vector<int>>& groups)
 {
-	CDT dt = buildTriangulation(data);
+	CDTP dt = buildTriangulation(data);
 	int n_all = (int)(dt.number_of_vertices() + data->powers.size());
 
 	double** G = buildGraphAll(data, dt, n_all, false, true);
