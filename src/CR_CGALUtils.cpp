@@ -531,14 +531,22 @@ vector<int> CableRouter::polyline_with_intersection(Polyline& polyline, const ve
 			else if (!source_is_in)
 				res.push_back(si.source());
 
-			source_is_in = POINT_EQUAL(si.target(), pts.back());
-			if (source_is_in)
-				*(pts.rbegin()) = si.target();
 
-			for (auto p : pts)
+			if (pts.size() > 0)
 			{
-				idx.push_back(res.size());
-				res.push_back(p);
+				source_is_in = POINT_EQUAL(si.target(), pts.back());
+				if (source_is_in)
+					*(pts.rbegin()) = si.target();
+
+				for (auto p : pts)
+				{
+					idx.push_back(res.size());
+					res.push_back(p);
+				}
+			}
+			else
+			{
+				source_is_in = false;
 			}
 		}
 		else
