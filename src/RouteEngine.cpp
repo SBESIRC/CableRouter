@@ -210,11 +210,9 @@ ASPath CableRouter::a_star_connect_p2p(MapInfo* const data, Point s, Point t, ve
 			bool cross_cons = false;
 			int k = 0;
 			while (no->face->neighbor(k) != next->face) k++;
+			if (is_obstacle_edge(no->face, k)) continue;
 			if (dt.is_constrained(make_pair(no->face, k)))
-			{ 
-				Cid id = dt.context(no->face->vertex(dt.cw(k)), no->face->vertex(dt.ccw(k))).id();
-				if (obstacle_cid.find(id) != obstacle_cid.end())
-					continue;
+			{
 				w += 100000; 
 				cross_cons = true;
 			}
