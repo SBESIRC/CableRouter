@@ -105,7 +105,7 @@ namespace CableRouter
     void mark_domains(CDT& cdt, CDT::Face_handle start, int index);
     void mark_domains(CDT& cdt);
 
-    bool is_obstacle(Face_handle face, int i);
+    bool is_obstacle_edge(Face_handle face, int i);
     bool is_tiny_face_between_obstacles(CDTP& cdt, Face_handle face);
     void mark_domains(CDTP& cdt, Face_handle start, int index);
     void mark_domains(CDTP& cdt, const set<Cid>& obstacles);
