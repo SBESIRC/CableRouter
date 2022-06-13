@@ -82,6 +82,7 @@ namespace CableRouter
 	{
 		PElement info;
 		SegBush* area_edge_tree;
+		Direction align = Direction(1, 0);
 	};
 
 	struct Region

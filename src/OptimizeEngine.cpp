@@ -214,15 +214,9 @@ void CableRouter::inner_connect(MapInfo* map, ImmuneSystem* group, vector<Polyli
 	{
 		vector<Polyline> paths;
 		int region_id = tree->region_id;
-		// normal connect
-		if (region_id == -1)
-		{
-			get_manhattan_tree(map, tree, cables);
-			avoid_coincidence(tree);
-			//paths = get_dream_tree_paths(tree);
-		}
+
 		// connect by center line
-		else if (map->regions[region_id].align_center)
+		if (region_id != -1 && map->regions[region_id].align_center)
 		{
 			if (map->regions[region_id].centers.size() == 0) {
 				get_manhattan_tree(map, tree, cables);
@@ -241,18 +235,26 @@ void CableRouter::inner_connect(MapInfo* map, ImmuneSystem* group, vector<Polyli
 		// connect by ucs
 		else
 		{
-			Direction align = to_first_quadrant(map->regions[region_id].align);
-			Transformation rotate = get_tf_from_dir(align);
-			all = getAllNodes(path_tree);
-			for (int i = 0; i < all.size(); i++)
-				all[i]->coord = all[i]->coord.transform(rotate.inverse());
-			MapInfo new_map = rotateMap(map, align);
-			get_manhattan_tree(&new_map, tree, cables);
-			avoid_coincidence(tree);
-			all = getAllNodes(path_tree);
-			for (int i = 0; i < all.size(); i++)
-				all[i]->coord = all[i]->coord.transform(rotate);
-			deleteMapInfo(new_map);
+			Direction align = region_id == -1 ? to_first_quadrant(map->area.align) : to_first_quadrant(map->regions[region_id].align);
+			if (align == Direction(1, 0))
+			{
+				get_manhattan_tree(map, tree, cables);
+				avoid_coincidence(tree);
+			}
+			else
+			{
+				Transformation rotate = get_tf_from_dir(align);
+				all = getAllNodes(path_tree);
+				for (int i = 0; i < all.size(); i++)
+					all[i]->coord = all[i]->coord.transform(rotate.inverse());
+				MapInfo new_map = rotateMap(map, align);
+				get_manhattan_tree(&new_map, tree, cables);
+				avoid_coincidence(tree);
+				all = getAllNodes(path_tree);
+				for (int i = 0; i < all.size(); i++)
+					all[i]->coord = all[i]->coord.transform(rotate);
+				deleteMapInfo(new_map);
+			}
 		}
 	}
 	optimize_junctions(map, path_tree, cables);

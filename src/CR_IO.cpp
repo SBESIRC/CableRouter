@@ -221,6 +221,13 @@ static void parse_geojson(MapInfo& map, const string& datastr)
                 se.weight = CR_INF;
                 area_nodes.push_back(get_seg_rtree_node(&se));
             }
+            if (prop["Vector"].type() != Json::nullValue)
+            {
+                string vec_s = prop["Vector"].asString();
+                vector<string> numbers;
+                boost::split(numbers, vec_s, boost::is_any_of("( ,)"));
+                map.area.align = Direction(atof(numbers[1].c_str()), atof(numbers[2].c_str()));
+            }
         }
         else if (cat.compare("CenterLine") == 0)
         {
